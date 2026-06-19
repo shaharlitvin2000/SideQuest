@@ -150,6 +150,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .title-emoji{font-size:22px;line-height:1}
 .title-name{flex:1;font-size:14px;font-weight:700;color:var(--text)}
 .title-state{font-size:12px;font-weight:800;color:var(--accent)}
+.feed-search-btn{margin-inline-start:auto;background:none;border:none;color:#fff;cursor:pointer;padding:6px;display:flex;align-items:center}
+.feed-search-btn svg{width:22px;height:22px}
+.search-header{display:flex;align-items:center;gap:10px;padding:8px 16px 12px}
+.search-header .inp{flex:1}
+.search-sec{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:14px 16px 6px}
+.search-row{display:flex;align-items:center;gap:12px;padding:11px 16px;cursor:pointer}
+.search-row:active{background:var(--bg3)}
+.search-row-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:16px;flex-shrink:0}
+.search-row-av.vid,.search-row-av.msn{background:var(--bg3)}
+.search-row-name{font-size:14px;font-weight:700}
+.search-row-sub{font-size:12px;color:var(--muted)}
 .season-banner b{color:var(--gold)}
 .lb-sort-row{display:flex;gap:8px;padding:10px 16px 0;justify-content:center}
 .lb-sort{flex:1;max-width:120px;padding:8px 6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
@@ -808,6 +819,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
         <div class="feed-tabs">
           <div class="feed-tab active" onclick="feedSwitchMode('foryou')">For You</div>
           <div class="feed-tab" onclick="feedSwitchMode('following')">Following</div>
+          <button class="feed-search-btn" onclick="openSearch()" aria-label="Search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+          </button>
         </div>
       </div>
       <!-- FOR YOU FEED -->
@@ -1015,7 +1029,8 @@ const T={
   chats:'Chats',loading:'Loading...',editProfile:'✏️ Edit Profile',changePhoto:'📷 Change photo',editBio:'Bio',editLink:'Link',editAge:'Age',editCountry:'Country',profileSaved:'Profile saved!',addBio:'+ Add a bio',
   dailyTitle:'Daily Reward',dailyReward:'Daily Reward',dailySub:'Come back every day for bigger rewards!',dailyClaim:'Claim reward',dailyClaimed:'Claimed ✓ — back tomorrow!',
   titlesTitle:'🏷️ Titles',titlesSub:'Unlock titles and show one on your profile',titleEquip:'Equip',titleSet:'Title updated',chooseTitle:'Choose a title',
-  shareTitle:'📤 Share',shareCopy:'Copy Link',shareMore:'More',linkCopied:'Link copied!',linkCopiedPaste:'Link copied — paste it to share',referralWelcome:'Welcome bonus!'},
+  shareTitle:'📤 Share',shareCopy:'Copy Link',shareMore:'More',linkCopied:'Link copied!',linkCopiedPaste:'Link copied — paste it to share',referralWelcome:'Welcome bonus!',
+  searchHint:'Search people, videos, missions',people:'People',videos:'Videos',hashtags:'Hashtags',noResults:'No results',photoUpdated:'Photo updated!'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
   close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'🏅 כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',
   lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
@@ -1024,7 +1039,8 @@ const T={
   chats:'צ׳אטים',loading:'טוען...',editProfile:'✏️ עריכת פרופיל',changePhoto:'📷 שנה תמונה',editBio:'ביו',editLink:'קישור',editAge:'גיל',editCountry:'מדינה',profileSaved:'הפרופיל נשמר!',addBio:'+ הוסף ביו',
   dailyTitle:'תגמול יומי',dailyReward:'תגמול יומי',dailySub:'חזור כל יום לתגמולים גדולים יותר!',dailyClaim:'אסוף תגמול',dailyClaimed:'נאסף ✓ — חזור מחר!',
   titlesTitle:'🏷️ תארים',titlesSub:'פתח תארים והצג אחד בפרופיל',titleEquip:'בחר',titleSet:'התואר עודכן',chooseTitle:'בחר תואר',
-  shareTitle:'📤 שיתוף',shareCopy:'העתק קישור',shareMore:'עוד',linkCopied:'הקישור הועתק!',linkCopiedPaste:'הקישור הועתק — הדבק כדי לשתף',referralWelcome:'בונוס הצטרפות!'},
+  shareTitle:'📤 שיתוף',shareCopy:'העתק קישור',shareMore:'עוד',linkCopied:'הקישור הועתק!',linkCopiedPaste:'הקישור הועתק — הדבק כדי לשתף',referralWelcome:'בונוס הצטרפות!',
+  searchHint:'חפש אנשים, סרטונים, משימות',people:'אנשים',videos:'סרטונים',hashtags:'האשטגים',noResults:'אין תוצאות',photoUpdated:'התמונה עודכנה!'},
 };
 ['ar','es','fr','pt','ru','de','it','tr','nl','pl','ko','ja','zh','hi','id','uk'].forEach(c=>{T[c]=T['en'];});
 
@@ -3988,6 +4004,41 @@ async function shareVia(platform){
   document.getElementById('share-modal').classList.remove('show');
 }
 
+// ══════════ SEARCH ══════════
+var _searchUsers=null,_searchTimer=null;
+function openSearch(){
+  const ov=document.getElementById('search-overlay'); if(!ov) return;
+  ov.classList.add('show');
+  const inp=document.getElementById('search-input'); if(inp){inp.value='';setTimeout(()=>inp.focus(),150);}
+  document.getElementById('search-results').innerHTML='<div class="empty-sheet">🔍 '+t('searchHint')+'</div>';
+  if(db&&!_searchUsers){ db.ref('users').limitToLast(200).once('value').then(s=>{var u=[];s.forEach(c=>{var v=c.val();if(v&&v.username)u.push({uid:c.key,...v});});_searchUsers=u;}).catch(()=>{}); }
+}
+function closeSearch(){ document.getElementById('search-overlay')?.classList.remove('show'); }
+function runSearch(){
+  const q=(document.getElementById('search-input')?.value||'').trim().toLowerCase().replace(/^#/,'');
+  const box=document.getElementById('search-results'); if(!box) return;
+  if(q.length<2){ box.innerHTML='<div class="empty-sheet">🔍 '+t('searchHint')+'</div>'; return; }
+  var html='';
+  // People
+  var people=(_searchUsers||[]).filter(u=>(u.username||'').toLowerCase().includes(q)).slice(0,8);
+  if(people.length){ html+='<div class="search-sec">'+t('people')+'</div>'+people.map(u=>{
+    var ini=(u.username||'?')[0].toUpperCase();
+    return '<div class="search-row" onclick="closeSearch();feedOpenProfile(\''+escHtml(u.uid)+'\',\''+escHtml(u.username||'Player')+'\',\''+escHtml(ini)+'\')"><div class="search-row-av">'+ini+'</div><div class="search-row-info"><div class="search-row-name">@'+escHtml(u.username||'Player')+'</div><div class="search-row-sub">★ '+(u.pts||0).toLocaleString()+'</div></div></div>';
+  }).join(''); }
+  // Videos
+  var vids=(feedAllPosts||[]).filter(p=>((p.caption||'')+' '+(p.missionTitle||'')+' '+(p.username||'')).toLowerCase().includes(q)).slice(0,8);
+  if(vids.length){ html+='<div class="search-sec">'+t('videos')+'</div>'+vids.map(p=>{
+    var title=p.caption||p.missionTitle||'Post';
+    return '<div class="search-row" onclick="closeSearch();feedJumpToPost(\''+escHtml(p.id)+'\')"><div class="search-row-av vid">🎬</div><div class="search-row-info"><div class="search-row-name">'+escHtml(title)+'</div><div class="search-row-sub">@'+escHtml(p.username||'Player')+' · ❤️ '+(p.likes||0)+'</div></div></div>';
+  }).join(''); }
+  // Missions
+  var ms=(MISSIONS||[]).map((m,i)=>({m,i})).filter(x=>(t(x.m.titleKey)+' '+t(x.m.descKey)).toLowerCase().includes(q)).slice(0,5);
+  if(ms.length){ html+='<div class="search-sec">'+t('missions')+'</div>'+ms.map(x=>
+    '<div class="search-row" onclick="closeSearch();go(\'home\');setTimeout(function(){openModal('+x.i+');},150)"><div class="search-row-av msn">🎯</div><div class="search-row-info"><div class="search-row-name">'+escHtml(t(x.m.titleKey))+'</div><div class="search-row-sub">★ '+(x.m.pts||0)+'</div></div></div>'
+  ).join(''); }
+  box.innerHTML=html||'<div class="empty-sheet">'+t('noResults')+'</div>';
+}
+
 // ══════════ EDIT PROFILE (bio, avatar, link, age, country) ══════════
 let myBio='',myAvatarURL='',myLink='',myAge='',myCountryName='';
 function renderProfileExtras(){
@@ -5020,6 +5071,18 @@ window.addEventListener('beforeunload',function(){
 
     <button class="modal-cta" id="upload-video-btn" onclick="submitUploadVideo()">Upload</button>
     <button class="modal-cancel" onclick="document.getElementById('upload-video-bg').classList.remove('show')">Cancel</button>
+  </div>
+</div>
+
+<!-- SEARCH OVERLAY -->
+<div class="follow-sheet-overlay" id="search-overlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="follow-sheet" style="height:80%">
+    <div class="follow-sheet-handle"></div>
+    <div class="search-header">
+      <button class="follow-sheet-close" onclick="closeSearch()">←</button>
+      <input class="inp" id="search-input" placeholder="Search people, videos, missions..." autocomplete="off" oninput="clearTimeout(_searchTimer);_searchTimer=setTimeout(runSearch,250)">
+    </div>
+    <div class="follow-sheet-list" id="search-results"><div class="empty-sheet">🔍</div></div>
   </div>
 </div>
 
