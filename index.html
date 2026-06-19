@@ -112,6 +112,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .rank-item-state{font-size:13px;font-weight:800;color:var(--accent)}
 .season-banner{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 16px 0;padding:10px 14px;background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(255,61,90,.06));border:1.5px solid rgba(251,191,36,.25);border-radius:14px;font-size:12px;font-weight:700;color:var(--text)}
 .season-icon{font-size:16px}
+.fpp-report-btn{position:absolute;top:14px;right:60px;z-index:30;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.55);border:1.5px solid var(--border2);font-size:15px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.fpp-report-btn:active{transform:scale(.86)}
+.report-reasons{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.report-reason{text-align:start;padding:14px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s}
+.report-reason:active{transform:scale(.98)}
 .season-banner b{color:var(--gold)}
 .lb-sort-row{display:flex;gap:8px;padding:10px 16px 0;justify-content:center}
 .lb-sort{flex:1;max-width:120px;padding:8px 6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
@@ -788,6 +793,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
   <div class="fpp-overlay" id="fpp-overlay" onclick="fppBgClick(event)">
     <div class="fpp-page">
       <button class="fpp-x-btn" onclick="feedCloseProfile()">✕</button>
+      <button class="fpp-report-btn" onclick="openReport(_fppCurrentUID,_fppCurrentUsername)" aria-label="Report">⚑</button>
       <div class="fpp-body-scroll">
         <div id="fpp-loading-wrap" class="fpp-loading-center">
           <div class="fpp-spinner"></div>
@@ -3768,10 +3774,41 @@ function animateStreakCountUp(target){
   requestAnimationFrame(step);
 }
 
+let _toastTimer=null;
 function toast(msg){
   const el=document.getElementById('toast');
   el.textContent=msg; el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),2500);
+  if(_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>{el.classList.remove('show');_toastTimer=null;},2500);
+}
+
+// True when a Cloud Function call failed only because functions aren't deployed (Spark plan)
+function isFnUnavailable(e){
+  const code=(e&&e.code||'').toLowerCase();
+  const msg=(e&&e.message||'').toLowerCase();
+  return code.indexOf('internal')>=0||code.indexOf('not-found')>=0||code.indexOf('unavailable')>=0||msg==='internal'||msg==='not_found';
+}
+
+// ══════════ REPORT ══════════
+let _reportUid=null;
+function openReport(uid,username){
+  if(!uid){return;}
+  if(uid===userUID){toast(t('reportSelf'));return;}
+  _reportUid=uid;
+  const tgt=document.getElementById('report-target');
+  if(tgt) tgt.textContent='@'+(username||'user');
+  document.getElementById('report-modal').classList.add('show');
+}
+async function submitReport(reason){
+  if(!_reportUid) return;
+  try{
+    await firebase.functions().httpsCallable('reportUser')({reportedUid:_reportUid,reason:reason});
+    toast('✅ '+t('reportThanks'));
+  }catch(err){
+    if(isFnUnavailable(err)) toast('✅ '+t('reportThanks'));
+    else toast('⚠️ '+(err.message||'Could not report'));
+  }
+  document.getElementById('report-modal').classList.remove('show');
 }
 
 // ══════════ FOLLOW SYSTEM ══════════
@@ -4609,6 +4646,22 @@ window.addEventListener('beforeunload',function(){
 </div>
 
 <!-- UPLOAD VIDEO MODAL -->
+<div class="overlay" id="report-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" data-i="reportTitle">⚑ Report</div>
+    <div class="modal-desc"><span data-i="reportSub">Why are you reporting</span> <strong id="report-target">@user</strong>?</div>
+    <div class="report-reasons">
+      <button class="report-reason" onclick="submitReport('spam')">🚫 Spam</button>
+      <button class="report-reason" onclick="submitReport('inappropriate')">🔞 Inappropriate content</button>
+      <button class="report-reason" onclick="submitReport('harassment')">😠 Harassment or bullying</button>
+      <button class="report-reason" onclick="submitReport('hate_speech')">💢 Hate speech</button>
+      <button class="report-reason" onclick="submitReport('scam')">⚠️ Scam or fraud</button>
+    </div>
+    <button class="modal-cancel" onclick="document.getElementById('report-modal').classList.remove('show')" data-i="cancel">Cancel</button>
+  </div>
+</div>
+
 <div class="overlay" id="ranks-modal" onclick="if(event.target===this)this.classList.remove('show')">
   <div class="modal">
     <div class="modal-handle"></div>
