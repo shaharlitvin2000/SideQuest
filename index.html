@@ -390,6 +390,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .feed-overlay{position:absolute;bottom:0;left:0;right:0;padding:80px 74px 22px 15px;background:linear-gradient(transparent 0%,rgba(0,0,0,.38) 40%,rgba(0,0,0,.88) 100%);color:#fff;pointer-events:none;direction:ltr}
 .feed-username-big{font-family:var(--font);font-weight:800;font-size:16px;text-shadow:0 1px 8px rgba(0,0,0,.8);margin-bottom:5px;letter-spacing:-.2px}
 .feed-caption{font-size:13px;line-height:1.45;margin-bottom:5px;text-shadow:0 1px 4px rgba(0,0,0,.7);opacity:.95}
+.hashtag{color:#60a5fa;font-weight:700;cursor:pointer}
 .feed-pts-tag{font-size:13px;color:#fbbf24;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6);margin-bottom:3px}
 .feed-ts{font-size:11px;color:rgba(255,255,255,.42)}
 .feed-actions{position:absolute;right:10px;bottom:28px;display:flex;flex-direction:column;align-items:center;gap:18px;z-index:4;pointer-events:all;direction:ltr}
@@ -2670,7 +2671,8 @@ function feedRenderPost(post,slot){
     +'</div>'
     +'<div class="feed-overlay">'
       +'<div class="feed-username-big" id="feed-uname-link" style="pointer-events:all;cursor:pointer">@'+escHtml(postUser)+(iFollow?' <span style="font-size:11px;color:#4ade80;font-weight:700;vertical-align:middle">✓ Following</span>':'')+'</div>'
-      +'<div class="feed-caption">🎯 '+escHtml(post.missionTitle||'Mission')+'</div>'
+      +'<div class="feed-caption">🎯 '+feedLinkifyTags(post.missionTitle||'Mission')+'</div>'
+      +(post.caption?'<div class="feed-caption">'+feedLinkifyTags(post.caption)+'</div>':'')
       +'<div class="feed-pts-tag">★ +'+(post.pts||0)+' points · <span style="color:#60a5fa">🤖 '+(post.status==='verified'?'verified':'pending')+'</span> · 👁️ '+(post.views||0)+'</div>'
       +(age?'<div class="feed-ts">'+age+'</div>':'')
     +'</div>'
@@ -3770,6 +3772,26 @@ function getRank(p){
 
 // Badge shown next to a player's name = emoji of their current rank tier
 function getNameBadge(p){ return (RANKS[getRank(p)].name.split(' ')[0])||''; }
+
+// ══════════ HASHTAGS ══════════
+function feedLinkifyTags(text){
+  return escHtml(text||'').replace(/#([\p{L}0-9_]{1,30})/gu,function(_,tag){
+    return '<span class="hashtag" onclick="event.stopPropagation();openHashtag(\''+tag.toLowerCase().replace(/[^a-z0-9_]/gi,'')+'\')">#'+tag+'</span>';
+  });
+}
+function openHashtag(tag){
+  if(!tag) return;
+  const ov=document.getElementById('hashtag-overlay'),list=document.getElementById('hashtag-list');
+  document.getElementById('hashtag-title').textContent='#'+tag;
+  ov.classList.add('show');
+  const matches=(feedAllPosts||[]).filter(function(p){return ((p.caption||'')+' '+(p.missionTitle||'')).toLowerCase().includes('#'+tag);});
+  if(!matches.length){ list.innerHTML='<div class="empty-sheet">'+t('noResults')+'</div>'; return; }
+  list.innerHTML=matches.map(function(p){
+    var title=p.caption||p.missionTitle||'Post';
+    return '<div class="search-row" onclick="closeHashtag();feedJumpToPost(\''+escHtml(p.id)+'\')"><div class="search-row-av vid">🎬</div><div class="search-row-info"><div class="search-row-name">'+escHtml(title)+'</div><div class="search-row-sub">@'+escHtml(p.username||'Player')+' · ❤️ '+(p.likes||0)+'</div></div></div>';
+  }).join('');
+}
+function closeHashtag(){ document.getElementById('hashtag-overlay')?.classList.remove('show'); }
 
 // ══════════ ACHIEVEMENTS ══════════
 const ACH_CATS=[
@@ -5334,6 +5356,18 @@ window.addEventListener('beforeunload',function(){
       <input class="inp" id="chat-input" placeholder="Message..." maxlength="500" autocomplete="off" onkeydown="if(event.key==='Enter')sendChatMessage()">
       <button class="chat-send" onclick="sendChatMessage()">➤</button>
     </div>
+  </div>
+</div>
+
+<!-- HASHTAG OVERLAY -->
+<div class="follow-sheet-overlay" id="hashtag-overlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="follow-sheet" style="height:75%">
+    <div class="follow-sheet-handle"></div>
+    <div class="follow-sheet-header">
+      <div class="follow-sheet-title" id="hashtag-title">#tag</div>
+      <button class="follow-sheet-close" onclick="closeHashtag()">✕</button>
+    </div>
+    <div class="follow-sheet-list" id="hashtag-list"><div class="empty-sheet">…</div></div>
   </div>
 </div>
 
