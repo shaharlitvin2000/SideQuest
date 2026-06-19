@@ -97,6 +97,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .streak-pill.bump{transform:scale(1.18);box-shadow:0 0 16px rgba(217,119,6,.4)}
 .streak-pill .num.count-up{transform:scale(1.35);color:#f59e0b}
 .pts-pill{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:var(--gold)}
+.rank-pill{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:800;color:var(--accent);background:var(--accent-soft);border:1.5px solid rgba(255,61,90,.28);border-radius:20px;padding:5px 10px;cursor:pointer;transition:transform .15s;white-space:nowrap}
+.rank-pill #rank-emoji{font-size:14px}
+.rank-pill:active{transform:scale(.92)}
+.name-badge{font-size:.95em;line-height:1}
+.ranks-list{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.rank-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;opacity:.6;transition:all .2s}
+.rank-item.reached{opacity:1}
+.rank-item.current{opacity:1;border-color:var(--accent);background:var(--accent-soft)}
+.rank-item-emoji{font-size:26px;line-height:1}
+.rank-item-info{flex:1}
+.rank-item-name{font-size:14px;font-weight:800;color:var(--text)}
+.rank-item-req{font-size:12px;color:var(--muted);margin-top:2px}
+.rank-item-state{font-size:13px;font-weight:800;color:var(--accent)}
 
 /* SCREENS inside app */
 .app-body{flex:1;overflow:hidden;position:relative}
@@ -544,6 +557,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
   <div class="topbar">
     <div class="logo">Flash<span>Arena</span></div>
     <div class="topbar-right">
+      <div class="rank-pill" id="rank-pill" onclick="openRanksModal()"><span id="rank-emoji">🌱</span> <span id="rank-name-top">Rookie</span></div>
       <div class="streak-pill">🔥 <span class="num" id="streak-num">7</span> <span style="color:var(--muted);font-size:10px" data-i="days">days</span></div>
       <div class="pts-pill">★ <span id="pts">1,240</span></div>
     </div>
@@ -935,8 +949,24 @@ const LANGS=[
 ];
 
 const T={
-  en:{langTitle:'Choose your language',langSub:'You can change this later in settings',continue:'Continue →',register:'Sign Up',login:'Log In',back:'Back',createAccountTitle:'Create account',loginTitle:'Welcome back',authSub:'Start completing missions and climbing the ranks',username:'Username',email:'Email',password:'Password',createAccount:'Create Account',logIn:'Log In',or:'or',continueGoogle:'Continue with Google',days:'days',heroTitle:"Ready for today's missions?",remaining:'missions remaining today',dailyProgress:'Daily progress',adMain:'Watch a short ad',adSub:'+50 bonus points · watch up to 10x/day',watch:'Watch',todaysMissions:"Today's missions",social:'Social',dare:'Dare',explore:'Explore',easy:'Easy',medium:'Medium',hard:'Hard',done:'✓ Done',start:'Start →',m0title:'Ask a stranger one question',m0desc:"Approach someone you don't know and ask them one genuine question.",m1title:'Stand completely still for 60 seconds',m1desc:'Pick a public spot and freeze like a statue for a full minute.',m2title:"Find a place you've never been to",m2desc:"Walk to a street or spot you've never noticed before.",leaderboard:'Leaderboard',lbSub:'This week · resets Friday',friends:'Friends',country:'Country',global:'Global',dayStreak:'day streak',weeklyPoints:'Weekly points',missionsDone:'Missions done',friendRank:'Friend rank',rankProgress:'Rank progress',ptsToLegend:'116 pts to Legend',language:'Language',notifications:'Notifications',privacy:'Privacy',goPremium:'Go Premium',free:'Free',on:'On',logout:'Log Out',missions:'Missions',ranks:'Ranks',feed:'Scroll',profile:'Profile',points:'Points',difficulty:'Difficulty',estTime:'Est. time',tips:'Tips',uploadProof:'Upload your proof',photoOrVideo:'Photo or short video',markComplete:'Mark as completed ✓',cancel:'Cancel',greeting:'Hey'},
-  he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי'},
+  en:{langTitle:'Choose your language',langSub:'You can change this later in settings',continue:'Continue →',register:'Sign Up',login:'Log In',back:'Back',createAccountTitle:'Create account',loginTitle:'Welcome back',authSub:'Start completing missions and climbing the ranks',username:'Username',email:'Email',password:'Password',createAccount:'Create Account',logIn:'Log In',or:'or',continueGoogle:'Continue with Google',days:'days',heroTitle:"Ready for today's missions?",remaining:'missions remaining today',dailyProgress:'Daily progress',adMain:'Watch a short ad',adSub:'+50 bonus points · watch up to 10x/day',watch:'Watch',todaysMissions:"Today's missions",social:'Social',dare:'Dare',explore:'Explore',easy:'Easy',medium:'Medium',hard:'Hard',done:'✓ Done',start:'Start →',m0title:'Ask a stranger one question',m0desc:"Approach someone you don't know and ask them one genuine question.",m1title:'Stand completely still for 60 seconds',m1desc:'Pick a public spot and freeze like a statue for a full minute.',m2title:"Find a place you've never been to",m2desc:"Walk to a street or spot you've never noticed before.",leaderboard:'Leaderboard',lbSub:'This week · resets Friday',friends:'Friends',country:'Country',global:'Global',dayStreak:'day streak',weeklyPoints:'Weekly points',missionsDone:'Missions done',friendRank:'Friend rank',rankProgress:'Rank progress',ptsToLegend:'116 pts to Legend',language:'Language',notifications:'Notifications',privacy:'Privacy',goPremium:'Go Premium',free:'Free',on:'On',logout:'Log Out',missions:'Missions',ranks:'Ranks',feed:'Scroll',profile:'Profile',points:'Points',difficulty:'Difficulty',estTime:'Est. time',tips:'Tips',uploadProof:'Upload your proof',photoOrVideo:'Photo or short video',markComplete:'Mark as completed ✓',cancel:'Cancel',greeting:'Hey',
+  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'🏅 All Ranks',allRanksSub:'Earn points to climb the ranks',
+  lbPoints:'Points',lbMissions:'Missions',lbStreak:'Streak',season:'Season',seasonEnds:'Season ends in',daysShort:'d',
+  notifTitle:'🔔 Notifications',notifEmpty:'No notifications yet',notifLiked:'liked your video',notifFollowed:'started following you',notifCommented:'commented on your video',notifReplied:'replied to your comment',notifReferral:'joined with your invite — +200!',justNow:'now',minShort:'m',hrShort:'h',dayShort2:'d',
+  reportTitle:'⚑ Report',reportSub:'Why are you reporting',reportThanks:'Thanks — our team will review it',reportSelf:"You can't report yourself",
+  chats:'Chats',loading:'Loading...',editProfile:'✏️ Edit Profile',changePhoto:'📷 Change photo',editBio:'Bio',editLink:'Link',editAge:'Age',editCountry:'Country',profileSaved:'Profile saved!',addBio:'+ Add a bio',
+  dailyTitle:'Daily Reward',dailyReward:'Daily Reward',dailySub:'Come back every day for bigger rewards!',dailyClaim:'Claim reward',dailyClaimed:'Claimed ✓ — back tomorrow!',
+  titlesTitle:'🏷️ Titles',titlesSub:'Unlock titles and show one on your profile',titleEquip:'Equip',titleSet:'Title updated',chooseTitle:'Choose a title',
+  shareTitle:'📤 Share',shareCopy:'Copy Link',shareMore:'More',linkCopied:'Link copied!',linkCopiedPaste:'Link copied — paste it to share',referralWelcome:'Welcome bonus!'},
+  he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
+  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'🏅 כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',
+  lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
+  notifTitle:'🔔 התראות',notifEmpty:'אין התראות עדיין',notifLiked:'אהב את הסרטון שלך',notifFollowed:'התחיל לעקוב אחריך',notifCommented:'הגיב על הסרטון שלך',notifReplied:'הגיב לתגובה שלך',notifReferral:'הצטרף דרך ההזמנה שלך — +200!',justNow:'עכשיו',minShort:'ד׳',hrShort:'ש׳',dayShort2:'ימ׳',
+  reportTitle:'⚑ דיווח',reportSub:'למה אתה מדווח על',reportThanks:'תודה — הצוות שלנו יבדוק',reportSelf:'אי אפשר לדווח על עצמך',
+  chats:'צ׳אטים',loading:'טוען...',editProfile:'✏️ עריכת פרופיל',changePhoto:'📷 שנה תמונה',editBio:'ביו',editLink:'קישור',editAge:'גיל',editCountry:'מדינה',profileSaved:'הפרופיל נשמר!',addBio:'+ הוסף ביו',
+  dailyTitle:'תגמול יומי',dailyReward:'תגמול יומי',dailySub:'חזור כל יום לתגמולים גדולים יותר!',dailyClaim:'אסוף תגמול',dailyClaimed:'נאסף ✓ — חזור מחר!',
+  titlesTitle:'🏷️ תארים',titlesSub:'פתח תארים והצג אחד בפרופיל',titleEquip:'בחר',titleSet:'התואר עודכן',chooseTitle:'בחר תואר',
+  shareTitle:'📤 שיתוף',shareCopy:'העתק קישור',shareMore:'עוד',linkCopied:'הקישור הועתק!',linkCopiedPaste:'הקישור הועתק — הדבק כדי לשתף',referralWelcome:'בונוס הצטרפות!'},
 };
 ['ar','es','fr','pt','ru','de','it','tr','nl','pl','ko','ja','zh','hi','id','uk'].forEach(c=>{T[c]=T['en'];});
 
@@ -3535,7 +3565,7 @@ function loadLeaderboard(){
         <div class="lb-rank ${rankCls}" style="color:${rankColor}">${rankNum}</div>
         <div class="lb-av" style="background:${colorStyle.split(';color:')[0]};color:${colorStyle.split(';color:')[1]}">${initial}</div>
         <div class="lb-info">
-          <div class="lb-name">${u.username||'Player'}${isMe?' <span style="font-size:10px;color:var(--accent)">(you)</span>':''}</div>
+          <div class="lb-name"><span class="name-badge">${getNameBadge(u.pts||0)}</span> ${u.username||'Player'}${isMe?' <span style="font-size:10px;color:var(--accent)">(you)</span>':''}</div>
           <div class="lb-meta">✅ ${missionsCount} mission${missionsCount!==1?'s':''} done</div>
         </div>
         <div class="lb-pts">★ ${(u.pts||0).toLocaleString()}</div>
@@ -3559,6 +3589,26 @@ const RANKS=[
 function getRank(p){
   for(let i=RANKS.length-1;i>=0;i--) if(p>=RANKS[i].min) return i;
   return 0;
+}
+
+// Badge shown next to a player's name = emoji of their current rank tier
+function getNameBadge(p){ return (RANKS[getRank(p)].name.split(' ')[0])||''; }
+
+function openRanksModal(){
+  const list=document.getElementById('ranks-list');
+  if(!list) return;
+  const cur=getRank(pts);
+  list.innerHTML=RANKS.map(function(r,i){
+    const isCur=i===cur, done=pts>=r.min;
+    const emoji=r.name.split(' ')[0], label=r.name.split(' ').slice(1).join(' ');
+    return '<div class="rank-item'+(isCur?' current':'')+(done?' reached':'')+'">'
+      +'<div class="rank-item-emoji">'+emoji+'</div>'
+      +'<div class="rank-item-info"><div class="rank-item-name">'+label+'</div>'
+      +'<div class="rank-item-req">'+r.min.toLocaleString()+'+ '+t('ptsUnit')+'</div></div>'
+      +'<div class="rank-item-state">'+(isCur?('★ '+t('you')):(done?'✓':'🔒'))+'</div>'
+    +'</div>';
+  }).join('');
+  document.getElementById('ranks-modal').classList.add('show');
 }
 
 function getCreatorStats(){
@@ -3637,6 +3687,10 @@ function updateUI(){
   const g=id=>document.getElementById(id);
   if(g('pts')) g('pts').textContent=pts.toLocaleString();
   if(g('pf-pts')) g('pf-pts').textContent=pts.toLocaleString();
+  // Rank pill in topbar (emoji + name)
+  const _rp=RANKS[getRank(pts)].name.split(' ');
+  if(g('rank-emoji')) g('rank-emoji').textContent=_rp[0];
+  if(g('rank-name-top')) g('rank-name-top').textContent=_rp.slice(1).join(' ');
   const left=Math.max(0,total-completed);
   if(g('left')) g('left').textContent=left;
   const pct=Math.round((completed/total)*100);
@@ -4511,6 +4565,16 @@ window.addEventListener('beforeunload',function(){
 </div>
 
 <!-- UPLOAD VIDEO MODAL -->
+<div class="overlay" id="ranks-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" data-i="allRanksTitle">🏅 All Ranks</div>
+    <div class="modal-desc" data-i="allRanksSub">Earn points to climb the ranks</div>
+    <div id="ranks-list" class="ranks-list"></div>
+    <button class="modal-cancel" onclick="document.getElementById('ranks-modal').classList.remove('show')" data-i="close">Close</button>
+  </div>
+</div>
+
 <div class="overlay" id="upload-video-bg" onclick="if(event.target===this)document.getElementById('upload-video-bg').classList.remove('show')">
   <div class="modal">
     <div class="modal-handle"></div>
