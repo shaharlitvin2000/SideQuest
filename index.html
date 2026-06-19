@@ -110,6 +110,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .rank-item-name{font-size:14px;font-weight:800;color:var(--text)}
 .rank-item-req{font-size:12px;color:var(--muted);margin-top:2px}
 .rank-item-state{font-size:13px;font-weight:800;color:var(--accent)}
+.season-banner{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 16px 0;padding:10px 14px;background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(255,61,90,.06));border:1.5px solid rgba(251,191,36,.25);border-radius:14px;font-size:12px;font-weight:700;color:var(--text)}
+.season-icon{font-size:16px}
+.season-banner b{color:var(--gold)}
+.lb-sort-row{display:flex;gap:8px;padding:10px 16px 0;justify-content:center}
+.lb-sort{flex:1;max-width:120px;padding:8px 6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.lb-sort.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 
 /* SCREENS inside app */
 .app-body{flex:1;overflow:hidden;position:relative}
@@ -642,10 +648,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
         <div class="lb-title" data-i="leaderboard">Leaderboard</div>
         <div class="lb-sub" data-i="lbSub">This week · resets Friday</div>
       </div>
+      <div class="season-banner" id="season-banner"></div>
       <div class="tabs">
         <div class="tab active" onclick="setTab(this)" data-i="friends">Friends</div>
         <div class="tab" onclick="setTab(this)" data-i="country">Country</div>
         <div class="tab" onclick="setTab(this)" data-i="global">Global</div>
+      </div>
+      <div class="lb-sort-row">
+        <button class="lb-sort active" onclick="setLbSort('pts',this)">★ <span data-i="lbPoints">Points</span></button>
+        <button class="lb-sort" onclick="setLbSort('missions',this)">✅ <span data-i="lbMissions">Missions</span></button>
+        <button class="lb-sort" onclick="setLbSort('streak',this)">🔥 <span data-i="lbStreak">Streak</span></button>
       </div>
       <div class="lb-list" id="lb-list">
         <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Loading rankings...</div>
@@ -3537,40 +3549,72 @@ const LB_COLORS=[
 ];
 const RANK_COLORS=['r1','r2','r3'];
 
-function loadLeaderboard(){
-  if(!db) return;
+var lbSortBy='pts';
+function setLbSort(field,el){
+  lbSortBy=field;
+  document.querySelectorAll('.lb-sort').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderLb();
+}
+function lbVal(u){
+  if(lbSortBy==='missions') return u.totalMissionsDone||0;
+  if(lbSortBy==='streak') return u.streak||0;
+  return u.pts||0;
+}
+function updateSeasonBanner(){
+  const el=document.getElementById('season-banner');
+  if(!el) return;
+  const now=new Date();
+  const end=new Date(now.getFullYear(),now.getMonth()+1,0,23,59,59);
+  const days=Math.ceil((end-now)/86400000);
+  const month=now.toLocaleString(curLang==='he'?'he-IL':'en-US',{month:'long'});
+  el.innerHTML='<span class="season-icon">🏆</span><span>'+t('season')+' '+month+' · '+t('seasonEnds')+' <b>'+days+t('daysShort')+'</b></span>';
+}
+function renderLb(){
   const list=document.getElementById('lb-list');
   if(!list) return;
-  list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Loading...</div>';
+  let users=(window._lbList||[]).slice();
+  users.sort((a,b)=>lbVal(b)-lbVal(a));
+  if(users.length===0){
+    list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No players yet — be the first!</div>';
+    return;
+  }
+  list.innerHTML=users.map((u,i)=>{
+    const rankNum=i+1;
+    const rankCls=rankNum<=3?RANK_COLORS[rankNum-1]:'';
+    const rankColor=rankNum===1?'var(--gold)':rankNum===2?'#c0c0c0':rankNum===3?'#cd7f32':'var(--muted)';
+    const colorStyle=LB_COLORS[i%LB_COLORS.length];
+    const isMe=u.uid===userUID;
+    const initial=(u.username||'?')[0].toUpperCase();
+    let mainStat, metaStat;
+    if(lbSortBy==='missions'){ mainStat='✅ '+(u.totalMissionsDone||0); metaStat='★ '+(u.pts||0).toLocaleString()+' '+t('ptsUnit'); }
+    else if(lbSortBy==='streak'){ mainStat='🔥 '+(u.streak||0); metaStat='★ '+(u.pts||0).toLocaleString()+' '+t('ptsUnit'); }
+    else { mainStat='★ '+(u.pts||0).toLocaleString(); metaStat='✅ '+(u.totalMissionsDone||0)+' '+t('missionsLbl'); }
+    return `<div class="lb-row${isMe?' me':''}">
+      <div class="lb-rank ${rankCls}" style="color:${rankColor}">${rankNum}</div>
+      <div class="lb-av" style="background:${colorStyle.split(';color:')[0]};color:${colorStyle.split(';color:')[1]}">${initial}</div>
+      <div class="lb-info">
+        <div class="lb-name"><span class="name-badge">${getNameBadge(u.pts||0)}</span> ${u.username||'Player'}${isMe?' <span style="font-size:10px;color:var(--accent)">'+t('you')+'</span>':''}</div>
+        <div class="lb-meta">${metaStat}</div>
+      </div>
+      <div class="lb-pts">${mainStat}</div>
+    </div>`;
+  }).join('');
+}
+function loadLeaderboard(){
+  if(!db) return;
+  updateSeasonBanner();
+  const list=document.getElementById('lb-list');
+  if(!list) return;
+  list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">'+t('loading')+'</div>';
   db.ref('users').orderByChild('pts').limitToLast(100).once('value').then(snap=>{
     const users=[];
     snap.forEach(child=>{
       const d=child.val();
       if(d && d.username && d.pts!=null) users.push({uid:child.key,...d});
     });
-    users.sort((a,b)=>b.pts-a.pts);
-    if(users.length===0){
-      list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No players yet — be the first!</div>';
-      return;
-    }
-    list.innerHTML=users.map((u,i)=>{
-      const rankNum=i+1;
-      const rankCls=rankNum<=3?RANK_COLORS[rankNum-1]:'';
-      const rankColor=rankNum===1?'var(--gold)':rankNum===2?'#c0c0c0':rankNum===3?'#cd7f32':'var(--muted)';
-      const colorStyle=LB_COLORS[i%LB_COLORS.length];
-      const isMe=u.uid===userUID;
-      const initial=(u.username||'?')[0].toUpperCase();
-      const missionsCount=u.completedMissions?u.completedMissions.length:0;
-      return `<div class="lb-row${isMe?' me':''}">
-        <div class="lb-rank ${rankCls}" style="color:${rankColor}">${rankNum}</div>
-        <div class="lb-av" style="background:${colorStyle.split(';color:')[0]};color:${colorStyle.split(';color:')[1]}">${initial}</div>
-        <div class="lb-info">
-          <div class="lb-name"><span class="name-badge">${getNameBadge(u.pts||0)}</span> ${u.username||'Player'}${isMe?' <span style="font-size:10px;color:var(--accent)">(you)</span>':''}</div>
-          <div class="lb-meta">✅ ${missionsCount} mission${missionsCount!==1?'s':''} done</div>
-        </div>
-        <div class="lb-pts">★ ${(u.pts||0).toLocaleString()}</div>
-      </div>`;
-    }).join('');
+    window._lbList=users;
+    renderLb();
   }).catch(e=>{
     console.error('[LB] error:',e);
     list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Could not load rankings</div>';
