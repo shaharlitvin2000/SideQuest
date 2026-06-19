@@ -3795,6 +3795,21 @@ function animateStreakCountUp(target){
   requestAnimationFrame(step);
 }
 
+// Lightweight confetti burst (no library)
+function launchConfetti(){
+  try{
+    const emojis=['🎉','✨','⭐','🎊','🔥'];
+    for(let i=0;i<18;i++){
+      const s=document.createElement('div');
+      s.textContent=emojis[i%emojis.length];
+      s.style.cssText='position:fixed;left:'+(10+Math.random()*80)+'%;top:-30px;font-size:'+(16+Math.random()*16)+'px;z-index:99999;pointer-events:none;transition:transform 1.6s cubic-bezier(.3,.7,.4,1),opacity 1.6s';
+      document.body.appendChild(s);
+      requestAnimationFrame(()=>{ s.style.transform='translateY('+(window.innerHeight+60)+'px) rotate('+(Math.random()*720-360)+'deg)'; s.style.opacity='0'; });
+      setTimeout(()=>s.remove(),1700);
+    }
+  }catch(e){}
+}
+
 let _toastTimer=null;
 function toast(msg){
   const el=document.getElementById('toast');
