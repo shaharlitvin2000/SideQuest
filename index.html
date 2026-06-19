@@ -192,6 +192,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .reward-cost{font-size:13px;color:var(--gold);font-weight:800}
 .reward-btn{background:var(--accent);color:#fff;border:none;border-radius:20px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}
 .reward-btn:disabled{background:var(--bg3);color:var(--muted);cursor:default}
+.achievements-wrap{padding:20px 16px 0}
+.achievements-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.achievements-icon{font-size:24px}
+.achievements-title{font-size:15px;font-weight:800;color:var(--text)}
+.achievements-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.ach-cat{margin-bottom:18px}
+.ach-cat-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1.5px solid var(--bg3);font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
+.ach-cat-cnt{font-size:11px;font-weight:700;color:var(--muted)}
+.ach-cat-cnt.full{color:var(--gold);font-weight:800}
+.achievements-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:12px}
+.achievement-badge{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;padding:11px 6px;background:transparent;border-radius:12px;border:1px solid transparent;transition:all .2s;opacity:.55}
+.achievement-badge:active{transform:scale(.92)}
+.achievement-badge.unlocked{opacity:1;border-color:rgba(251,191,36,.2);background:rgba(251,191,36,.05)}
+.ach-state{position:absolute;top:5px;inset-inline-end:6px;font-size:13px}
+.achievement-icon{font-size:32px;line-height:1}
+.achievement-badge.unlocked .achievement-icon{filter:drop-shadow(0 0 4px rgba(251,191,36,.3))}
+.achievement-name{font-size:10px;text-align:center;color:var(--muted);font-weight:600}
+.achievement-badge.unlocked .achievement-name{color:var(--text);font-weight:700}
 .season-banner b{color:var(--gold)}
 .lb-sort-row{display:flex;gap:8px;padding:10px 16px 0;justify-content:center}
 .lb-sort{flex:1;max-width:120px;padding:8px 6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
@@ -796,6 +814,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
           <div class="ptrack-lbl" id="pf-rank-lbl">884 / 1,000 pts</div>
         </div>
       </div>
+      <div class="achievements-wrap" id="achievements-wrap" style="display:none">
+        <div class="achievements-header">
+          <div class="achievements-icon">🏆</div>
+          <div><div class="achievements-title" data-i="achievements">Achievements</div>
+          <div class="achievements-sub" data-i="achTapHint">Tap one to see what's needed</div></div>
+        </div>
+        <div id="achievements-grid"></div>
+      </div>
       <div class="stats-grid" id="creator-stats" style="margin-bottom:0;display:none">
         <div class="stat"><div class="stat-n" style="color:var(--blue)">0</div><div class="stat-l">Total Views</div></div>
         <div class="stat"><div class="stat-n" style="color:var(--accent)">0</div><div class="stat-l">Total Likes</div></div>
@@ -1071,7 +1097,8 @@ const T={
   shareTitle:'📤 Share',shareCopy:'Copy Link',shareMore:'More',linkCopied:'Link copied!',linkCopiedPaste:'Link copied — paste it to share',referralWelcome:'Welcome bonus!',
   searchHint:'Search people, videos, missions',people:'People',videos:'Videos',hashtags:'Hashtags',noResults:'No results',photoUpdated:'Photo updated!',
   messages:'Messages',message:'Message',rewards:'Rewards',inviteFriends:'Invite',noChats:'No conversations yet — visit a profile and say hi! 👋',chatStart:'Say hello 👋',
-  rewardsShop:'🎁 Rewards Shop',yourBalance:'Your balance:',rewardsNote:'Rewards are processed manually within 48h.',redeem:'Redeem',locked:'Locked',redeemConfirm:'Redeem'},
+  rewardsShop:'🎁 Rewards Shop',yourBalance:'Your balance:',rewardsNote:'Rewards are processed manually within 48h.',redeem:'Redeem',locked:'Locked',redeemConfirm:'Redeem',
+  achievements:'Achievements',achTapHint:"Tap one to see what's needed",achUnlockedYes:'Unlocked! ✓',achNeed:'Need',achUnit_missions:'more missions',achUnit_points:'more points',achUnit_followers:'more followers',achUnit_streak:'more days streak',achCat_missions:'Missions',achCat_points:'Points',achCat_followers:'Followers',achCat_streak:'Streak'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
   close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'🏅 כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',
   lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
@@ -1083,7 +1110,8 @@ const T={
   shareTitle:'📤 שיתוף',shareCopy:'העתק קישור',shareMore:'עוד',linkCopied:'הקישור הועתק!',linkCopiedPaste:'הקישור הועתק — הדבק כדי לשתף',referralWelcome:'בונוס הצטרפות!',
   searchHint:'חפש אנשים, סרטונים, משימות',people:'אנשים',videos:'סרטונים',hashtags:'האשטגים',noResults:'אין תוצאות',photoUpdated:'התמונה עודכנה!',
   messages:'הודעות',message:'הודעה',rewards:'פרסים',inviteFriends:'הזמן',noChats:'אין שיחות עדיין — בקר בפרופיל ותגיד שלום! 👋',chatStart:'תגיד שלום 👋',
-  rewardsShop:'🎁 חנות פרסים',yourBalance:'היתרה שלך:',rewardsNote:'הפרסים מטופלים ידנית תוך 48 שעות.',redeem:'פדה',locked:'נעול',redeemConfirm:'לפדות'},
+  rewardsShop:'🎁 חנות פרסים',yourBalance:'היתרה שלך:',rewardsNote:'הפרסים מטופלים ידנית תוך 48 שעות.',redeem:'פדה',locked:'נעול',redeemConfirm:'לפדות',
+  achievements:'הישגים',achTapHint:'לחץ על הישג לראות מה חסר',achUnlockedYes:'נפתח! ✓',achNeed:'חסרים עוד',achUnit_missions:'משימות',achUnit_points:'נקודות',achUnit_followers:'עוקבים',achUnit_streak:'ימי רצף',achCat_missions:'משימות',achCat_points:'נקודות',achCat_followers:'עוקבים',achCat_streak:'סטריק'},
 };
 ['ar','es','fr','pt','ru','de','it','tr','nl','pl','ko','ja','zh','hi','id','uk'].forEach(c=>{T[c]=T['en'];});
 
@@ -3743,6 +3771,63 @@ function getRank(p){
 // Badge shown next to a player's name = emoji of their current rank tier
 function getNameBadge(p){ return (RANKS[getRank(p)].name.split(' ')[0])||''; }
 
+// ══════════ ACHIEVEMENTS ══════════
+const ACH_CATS=[
+  {id:'missions',icon:'🎬',label:'Missions'},
+  {id:'points',icon:'💰',label:'Points'},
+  {id:'followers',icon:'👥',label:'Followers'},
+  {id:'streak',icon:'🔥',label:'Streak'}
+];
+const ACHIEVEMENTS=[
+  {id:'first',cat:'missions',icon:'🎬',name:'First Mission',target:1},
+  {id:'5x',cat:'missions',icon:'🚀',name:'5 Missions',target:5},
+  {id:'10x',cat:'missions',icon:'⭐',name:'10 Missions',target:10},
+  {id:'25x',cat:'missions',icon:'🔥',name:'25 Missions',target:25},
+  {id:'50x',cat:'missions',icon:'🏅',name:'50 Missions',target:50},
+  {id:'100x',cat:'missions',icon:'🏆',name:'100 Missions',target:100},
+  {id:'100pts',cat:'points',icon:'💰',name:'100 Points',target:100},
+  {id:'1kpts',cat:'points',icon:'👑',name:'1K Points',target:1000},
+  {id:'5kpts',cat:'points',icon:'💎',name:'5K Points',target:5000},
+  {id:'20kpts',cat:'points',icon:'🌟',name:'20K Points',target:20000},
+  {id:'follower',cat:'followers',icon:'👥',name:'First Follower',target:1},
+  {id:'5followers',cat:'followers',icon:'🤝',name:'5 Followers',target:5},
+  {id:'25followers',cat:'followers',icon:'🌍',name:'25 Followers',target:25},
+  {id:'streak3',cat:'streak',icon:'⚡',name:'3 Day Streak',target:3},
+  {id:'streak7',cat:'streak',icon:'🗓️',name:'7 Day Streak',target:7},
+  {id:'streak30',cat:'streak',icon:'🛡️',name:'30 Day Streak',target:30}
+];
+function achCurrentValue(cat){
+  if(cat==='missions') return totalMissionsDone||0;
+  if(cat==='points') return pts||0;
+  if(cat==='followers') return parseInt(document.getElementById('my-followers-cnt')?.textContent)||0;
+  if(cat==='streak') return streak||0;
+  return 0;
+}
+function showAchievementInfo(id){
+  const a=ACHIEVEMENTS.find(x=>x.id===id); if(!a) return;
+  const cur=achCurrentValue(a.cat);
+  if(cur>=a.target){ toast(a.icon+' '+a.name+' — '+t('achUnlockedYes')); return; }
+  toast('🔒 '+a.name+': '+t('achNeed')+' '+(a.target-cur).toLocaleString()+' '+t('achUnit_'+a.cat));
+}
+function renderAchievements(){
+  const wrap=document.getElementById('achievements-wrap'),grid=document.getElementById('achievements-grid');
+  if(!wrap||!grid) return;
+  wrap.style.display='block';
+  const followersCnt=parseInt(document.getElementById('my-followers-cnt')?.textContent)||0;
+  const isUnlocked=a=>{const v=a.cat==='missions'?(totalMissionsDone||0):a.cat==='points'?(pts||0):a.cat==='followers'?followersCnt:(streak||0);return v>=a.target;};
+  let html='';
+  ACH_CATS.forEach(function(cat){
+    const items=ACHIEVEMENTS.filter(a=>a.cat===cat.id);
+    const done=items.filter(isUnlocked).length;
+    html+='<div class="ach-cat"><div class="ach-cat-head"><span>'+cat.icon+' '+t('achCat_'+cat.id)+'</span><span class="ach-cat-cnt'+(done===items.length?' full':'')+'">'+done+'/'+items.length+'</span></div>'
+      +'<div class="achievements-grid">'+items.map(function(a){
+        const u=isUnlocked(a);
+        return '<div class="achievement-badge'+(u?' unlocked':'')+'" onclick="showAchievementInfo(\''+a.id+'\')"><span class="ach-state">'+(u?'✓':'🔒')+'</span><div class="achievement-icon">'+a.icon+'</div><div class="achievement-name">'+a.name+'</div></div>';
+      }).join('')+'</div></div>';
+  });
+  grid.innerHTML=html;
+}
+
 function openRanksModal(){
   const list=document.getElementById('ranks-list');
   if(!list) return;
@@ -3831,6 +3916,7 @@ function updateProfile(){
   }
   applyMyHeroColor();
   try{renderProfileExtras();}catch(e){}
+  try{renderAchievements();}catch(e){}
   try{loadSavedPosts();}catch(e){}
 }
 function updateUI(){
