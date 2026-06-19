@@ -2283,8 +2283,8 @@ function loadFeed(isRefresh){
     return;
   }
 
-  // Load initial batch (first 50 posts)
-  var query=db.ref('feed').orderByChild('timestamp').limitToLast(51);
+  // Load initial batch (first 20 posts; 21st probes for more)
+  var query=db.ref('feed').orderByChild('timestamp').limitToLast(21);
   query.once('value').then(function(snap){
     feedAllPosts=[];
     snap.forEach(function(c){
@@ -2296,7 +2296,7 @@ function loadFeed(isRefresh){
     // Set pagination cursor to oldest post's timestamp
     if(feedAllPosts.length>0){
       feedPaginationCursor=feedAllPosts[0].timestamp;
-      feedHasMorePosts=feedAllPosts.length===51; // If we got 51, there are more
+      feedHasMorePosts=feedAllPosts.length===21; // got the probe → more exist
       if(feedHasMorePosts) feedAllPosts.pop(); // Remove the extra one we used for checking
     }
 
@@ -2514,7 +2514,7 @@ function feedRenderPost(post,slot){
   // Skip blob URLs (temporary, invalid in current session)
   var isValidURL=post.mediaURL&&!post.mediaURL.startsWith('blob:');
   if(isVid&&isValidURL){
-    media='<video class="feed-media-vid" src="'+escHtml(post.mediaURL)+'" muted loop playsinline ontimeupdate="feedOnVideoProgress(\''+postId+'\',this)"></video>'
+    media='<video class="feed-media-vid" src="'+escHtml(post.mediaURL)+'" muted loop playsinline preload="none" ontimeupdate="feedOnVideoProgress(\''+postId+'\',this)"></video>'
          +'<button class="feed-mute-btn" onclick="feedToggleMute(event)">🔇</button>'
          +'<div class="feed-pause-icon">▶️</div>'
          +'<div class="feed-progress"><div class="feed-progress-fill"></div></div>';
@@ -2936,8 +2936,8 @@ function feedLoadMorePosts(){
 
   // Use cursor-based pagination
   var query=feedPaginationCursor
-    ?db.ref('feed').orderByChild('timestamp').endBefore(feedPaginationCursor).limitToLast(51)
-    :db.ref('feed').orderByChild('timestamp').limitToLast(51);
+    ?db.ref('feed').orderByChild('timestamp').endBefore(feedPaginationCursor).limitToLast(21)
+    :db.ref('feed').orderByChild('timestamp').limitToLast(21);
 
   query.once('value').then(function(snap){
     var newPosts=[];
@@ -2955,7 +2955,7 @@ function feedLoadMorePosts(){
       feedPaginationCursor=newPosts[0].timestamp;
 
       // Check if we have more posts
-      feedHasMorePosts=newPosts.length===51;
+      feedHasMorePosts=newPosts.length===21;
       if(feedHasMorePosts) feedAllPosts.shift(); // Remove the extra one
 
       // Rebuild shuffle with new posts
