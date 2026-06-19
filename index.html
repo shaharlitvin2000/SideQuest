@@ -14,8 +14,8 @@
 :root{
   --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans Hebrew','Apple Color Emoji',sans-serif;
   --bg:#121212;--bg2:#1c1c22;--bg3:#28282f;
-  --accent:#ff7a18;--accent2:#ff6b35;
-  --accent-soft:rgba(255,122,24,0.16);--accent-glow:rgba(255,122,24,0.38);
+  --accent:#f97316;--accent2:#fb8c3a;
+  --accent-soft:rgba(249,115,22,0.13);--accent-glow:rgba(249,115,22,0.18);
   --gold:#fbbf24;--gold-soft:rgba(251,191,36,0.14);
   --green:#34d399;--green-soft:rgba(52,211,153,0.14);
   --blue:#3b9eff;--blue-soft:rgba(59,158,255,0.16);
@@ -77,7 +77,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .inp{width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 15px;color:var(--text);font-family:var(--font);font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;box-shadow:var(--sh0)}
 .inp:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
 .inp::placeholder{color:var(--muted)}
-.auth-btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:var(--r);padding:15px;margin-top:4px;font-family:var(--font);font-size:16px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s;box-shadow:0 4px 20px rgba(255,122,24,.3)}
+.auth-btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:var(--r);padding:15px;margin-top:4px;font-family:var(--font);font-size:16px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s;box-shadow:0 4px 20px rgba(255,122,24,.18)}
 .auth-btn:active{opacity:.85;transform:scale(.98)}
 .auth-or{display:flex;align-items:center;gap:10px;margin:20px 0;color:var(--muted);font-size:12px}
 .auth-or::before,.auth-or::after{content:'';flex:1;height:1px;background:var(--border)}
@@ -207,9 +207,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .achievement-badge.unlocked{opacity:1;border-color:rgba(251,191,36,.2);background:rgba(251,191,36,.05)}
 .ach-state{position:absolute;top:5px;inset-inline-end:6px;font-size:13px}
 .achievement-icon{font-size:32px;line-height:1}
-.achievement-badge.unlocked .achievement-icon{filter:drop-shadow(0 0 4px rgba(251,191,36,.3))}
+.achievement-badge.unlocked .achievement-icon{}
 .achievement-name{font-size:10px;text-align:center;color:var(--muted);font-weight:600}
 .achievement-badge.unlocked .achievement-name{color:var(--text);font-weight:700}
+.ach-toggle{display:block;width:100%;margin-top:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:12px;padding:11px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer}
+.ach-toggle:active{transform:scale(.98)}
 .season-banner b{color:var(--gold)}
 .lb-sort-row{display:flex;gap:8px;padding:10px 16px 0;justify-content:center}
 .lb-sort{flex:1;max-width:120px;padding:8px 6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
@@ -405,9 +407,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .feed-action-btn:active{transform:scale(.80)}
 .feed-action-btn svg{width:26px;height:26px;display:block}
 .feed-action-btn.liked{color:#ff7a18}
-.feed-action-btn.liked svg{filter:drop-shadow(0 0 6px rgba(255,122,24,.6))}
+.feed-action-btn.liked svg{filter:drop-shadow(0 1px 3px rgba(255,122,24,.35))}
 .feed-action-btn.saved{color:#fbbf24}
-.feed-action-btn.saved svg{fill:currentColor;filter:drop-shadow(0 0 6px rgba(251,191,36,.6))}
+.feed-action-btn.saved svg{fill:currentColor;filter:drop-shadow(0 1px 3px rgba(251,191,36,.35))}
 .feed-action-count{font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7);text-align:center;width:52px;height:16px;display:flex;align-items:center;justify-content:center}
 .feed-av-side-wrap{position:relative;display:flex;justify-content:center}
 .feed-av-side{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:18px;font-weight:800;color:#fff;border:2.5px solid rgba(255,255,255,.9);flex-shrink:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 12px rgba(0,0,0,.3)}
@@ -528,7 +530,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .my-follow-num{font-family:var(--font);font-size:22px;font-weight:800;line-height:1;color:var(--text)}
 .my-follow-lbl{font-size:11px;color:var(--muted);font-weight:500}
 .my-follow-divider{width:1px;height:38px;background:var(--border2);flex-shrink:0}
-.upload-my-video-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:var(--rl);padding:12px 24px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s;box-shadow:0 4px 18px rgba(255,122,24,.3);margin-top:16px;display:flex;align-items:center;justify-content:center}
+.upload-my-video-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:var(--rl);padding:12px 24px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s;box-shadow:0 4px 18px rgba(255,122,24,.18);margin-top:16px;display:flex;align-items:center;justify-content:center}
 .upload-my-video-btn:active{opacity:.85;transform:scale(.96)}
 /* feed follow indicator */
 .feed-follow-btn.following{background:var(--green)!important;font-size:12px}
@@ -554,7 +556,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .comment-inp{flex:1;background:var(--bg3);border:1.5px solid var(--border);border-radius:24px;padding:10px 16px;font-family:var(--font);font-size:14px;color:var(--text);outline:none;transition:border-color .2s}
 .comment-inp:focus{border-color:var(--accent)}
 .comment-inp::placeholder{color:var(--muted)}
-.comment-send{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .12s,opacity .15s;box-shadow:0 3px 12px rgba(255,122,24,.3)}
+.comment-send{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .12s,opacity .15s;box-shadow:0 3px 12px rgba(255,122,24,.18)}
 .comment-send:active{transform:scale(.88);opacity:.85}
 .comment-send svg{width:18px;height:18px;color:#fff}
 /* ───── FPP FOLLOW ───── */
@@ -565,7 +567,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .fpp-flw-num{font-family:var(--font);font-weight:800;color:var(--text);font-size:14px}
 .fpp-flw-lbl{color:var(--muted);font-size:12px;font-weight:500}
 .fpp-flw-sep{color:var(--border);margin:0 2px;font-size:18px;line-height:1;opacity:.6}
-.fpp-follow-btn{height:40px;padding:0 32px;border-radius:22px;background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s;touch-action:manipulation;box-shadow:0 4px 18px rgba(255,122,24,.3);letter-spacing:.2px}
+.fpp-follow-btn{height:40px;padding:0 32px;border-radius:22px;background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s;touch-action:manipulation;box-shadow:0 4px 18px rgba(255,122,24,.18);letter-spacing:.2px}
 .fpp-follow-btn:active{opacity:.8;transform:scale(.94)}
 .fpp-follow-btn.following{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);box-shadow:0 2px 10px rgba(0,0,0,.08)}
 /* ───── FOLLOW SHEET ───── */
@@ -1109,7 +1111,7 @@ const T={
   searchHint:'Search people, videos, missions',people:'People',videos:'Videos',hashtags:'Hashtags',noResults:'No results',photoUpdated:'Photo updated!',
   messages:'Messages',message:'Message',rewards:'Rewards',inviteFriends:'Invite',noChats:'No conversations yet — visit a profile and say hi! 👋',chatStart:'Say hello 👋',
   rewardsShop:'🎁 Rewards Shop',yourBalance:'Your balance:',rewardsNote:'Rewards are processed manually within 48h.',redeem:'Redeem',locked:'Locked',redeemConfirm:'Redeem',
-  achievements:'Achievements',achTapHint:"Tap one to see what's needed",achUnlockedYes:'Unlocked! ✓',achNeed:'Need',achUnit_missions:'more missions',achUnit_points:'more points',achUnit_followers:'more followers',achUnit_streak:'more days streak',achCat_missions:'Missions',achCat_points:'Points',achCat_followers:'Followers',achCat_streak:'Streak'},
+  achievements:'Achievements',achTapHint:"Tap one to see what's needed",achUnlockedYes:'Unlocked! ✓',achNeed:'Need',achUnit_missions:'more missions',achUnit_points:'more points',achUnit_followers:'more followers',achUnit_streak:'more days streak',achCat_missions:'Missions',achCat_points:'Points',achCat_followers:'Followers',achCat_streak:'Streak',showAll:'Show all',showLess:'Show less'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
   close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'🏅 כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',
   lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
@@ -1122,7 +1124,7 @@ const T={
   searchHint:'חפש אנשים, סרטונים, משימות',people:'אנשים',videos:'סרטונים',hashtags:'האשטגים',noResults:'אין תוצאות',photoUpdated:'התמונה עודכנה!',
   messages:'הודעות',message:'הודעה',rewards:'פרסים',inviteFriends:'הזמן',noChats:'אין שיחות עדיין — בקר בפרופיל ותגיד שלום! 👋',chatStart:'תגיד שלום 👋',
   rewardsShop:'🎁 חנות פרסים',yourBalance:'היתרה שלך:',rewardsNote:'הפרסים מטופלים ידנית תוך 48 שעות.',redeem:'פדה',locked:'נעול',redeemConfirm:'לפדות',
-  achievements:'הישגים',achTapHint:'לחץ על הישג לראות מה חסר',achUnlockedYes:'נפתח! ✓',achNeed:'חסרים עוד',achUnit_missions:'משימות',achUnit_points:'נקודות',achUnit_followers:'עוקבים',achUnit_streak:'ימי רצף',achCat_missions:'משימות',achCat_points:'נקודות',achCat_followers:'עוקבים',achCat_streak:'סטריק'},
+  achievements:'הישגים',achTapHint:'לחץ על הישג לראות מה חסר',achUnlockedYes:'נפתח! ✓',achNeed:'חסרים עוד',achUnit_missions:'משימות',achUnit_points:'נקודות',achUnit_followers:'עוקבים',achUnit_streak:'ימי רצף',achCat_missions:'משימות',achCat_points:'נקודות',achCat_followers:'עוקבים',achCat_streak:'סטריק',showAll:'הצג הכל',showLess:'הצג פחות'},
 };
 ['ar','es','fr','pt','ru','de','it','tr','nl','pl','ko','ja','zh','hi','id','uk'].forEach(c=>{T[c]=T['en'];});
 
@@ -3841,22 +3843,28 @@ function showAchievementInfo(id){
   if(cur>=a.target){ toast(a.icon+' '+a.name+' — '+t('achUnlockedYes')); return; }
   toast('🔒 '+a.name+': '+t('achNeed')+' '+(a.target-cur).toLocaleString()+' '+t('achUnit_'+a.cat));
 }
+var _achExpanded=false;
+function toggleAchievements(){ _achExpanded=!_achExpanded; renderAchievements(); }
 function renderAchievements(){
   const wrap=document.getElementById('achievements-wrap'),grid=document.getElementById('achievements-grid');
   if(!wrap||!grid) return;
   wrap.style.display='block';
   const followersCnt=parseInt(document.getElementById('my-followers-cnt')?.textContent)||0;
   const isUnlocked=a=>{const v=a.cat==='missions'?(totalMissionsDone||0):a.cat==='points'?(pts||0):a.cat==='followers'?followersCnt:(streak||0);return v>=a.target;};
+  const total=ACHIEVEMENTS.length, unlocked=ACHIEVEMENTS.filter(isUnlocked).length;
   let html='';
-  ACH_CATS.forEach(function(cat){
+  ACH_CATS.forEach(function(cat,idx){
     const items=ACHIEVEMENTS.filter(a=>a.cat===cat.id);
     const done=items.filter(isUnlocked).length;
-    html+='<div class="ach-cat"><div class="ach-cat-head"><span>'+cat.icon+' '+t('achCat_'+cat.id)+'</span><span class="ach-cat-cnt'+(done===items.length?' full':'')+'">'+done+'/'+items.length+'</span></div>'
+    // Collapsed: show only the first category
+    const hidden=(!_achExpanded && idx>0)?' style="display:none"':'';
+    html+='<div class="ach-cat"'+hidden+'><div class="ach-cat-head"><span>'+cat.icon+' '+t('achCat_'+cat.id)+'</span><span class="ach-cat-cnt'+(done===items.length?' full':'')+'">'+done+'/'+items.length+'</span></div>'
       +'<div class="achievements-grid">'+items.map(function(a){
         const u=isUnlocked(a);
         return '<div class="achievement-badge'+(u?' unlocked':'')+'" onclick="showAchievementInfo(\''+a.id+'\')"><span class="ach-state">'+(u?'✓':'🔒')+'</span><div class="achievement-icon">'+a.icon+'</div><div class="achievement-name">'+a.name+'</div></div>';
       }).join('')+'</div></div>';
   });
+  html+='<button class="ach-toggle" onclick="toggleAchievements()">'+(_achExpanded?t('showLess'):(t('showAll')+' ('+unlocked+'/'+total+')'))+'</button>';
   grid.innerHTML=html;
 }
 
