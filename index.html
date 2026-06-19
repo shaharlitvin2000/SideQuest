@@ -117,6 +117,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .report-reasons{display:flex;flex-direction:column;gap:8px;margin:16px 0}
 .report-reason{text-align:start;padding:14px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s}
 .report-reason:active{transform:scale(.98)}
+.tb-bell{position:relative;background:none;border:none;color:var(--text);cursor:pointer;padding:4px;display:flex;align-items:center}
+.tb-bell svg{width:22px;height:22px}
+.msg-dot{position:absolute;top:-3px;inset-inline-end:-3px;width:13px;height:13px;border-radius:50%;background:#ff2d4f;border:2px solid #000;box-shadow:0 1px 5px rgba(255,45,79,.6);display:none;z-index:5}
+.notif-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer}
+.notif-row.unread{background:var(--accent-soft)}
+.notif-row-text{font-size:14px;color:var(--text);font-weight:600}
+.notif-row-time{font-size:11px;color:var(--muted);flex-shrink:0}
 .season-banner b{color:var(--gold)}
 .lb-sort-row{display:flex;gap:8px;padding:10px 16px 0;justify-content:center}
 .lb-sort{flex:1;max-width:120px;padding:8px 6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
@@ -568,6 +575,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
   <div class="topbar">
     <div class="logo">Flash<span>Arena</span></div>
     <div class="topbar-right">
+      <button class="tb-bell" onclick="openNotifications()" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <span class="msg-dot" id="notif-dot"></span>
+      </button>
       <div class="rank-pill" id="rank-pill" onclick="openRanksModal()"><span id="rank-emoji">🌱</span> <span id="rank-name-top">Rookie</span></div>
       <div class="streak-pill">🔥 <span class="num" id="streak-num">7</span> <span style="color:var(--muted);font-size:10px" data-i="days">days</span></div>
       <div class="pts-pill">★ <span id="pts">1,240</span></div>
@@ -1379,6 +1390,7 @@ function finishLoad(){
   try{loadLeaderboard();}catch(e){console.error('[finishLoad] lb',e);}
   try{loadFeed();}catch(e){console.error('[finishLoad] feed',e);}
   try{loadMyFollowing();}catch(e){console.error('[finishLoad] following',e);}
+  try{watchNotifUnread();}catch(e){}
   try{startNightBatchVerifySchedule();}catch(e){console.error('[finishLoad] batch verify',e);}
   setTimeout(function(){try{animateStreakCountUp(streak);}catch(e){};},400);
 }
@@ -3811,6 +3823,52 @@ async function submitReport(reason){
   document.getElementById('report-modal').classList.remove('show');
 }
 
+// ══════════ NOTIFICATIONS INBOX ══════════
+function notifText(n){
+  const who=n.byUsername||'Someone';
+  switch(n.type){
+    case 'like': return '❤️ '+who+' '+t('notifLiked');
+    case 'follow': return '👤 '+who+' '+t('notifFollowed');
+    case 'comment': return '💬 '+who+' '+t('notifCommented');
+    case 'comment_reply': return '💬 '+who+' '+t('notifReplied');
+    case 'referral': return '🎉 '+who+' '+t('notifReferral');
+    default: return '🔔 '+who;
+  }
+}
+function timeAgoMs(ts){
+  if(!ts) return '';
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60) return t('justNow');
+  if(s<3600) return Math.floor(s/60)+t('minShort');
+  if(s<86400) return Math.floor(s/3600)+t('hrShort');
+  return Math.floor(s/86400)+t('dayShort2');
+}
+function openNotifications(){
+  const ov=document.getElementById('notif-overlay'), list=document.getElementById('notif-list');
+  if(!ov||!list) return;
+  ov.classList.add('show');
+  if(!db||!userUID){ list.innerHTML='<div class="empty-sheet">'+t('notifEmpty')+'</div>'; return; }
+  list.innerHTML='<div class="empty-sheet">'+t('loading')+'</div>';
+  db.ref('notifications/'+userUID).orderByChild('createdAt').limitToLast(50).once('value').then(function(snap){
+    const items=[]; snap.forEach(function(c){items.push({key:c.key,...c.val()});}); items.reverse();
+    if(!items.length){ list.innerHTML='<div class="empty-sheet">'+t('notifEmpty')+'</div>'; return; }
+    list.innerHTML=items.map(function(n){
+      const tap=n.byUid?(' onclick="closeNotifications();feedOpenProfile(\''+escHtml(n.byUid)+'\',\''+escHtml(n.byUsername||'Player')+'\',\''+escHtml((n.byUsername||'?')[0].toUpperCase())+'\')"'):'';
+      return '<div class="notif-row'+(n.read?'':' unread')+'"'+tap+'><div class="notif-row-text">'+notifText(n)+'</div><div class="notif-row-time">'+timeAgoMs(n.createdAt)+'</div></div>';
+    }).join('');
+    const updates={}; items.forEach(function(n){ if(!n.read) updates['notifications/'+userUID+'/'+n.key+'/read']=true; });
+    if(Object.keys(updates).length) db.ref().update(updates).catch(function(){});
+    const d=document.getElementById('notif-dot'); if(d) d.style.display='none';
+  }).catch(function(){ list.innerHTML='<div class="empty-sheet">'+t('notifEmpty')+'</div>'; });
+}
+function closeNotifications(){ document.getElementById('notif-overlay')?.classList.remove('show'); }
+function watchNotifUnread(){
+  if(!db||!userUID) return;
+  db.ref('notifications/'+userUID).orderByChild('read').equalTo(false).on('value',function(snap){
+    const d=document.getElementById('notif-dot'); if(d) d.style.display=snap.numChildren()>0?'block':'none';
+  });
+}
+
 // ══════════ FOLLOW SYSTEM ══════════
 var _fppCurrentUID = null, _fppCurrentUsername = null;
 var _myFollowingSet = new Set();
@@ -4695,6 +4753,18 @@ window.addEventListener('beforeunload',function(){
 
     <button class="modal-cta" id="upload-video-btn" onclick="submitUploadVideo()">Upload</button>
     <button class="modal-cancel" onclick="document.getElementById('upload-video-bg').classList.remove('show')">Cancel</button>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS OVERLAY -->
+<div class="follow-sheet-overlay" id="notif-overlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="follow-sheet">
+    <div class="follow-sheet-handle"></div>
+    <div class="follow-sheet-header">
+      <div class="follow-sheet-title" data-i="notifTitle">🔔 Notifications</div>
+      <button class="follow-sheet-close" onclick="closeNotifications()">✕</button>
+    </div>
+    <div class="follow-sheet-list" id="notif-list"><div class="empty-sheet">…</div></div>
   </div>
 </div>
 
