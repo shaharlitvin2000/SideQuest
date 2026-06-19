@@ -161,6 +161,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .search-row-av.vid,.search-row-av.msn{background:var(--bg3)}
 .search-row-name{font-size:14px;font-weight:700}
 .search-row-sub{font-size:12px;color:var(--muted)}
+.pf-mini-actions{display:flex;gap:8px;margin:10px auto 0;max-width:330px;width:100%;padding:0 20px;box-sizing:border-box}
+.pf-mini-btn{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:13px;padding:10px 4px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+.pf-mini-btn:active{transform:scale(.95)}
+.chat-row{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border)}
+.chat-row:active{background:var(--bg3)}
+.chat-row-av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:17px;flex-shrink:0}
+.chat-row-info{flex:1;min-width:0}
+.chat-row-name{font-size:14px;font-weight:700}
+.chat-row-last{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-row-time{font-size:11px;color:var(--muted)}
+.chat-unread{background:var(--accent);color:#fff;font-size:11px;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 5px}
+.chat-overlay{position:fixed;inset:0;background:var(--bg);z-index:400;display:none;flex-direction:column;max-width:430px;margin:0 auto}
+.chat-overlay.show{display:flex}
+.chat-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.chat-back{background:none;border:none;color:var(--text);font-size:22px;cursor:pointer}
+.chat-peer-name{font-size:16px;font-weight:700}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.chat-msg{max-width:75%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.4;word-break:break-word}
+.chat-msg.mine{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:5px}
+.chat-msg.theirs{align-self:flex-start;background:var(--bg2);color:var(--text);border-bottom-left-radius:5px}
+.chat-input-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--bg2)}
+.chat-input-row .inp{flex:1}
+.chat-send{background:var(--accent);border:none;color:#fff;width:42px;height:42px;border-radius:50%;font-size:18px;cursor:pointer;flex-shrink:0}
 .season-banner b{color:var(--gold)}
 .lb-sort-row{display:flex;gap:8px;padding:10px 16px 0;justify-content:center}
 .lb-sort{flex:1;max-width:120px;padding:8px 6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
@@ -745,6 +768,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
         <button class="upload-my-video-btn" onclick="openUploadVideo()">
           <span style="font-size:18px;margin-right:6px">🎬</span> Upload Video
         </button>
+        <div class="pf-mini-actions">
+          <button class="pf-mini-btn" onclick="openChatList()">💬 <span data-i="messages">Messages</span></button>
+          <button class="pf-mini-btn" onclick="shareApp()">📤 <span data-i="inviteFriends">Invite</span></button>
+          <button class="pf-mini-btn" onclick="openRewardsShop()">🎁 <span data-i="rewards">Rewards</span></button>
+        </div>
       </div>
       <div class="stats-grid">
         <div class="stat"><div class="stat-n" style="color:var(--gold)" id="pf-pts">0</div><div class="stat-l" data-i="weeklyPoints">Total points</div></div>
@@ -875,7 +903,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
                   <span class="fpp-flw-lbl">Following</span>
                 </div>
               </div>
-              <button class="fpp-follow-btn" id="fpp-follow-btn" style="display:none">Follow</button>
+              <div style="display:flex;gap:10px;justify-content:center">
+                <button class="fpp-follow-btn" id="fpp-follow-btn" style="display:none">Follow</button>
+                <button class="fpp-follow-btn following" id="fpp-msg-btn" style="display:none" onclick="openChatWith(_fppCurrentUID,_fppCurrentUsername)">💬 <span data-i="message">Message</span></button>
+              </div>
             </div>
           </div>
           <div class="fpp-stats-4">
@@ -1030,7 +1061,8 @@ const T={
   dailyTitle:'Daily Reward',dailyReward:'Daily Reward',dailySub:'Come back every day for bigger rewards!',dailyClaim:'Claim reward',dailyClaimed:'Claimed ✓ — back tomorrow!',
   titlesTitle:'🏷️ Titles',titlesSub:'Unlock titles and show one on your profile',titleEquip:'Equip',titleSet:'Title updated',chooseTitle:'Choose a title',
   shareTitle:'📤 Share',shareCopy:'Copy Link',shareMore:'More',linkCopied:'Link copied!',linkCopiedPaste:'Link copied — paste it to share',referralWelcome:'Welcome bonus!',
-  searchHint:'Search people, videos, missions',people:'People',videos:'Videos',hashtags:'Hashtags',noResults:'No results',photoUpdated:'Photo updated!'},
+  searchHint:'Search people, videos, missions',people:'People',videos:'Videos',hashtags:'Hashtags',noResults:'No results',photoUpdated:'Photo updated!',
+  messages:'Messages',message:'Message',rewards:'Rewards',inviteFriends:'Invite',noChats:'No conversations yet — visit a profile and say hi! 👋',chatStart:'Say hello 👋'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
   close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'🏅 כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',
   lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
@@ -1040,7 +1072,8 @@ const T={
   dailyTitle:'תגמול יומי',dailyReward:'תגמול יומי',dailySub:'חזור כל יום לתגמולים גדולים יותר!',dailyClaim:'אסוף תגמול',dailyClaimed:'נאסף ✓ — חזור מחר!',
   titlesTitle:'🏷️ תארים',titlesSub:'פתח תארים והצג אחד בפרופיל',titleEquip:'בחר',titleSet:'התואר עודכן',chooseTitle:'בחר תואר',
   shareTitle:'📤 שיתוף',shareCopy:'העתק קישור',shareMore:'עוד',linkCopied:'הקישור הועתק!',linkCopiedPaste:'הקישור הועתק — הדבק כדי לשתף',referralWelcome:'בונוס הצטרפות!',
-  searchHint:'חפש אנשים, סרטונים, משימות',people:'אנשים',videos:'סרטונים',hashtags:'האשטגים',noResults:'אין תוצאות',photoUpdated:'התמונה עודכנה!'},
+  searchHint:'חפש אנשים, סרטונים, משימות',people:'אנשים',videos:'סרטונים',hashtags:'האשטגים',noResults:'אין תוצאות',photoUpdated:'התמונה עודכנה!',
+  messages:'הודעות',message:'הודעה',rewards:'פרסים',inviteFriends:'הזמן',noChats:'אין שיחות עדיין — בקר בפרופיל ותגיד שלום! 👋',chatStart:'תגיד שלום 👋'},
 };
 ['ar','es','fr','pt','ru','de','it','tr','nl','pl','ko','ja','zh','hi','id','uk'].forEach(c=>{T[c]=T['en'];});
 
@@ -1940,6 +1973,8 @@ function feedOpenProfile(uid,username,init){
       if(iAmFollowing) followBtn.classList.add('following');
       else followBtn.classList.remove('following');
     }
+    var msgBtn=document.getElementById('fpp-msg-btn');
+    if(msgBtn) msgBtn.style.display=(!isMe&&userUID)?'block':'none';
     renderGrid();
     showContent();
   }).catch(function(){
@@ -4039,6 +4074,59 @@ function runSearch(){
   box.innerHTML=html||'<div class="empty-sheet">'+t('noResults')+'</div>';
 }
 
+// ══════════ DIRECT MESSAGES ══════════
+var _chatPeerUid=null,_chatPeerName=null,_chatId=null,_chatListener=null;
+function chatIdFor(a,b){return [a,b].sort().join('_');}
+function openChatList(){
+  const ov=document.getElementById('chat-list-overlay'),list=document.getElementById('chat-list');
+  if(!ov||!list) return;
+  ov.classList.add('show');
+  if(!db||!userUID){list.innerHTML='<div class="empty-sheet">'+t('noChats')+'</div>';return;}
+  list.innerHTML='<div class="empty-sheet">'+t('loading')+'</div>';
+  db.ref('chatMeta/'+userUID).orderByChild('lastAt').once('value').then(function(snap){
+    var chats=[];snap.forEach(c=>chats.push({chatId:c.key,...c.val()}));chats.reverse();
+    if(!chats.length){list.innerHTML='<div class="empty-sheet">'+t('noChats')+'</div>';return;}
+    list.innerHTML=chats.map(function(c){
+      var ini=(c.peerName||'?')[0].toUpperCase();
+      var time=c.lastAt?new Date(c.lastAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+      return '<div class="chat-row" onclick="openChatWith(\''+escHtml(c.peerUid)+'\',\''+escHtml(c.peerName||'Player')+'\')"><div class="chat-row-av">'+ini+'</div><div class="chat-row-info"><div class="chat-row-name">'+escHtml(c.peerName||'Player')+'</div><div class="chat-row-last">'+escHtml(c.lastText||'')+'</div></div>'+(c.unread>0?'<div class="chat-unread">'+c.unread+'</div>':'<div class="chat-row-time">'+time+'</div>')+'</div>';
+    }).join('');
+  }).catch(()=>{list.innerHTML='<div class="empty-sheet">'+t('noChats')+'</div>';});
+}
+function openChatWith(peerUid,peerName){
+  if(!peerUid||peerUid===userUID||!db) return;
+  _chatPeerUid=peerUid;_chatPeerName=peerName||'Player';_chatId=chatIdFor(userUID,peerUid);
+  document.getElementById('chat-list-overlay')?.classList.remove('show');
+  document.getElementById('fpp-overlay')?.classList.remove('show');
+  document.getElementById('chat-peer-name').textContent=_chatPeerName;
+  var box=document.getElementById('chat-messages'); box.innerHTML='<div class="empty-sheet">'+t('chatStart')+'</div>';
+  document.getElementById('chat-overlay').classList.add('show');
+  if(_chatListener){_chatListener.ref.off('value',_chatListener.fn);_chatListener=null;}
+  var ref=db.ref('chats/'+_chatId+'/messages').orderByChild('at').limitToLast(100);
+  var fn=ref.on('value',function(snap){
+    var msgs=[];snap.forEach(c=>msgs.push(c.val()));
+    if(!msgs.length){box.innerHTML='<div class="empty-sheet">'+t('chatStart')+'</div>';return;}
+    box.innerHTML=msgs.map(function(m){
+      var mine=m.from===userUID;
+      return '<div class="chat-msg '+(mine?'mine':'theirs')+'">'+escHtml(m.text||'')+'</div>';
+    }).join('');
+    box.scrollTop=box.scrollHeight;
+  });
+  _chatListener={ref:ref,fn:fn};
+  if(userUID) db.ref('chatMeta/'+userUID+'/'+_chatId+'/unread').set(0).catch(()=>{});
+}
+function closeChat(){
+  if(_chatListener){_chatListener.ref.off('value',_chatListener.fn);_chatListener=null;}
+  document.getElementById('chat-overlay')?.classList.remove('show');
+}
+async function sendChatMessage(){
+  var inp=document.getElementById('chat-input'); var text=(inp?inp.value:'').trim();
+  if(!text||!_chatPeerUid) return;
+  inp.value='';
+  try{ await firebase.functions().httpsCallable('sendMessage')({toUid:_chatPeerUid,text:text}); }
+  catch(err){ if(!isFnUnavailable(err)){ toast('⚠️ '+(err.message||'Could not send')); inp.value=text; } else { toast('⚠️ Messages need the server (Blaze)'); } }
+}
+
 // ══════════ EDIT PROFILE (bio, avatar, link, age, country) ══════════
 let myBio='',myAvatarURL='',myLink='',myAge='',myCountryName='';
 function renderProfileExtras(){
@@ -5071,6 +5159,33 @@ window.addEventListener('beforeunload',function(){
 
     <button class="modal-cta" id="upload-video-btn" onclick="submitUploadVideo()">Upload</button>
     <button class="modal-cancel" onclick="document.getElementById('upload-video-bg').classList.remove('show')">Cancel</button>
+  </div>
+</div>
+
+<!-- CHAT LIST OVERLAY -->
+<div class="follow-sheet-overlay" id="chat-list-overlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="follow-sheet" style="height:75%">
+    <div class="follow-sheet-handle"></div>
+    <div class="follow-sheet-header">
+      <div class="follow-sheet-title" data-i="messages">💬 Messages</div>
+      <button class="follow-sheet-close" onclick="document.getElementById('chat-list-overlay').classList.remove('show')">✕</button>
+    </div>
+    <div class="follow-sheet-list" id="chat-list"><div class="empty-sheet">…</div></div>
+  </div>
+</div>
+
+<!-- CHAT WINDOW -->
+<div class="chat-overlay" id="chat-overlay">
+  <div class="chat-window">
+    <div class="chat-header">
+      <button class="chat-back" onclick="closeChat()">←</button>
+      <div class="chat-peer-name" id="chat-peer-name">Chat</div>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-row">
+      <input class="inp" id="chat-input" placeholder="Message..." maxlength="500" autocomplete="off" onkeydown="if(event.key==='Enter')sendChatMessage()">
+      <button class="chat-send" onclick="sendChatMessage()">➤</button>
+    </div>
   </div>
 </div>
 
