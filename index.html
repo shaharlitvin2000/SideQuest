@@ -391,6 +391,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .feed-username-big{font-family:var(--font);font-weight:800;font-size:16px;text-shadow:0 1px 8px rgba(0,0,0,.8);margin-bottom:5px;letter-spacing:-.2px}
 .feed-caption{font-size:13px;line-height:1.45;margin-bottom:5px;text-shadow:0 1px 4px rgba(0,0,0,.7);opacity:.95}
 .hashtag{color:#60a5fa;font-weight:700;cursor:pointer}
+.pf-bell-btn,.pf-edit-btn{position:absolute;top:14px;z-index:3;background:rgba(0,0,0,.4);border:1px solid var(--border2);color:var(--text);width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:transform .12s}
+.pf-bell-btn{inset-inline-end:16px}
+.pf-edit-btn{inset-inline-start:16px;font-size:17px}
+.pf-bell-btn:active,.pf-edit-btn:active{transform:scale(.88)}
+.pf-bell-btn svg{width:21px;height:21px}
 .feed-pts-tag{font-size:13px;color:#fbbf24;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6);margin-bottom:3px}
 .feed-ts{font-size:11px;color:rgba(255,255,255,.42)}
 .feed-actions{position:absolute;right:10px;bottom:28px;display:flex;flex-direction:column;align-items:center;gap:18px;z-index:4;pointer-events:all;direction:ltr}
@@ -772,6 +777,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
     <div class="screen" id="s-pf">
       <div class="my-hero">
         <div class="my-hero-bg" id="my-hero-bg"></div>
+        <button class="pf-bell-btn" onclick="openNotifications()" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span class="msg-dot" id="notif-dot-pf"></span>
+        </button>
+        <button class="pf-edit-btn" onclick="openEditProfile()" aria-label="Edit">✏️</button>
         <div class="my-hero-ring" id="my-hero-ring" onclick="openEditProfile()" style="cursor:pointer">
           <div class="my-hero-gap">
             <div class="pf-avatar" id="pf-av">S</div>
@@ -4076,7 +4086,8 @@ function closeNotifications(){ document.getElementById('notif-overlay')?.classLi
 function watchNotifUnread(){
   if(!db||!userUID) return;
   db.ref('notifications/'+userUID).orderByChild('read').equalTo(false).on('value',function(snap){
-    const d=document.getElementById('notif-dot'); if(d) d.style.display=snap.numChildren()>0?'block':'none';
+    const show=snap.numChildren()>0;
+    ['notif-dot','notif-dot-pf'].forEach(function(id){const d=document.getElementById(id);if(d)d.style.display=show?'block':'none';});
   });
 }
 
