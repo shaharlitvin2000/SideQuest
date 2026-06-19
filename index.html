@@ -124,6 +124,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .notif-row.unread{background:var(--accent-soft)}
 .notif-row-text{font-size:14px;color:var(--text);font-weight:600}
 .notif-row-time{font-size:11px;color:var(--muted);flex-shrink:0}
+.daily-cta{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 40px);margin:14px 20px 0;background:linear-gradient(135deg,var(--gold),#f59e0b);color:#000;border:none;border-radius:var(--rl);padding:14px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(251,191,36,.3)}
+.daily-cta:active{transform:scale(.97)}
+.daily-cta-tag{background:rgba(0,0,0,.2);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.daily-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
+.daily-day{background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.daily-day-lbl{font-size:10px;color:var(--muted);font-weight:700}
+.daily-day-pts{font-size:13px;font-weight:800;color:var(--gold)}
+.daily-day.today{border-color:var(--gold);background:rgba(251,191,36,.1);box-shadow:0 0 0 2px rgba(251,191,36,.2)}
+.share-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.share-opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:11px;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s}
+.share-opt:active{transform:scale(.95)}
+.share-ic{font-size:24px;line-height:1}
 .season-banner b{color:var(--gold)}
 .lb-sort-row{display:flex;gap:8px;padding:10px 16px 0;justify-content:center}
 .lb-sort{flex:1;max-width:120px;padding:8px 6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
@@ -598,6 +610,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
         <div class="progress-label"><span data-i="dailyProgress">Daily progress</span><span id="prog-txt">1 / 3</span></div>
         <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:33%"></div></div>
       </div>
+      <button class="daily-cta" id="daily-reward-btn" onclick="openDailyReward()" style="display:none">🎁 <span data-i="dailyReward">Daily Reward</span> <span class="daily-cta-tag">+</span></button>
       <div class="ad-banner" onclick="watchAd()">
         <div class="ad-icon">📺</div>
         <div class="ad-text">
@@ -1351,6 +1364,8 @@ function applyLoadedData(data, user){
   pts=data.pts||0;
   streak=data.streak||1;
   totalMissionsDone=data.totalMissionsDone||0;
+  myLastDailyClaim=data.lastDailyClaim||'';
+  myDailyStreak=data.dailyClaimStreak||0;
   curLang=data.lang||'en'; selLang=curLang;
 
   if(data.missionsDate!==todayStr()){
@@ -1391,6 +1406,8 @@ function finishLoad(){
   try{loadFeed();}catch(e){console.error('[finishLoad] feed',e);}
   try{loadMyFollowing();}catch(e){console.error('[finishLoad] following',e);}
   try{watchNotifUnread();}catch(e){}
+  try{updateDailyDot();}catch(e){}
+  try{maybeClaimReferral();}catch(e){}
   try{startNightBatchVerifySchedule();}catch(e){console.error('[finishLoad] batch verify',e);}
   setTimeout(function(){try{animateStreakCountUp(streak);}catch(e){};},400);
 }
@@ -2455,15 +2472,7 @@ function feedGetCreatorBadge(uid){
 function feedSharePost(){
   var currPost=feedSeen[feedPos];
   if(!currPost){toast('No post to share');return;}
-  var baseUrl=window.location.href.split('?')[0];
-  var shareUrl=baseUrl+'?post='+currPost.id;
-  var msg='Check out this post on Flash Arena!';
-  if(navigator.share){
-    navigator.share({title:'Flash Arena',text:msg,url:shareUrl}).catch(function(){});
-  } else {
-    try{navigator.clipboard.writeText(shareUrl);}catch(e){}
-    toast('📋 Link copied!');
-  }
+  openShareSheet(window.location.href.split('?')[0]+'?post='+currPost.id, '🔥 Check out this mission on FlashArena!');
 }
 function feedFollowUser(btn, targetUID, targetUsername) {
   if (!userUID) { toast('Log in to follow'); return; }
@@ -3869,6 +3878,83 @@ function watchNotifUnread(){
   });
 }
 
+// ══════════ DAILY LOGIN REWARD ══════════
+const DAILY_REWARDS=[20,30,40,50,60,80,150];
+let myLastDailyClaim='', myDailyStreak=0;
+function todayILStr(){ return israelDate().toISOString().slice(0,10); }
+function dailyAvailable(){ return myLastDailyClaim!==todayILStr(); }
+function updateDailyDot(){
+  const avail=userUID&&dailyAvailable();
+  const btn=document.getElementById('daily-reward-btn'); if(btn) btn.style.display=avail?'':'none';
+}
+function openDailyReward(){
+  const grid=document.getElementById('daily-grid');
+  const claimable=dailyAvailable();
+  const yesterday=new Date(israelDate().getTime()-86400000).toISOString().slice(0,10);
+  const cont=(myLastDailyClaim===yesterday)?(myDailyStreak+1):1;
+  const todayDay=((cont-1)%7)+1;
+  if(grid) grid.innerHTML=DAILY_REWARDS.map(function(r,i){
+    const day=i+1, isToday=claimable&&day===todayDay;
+    return '<div class="daily-day'+(isToday?' today':'')+'"><div class="daily-day-lbl">'+t('dayShort2')+day+'</div><div class="daily-day-pts">★'+r+'</div></div>';
+  }).join('');
+  const btn=document.getElementById('daily-claim-btn');
+  if(btn){ btn.disabled=!claimable; btn.textContent=claimable?t('dailyClaim'):t('dailyClaimed'); }
+  document.getElementById('daily-modal').classList.add('show');
+}
+async function claimDaily(){
+  if(!dailyAvailable()){ toast(t('dailyClaimed')); return; }
+  const btn=document.getElementById('daily-claim-btn'); if(btn) btn.disabled=true;
+  try{
+    const res=await firebase.functions().httpsCallable('claimDailyReward')({});
+    const d=res.data; pts=d.newPoints; myLastDailyClaim=todayILStr(); myDailyStreak=d.streak;
+    updateUI(); updateDailyDot();
+    document.getElementById('daily-modal').classList.remove('show');
+    toast('🎁 +'+d.reward+' '+t('points')+'!'); try{launchConfetti();}catch(e){}
+  }catch(err){
+    if(isFnUnavailable(err)){
+      const yesterday=new Date(israelDate().getTime()-86400000).toISOString().slice(0,10);
+      const cont=(myLastDailyClaim===yesterday)?(myDailyStreak+1):1;
+      const reward=DAILY_REWARDS[((cont-1)%7)];
+      pts=(pts||0)+reward; myLastDailyClaim=todayILStr(); myDailyStreak=cont;
+      updateUI(); updateDailyDot();
+      document.getElementById('daily-modal').classList.remove('show');
+      toast('🎁 +'+reward+' '+t('points')+'!'); try{launchConfetti();}catch(e){}
+    } else if(err.code==='functions/already-exists'){
+      myLastDailyClaim=todayILStr(); updateDailyDot();
+      document.getElementById('daily-modal').classList.remove('show'); toast(t('dailyClaimed'));
+    } else { toast('⚠️ '+(err.message||'Try again')); if(btn) btn.disabled=false; }
+  }
+}
+
+// ══════════ REFERRAL ══════════
+function captureReferral(){
+  try{ const r=new URLSearchParams(window.location.search).get('ref'); if(r) localStorage.setItem('fa_pending_ref',r); }catch(e){}
+}
+function maybeClaimReferral(){
+  let ref=''; try{ ref=localStorage.getItem('fa_pending_ref')||''; }catch(e){}
+  if(!ref||!userUID||ref===userUID) return;
+  firebase.functions().httpsCallable('claimReferral')({refUid:ref}).then(function(res){
+    try{localStorage.removeItem('fa_pending_ref');}catch(e){}
+    if(res.data&&res.data.reward){ pts=res.data.newPoints||pts; updateUI(); toast('🎉 +'+res.data.reward+' '+t('points')+' — '+t('referralWelcome')); try{launchConfetti();}catch(e){} }
+  }).catch(function(err){
+    if(err.code==='functions/already-exists'||err.code==='functions/failed-precondition'){ try{localStorage.removeItem('fa_pending_ref');}catch(e){} }
+  });
+}
+
+// ══════════ SHARE SHEET ══════════
+var _shareUrl='',_shareText='';
+function openShareSheet(url,text){ _shareUrl=url; _shareText=text||'🔥 FlashArena'; document.getElementById('share-modal').classList.add('show'); }
+function shareApp(){ openShareSheet('https://flasharena-f35b1.web.app/'+(userUID?('?ref='+userUID):''), '🔥 Join me on FlashArena! Complete real-life missions and earn rewards:'); }
+async function shareVia(platform){
+  var url=_shareUrl,text=_shareText,full=text+' '+url,enc=encodeURIComponent;
+  if(platform==='copy'){ try{await navigator.clipboard.writeText(url);toast('🔗 '+t('linkCopied'));}catch(e){toast('🔗 '+url);} }
+  else if(platform==='whatsapp'){ window.open('https://wa.me/?text='+enc(full),'_blank'); }
+  else if(platform==='telegram'){ window.open('https://t.me/share/url?url='+enc(url)+'&text='+enc(text),'_blank'); }
+  else if(platform==='instagram'||platform==='discord'){ try{await navigator.clipboard.writeText(url);}catch(e){} toast('🔗 '+t('linkCopiedPaste')); }
+  else if(platform==='native'){ if(navigator.share){try{await navigator.share({title:'FlashArena',text:text,url:url});}catch(e){}}else{try{await navigator.clipboard.writeText(url);toast('🔗 '+t('linkCopied'));}catch(e){}} }
+  document.getElementById('share-modal').classList.remove('show');
+}
+
 // ══════════ FOLLOW SYSTEM ══════════
 var _fppCurrentUID = null, _fppCurrentUsername = null;
 var _myFollowingSet = new Set();
@@ -4628,6 +4714,7 @@ startLoadingAnim();
 buildLangGrid();
 tryInitFirebase(0);
 checkOpenSharedPost();
+try{captureReferral();}catch(e){}
 
 // Run safety cleanup in background (non-blocking)
 setTimeout(function(){
@@ -4704,6 +4791,34 @@ window.addEventListener('beforeunload',function(){
 </div>
 
 <!-- UPLOAD VIDEO MODAL -->
+<div class="overlay" id="daily-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal" style="text-align:center">
+    <div class="modal-handle"></div>
+    <div style="font-size:44px">🎁</div>
+    <div class="modal-title" data-i="dailyTitle">Daily Reward</div>
+    <div class="modal-desc" data-i="dailySub">Come back every day for bigger rewards!</div>
+    <div class="daily-grid" id="daily-grid"></div>
+    <button class="modal-cta" id="daily-claim-btn" onclick="claimDaily()" data-i="dailyClaim">Claim reward</button>
+    <button class="modal-cancel" onclick="document.getElementById('daily-modal').classList.remove('show')" data-i="close">Close</button>
+  </div>
+</div>
+
+<div class="overlay" id="share-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" data-i="shareTitle">📤 Share</div>
+    <div class="share-grid">
+      <button class="share-opt" onclick="shareVia('copy')"><span class="share-ic">🔗</span><span data-i="shareCopy">Copy Link</span></button>
+      <button class="share-opt" onclick="shareVia('whatsapp')"><span class="share-ic">🟢</span>WhatsApp</button>
+      <button class="share-opt" onclick="shareVia('instagram')"><span class="share-ic">📸</span>Instagram</button>
+      <button class="share-opt" onclick="shareVia('discord')"><span class="share-ic">🎮</span>Discord</button>
+      <button class="share-opt" onclick="shareVia('telegram')"><span class="share-ic">✈️</span>Telegram</button>
+      <button class="share-opt" onclick="shareVia('native')"><span class="share-ic">•••</span><span data-i="shareMore">More</span></button>
+    </div>
+    <button class="modal-cancel" onclick="document.getElementById('share-modal').classList.remove('show')" data-i="close">Close</button>
+  </div>
+</div>
+
 <div class="overlay" id="report-modal" onclick="if(event.target===this)this.classList.remove('show')">
   <div class="modal">
     <div class="modal-handle"></div>
