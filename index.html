@@ -2981,10 +2981,10 @@ function feedRecordWatchTime(postId){
   if(!postId||!feedWatchTime[postId]) return;
   var elapsed=Date.now()-feedWatchTime[postId].start;
   feedWatchTime[postId].paused=(feedWatchTime[postId].paused||0)+elapsed;
-  // Sync watch time to Firebase (debounced - only if watched >3 seconds)
-  if(feedWatchTime[postId].paused>3000&&!feedWatchTime[postId]._synced&&db){
-    feedWatchTime[postId]._synced=true;
-    db.ref('feed/'+postId+'/watchTime').transaction(c=>(c||0)+feedWatchTime[postId].paused).catch(()=>{});
+  // Report the view + watch time server-side (real unique/repeat/watch-time tracking)
+  if(elapsed>800 && db && userUID && firebase.functions){
+    var watchMs=Math.min(elapsed,600000);
+    firebase.functions().httpsCallable('recordView')({postId:postId,watchMs:watchMs}).catch(function(){});
   }
 }
 
