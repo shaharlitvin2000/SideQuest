@@ -1,0 +1,80 @@
+{
+  "database": {
+    "rules": "FIREBASE_RULES_PRODUCTION.json",
+    "indexes": {
+      "feed": [
+        { "timestamp": "asc" }
+      ],
+      "users": [
+        { "pts": "asc" }
+      ],
+      "leaderboard": [
+        { "pts": "asc" },
+        { "seasonPts": "asc" }
+      ]
+    }
+  },
+
+  "storage": {
+    "rules": "STORAGE_RULES_PRODUCTION.txt"
+  },
+
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebase",
+      ".firebaserc",
+      ".gitignore",
+      "*.bat",
+      "*.sh",
+      "404.html",
+      "firebase/**",
+      ".vs/**",
+      "*.md",
+      "*.txt",
+      "*.json",
+      "flash-arena.html",
+      "admin-dashboard.html"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Strict-Transport-Security",
+            "value": "max-age=31536000; includeSubDomains"
+          },
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          }
+        ]
+      },
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
+    ]
+  },
+
+  "functions": {
+    "source": "firebase/functions",
+    "runtime": "nodejs20"
+  }
+}

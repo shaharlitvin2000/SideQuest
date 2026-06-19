@@ -1,0 +1,57 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        ".validate": "newData.hasChildren(['username','pts','streak','lang','updatedAt'])",
+        "pts": {
+          ".validate": "newData.isNumber() && newData.val() >= data.val() && (newData.val() - data.val()) <= 500"
+        },
+        "updatedAt": {
+          ".validate": "newData.val() === now"
+        },
+        "blocked": {
+          ".read": "$uid === auth.uid",
+          ".write": false
+        },
+        "badUploads": {
+          ".read": "$uid === auth.uid",
+          ".write": false
+        },
+        "following": {
+          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid"
+        },
+        "followers": {
+          ".read": "true",
+          ".write": false
+        }
+      }
+    },
+    "feed": {
+      ".read": "auth !== null",
+      ".write": false,
+      "$postId": {
+        ".write": "root.child('users').child(auth.uid).exists() && newData.child('uid').val() === auth.uid && newData.child('status').val() === 'verified'",
+        "likes": {
+          ".write": "auth !== null",
+          ".validate": "newData.isNumber()"
+        },
+        "watchTime": {
+          ".write": "auth !== null",
+          ".validate": "newData.isNumber()"
+        }
+      }
+    },
+    "userLikes": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        ".validate": "newData.isBoolean()"
+      }
+    },
+    ".read": false,
+    ".write": false
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        ".validate": "newData.hasChildren(['username','pts','streak','lang','updatedAt'])",
+
+        "pts": {
+          ".validate": "newData.isNumber() && newData.val() >= data.val() && (newData.val() - data.val()) <= 500"
+        },
+
+        "updatedAt": {
+          ".validate": "newData.val() === now"
+        },
+
+        "blocked": {
+          ".read": "$uid === auth.uid",
+          ".write": false
+        },
+
+        "badUploads": {
+          ".read": "$uid === auth.uid",
+          ".write": false
+        },
+
+        "completedMissionsToday": {
+          "$missionId": {
+            ".read": "$uid === auth.uid",
+            ".write": "$uid === auth.uid && !data.exists()",
+            ".validate": "newData.val() === now"
+          }
+        },
+
+        "following": {
+          "$targetUid": {
+            ".read": "$uid === auth.uid",
+            ".write": "$uid === auth.uid && root.child('users').child($targetUid).exists()",
+            ".validate": "newData.isBoolean() && newData.val() === true"
+          }
+        },
+
+        "followers": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    },
+
+    "feed": {
+      ".read": "auth !== null",
+      ".write": false,
+
+      "$postId": {
+        ".write": "root.child('users').child(auth.uid).exists() && newData.child('uid').val() === auth.uid && newData.child('status').val() === 'verified'",
+
+        ".validate": "newData.hasChildren(['uid','username','missionTitle','pts','timestamp','status']) && newData.child('uid').isString() && newData.child('username').isString() && newData.child('missionTitle').isString() && newData.child('pts').isNumber() && newData.child('timestamp').isNumber() && newData.child('status').isString()",
+
+        "pts": {
+          ".validate": "newData.val() in [150, 250, 400]"
+        },
+
+        "missionTitle": {
+          ".validate": "newData.val() in ['Ask a stranger one question','Stand completely still for 60 seconds','Find a place you\\'ve never been to']"
+        },
+
+        "status": {
+          ".validate": "newData.val() === 'verified'"
+        },
+
+        "likes": {
+          ".write": "auth !== null && !root.child('userLikes').child(auth.uid).child($postId).exists()",
+          ".validate": "newData.isNumber() && newData.val() > 0"
+        },
+
+        "watchTime": {
+          ".write": "auth !== null",
+          ".validate": "newData.isNumber()"
+        }
+      }
+    },
+
+    "userLikes": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+
+        "$postId": {
+          ".write": "$uid === auth.uid && !data.exists()",
+          ".validate": "newData.isBoolean() && newData.val() === true"
+        }
+      }
+    },
+
+    "userStorage": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+
+        "uploadedBytes": {
+          ".validate": "newData.isNumber() && newData.val() <= 500000000"
+        },
+
+        "uploadCountToday": {
+          ".validate": "newData.isNumber() && newData.val() <= 5"
+        }
+      }
+    },
+
+    ".read": false,
+    ".write": false
+  }
+}

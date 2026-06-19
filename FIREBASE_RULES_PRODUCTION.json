@@ -1,0 +1,281 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('users').child($uid).child('public').exists()",
+        ".write": false,
+
+        "username": {".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 30"},
+        "pts": {".read": true, ".validate": "newData.isNumber() && newData.val() >= 0"},
+        "seasonPts": {".read": true, ".validate": "newData.isNumber() && newData.val() >= 0"},
+        "missions": {".read": true, ".validate": "newData.isNumber() && newData.val() >= 0"},
+        "country": {".read": true, ".validate": "newData.isString() && newData.val().length <= 50"},
+        "streak": {".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 365"},
+        "verified": {".validate": "newData.isBoolean()"},
+        "premium": {".read": true, ".write": false, ".validate": "newData.isBoolean()"},
+        "blocked": {".validate": "newData.isBoolean()"},
+        "email": {".write": "false"},
+        "createdAt": {".write": "false"},
+        "public": {".read": true},
+
+        "privacy": {
+          ".read": true,
+          ".write": "$uid === auth.uid",
+          "privateProfile": {".validate": "newData.isBoolean()"},
+          "hideFromLeaderboard": {".validate": "newData.isBoolean()"},
+          "dmFollowersOnly": {".validate": "newData.isBoolean()"},
+          "$other": {".validate": false}
+        },
+
+        "avatarURL": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 600"},
+        "title": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 30"},
+        "link": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 200"},
+        "age": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isNumber() && newData.val() >= 13 && newData.val() <= 120"},
+        "profileCountry": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 60"},
+
+        "completedMissionsToday": {
+          ".read": "$uid === auth.uid",
+          ".write": false
+        },
+        "followers": {
+          ".read": true,
+          ".write": false
+        },
+        "following": {
+          ".read": true,
+          ".write": false
+        },
+        "blockedUploads": {
+          ".read": false,
+          ".write": false
+        }
+      }
+    },
+
+    "languages": {
+      ".read": true,
+      ".write": false
+    },
+
+    "feed": {
+      ".read": "auth !== null",
+      ".write": false,
+      ".indexOn": ["uid", "timestamp", "pts", "createdAt", "status"],
+
+      "$postId": {
+        ".validate": "newData.hasChildren(['uid','timestamp','status'])",
+        "uid": {".validate": "newData.isString()"},
+        "timestamp": {".validate": "newData.isNumber()"},
+        "status": {".validate": "newData.val() === 'verified' || newData.val() === 'pending' || newData.val() === 'rejected'"},
+        "pts": {".validate": "newData.isNumber() && newData.val() >= 0"},
+        "likes": {".validate": "newData.isNumber() && newData.val() >= 0"},
+        "views": {".validate": "newData.isNumber() && newData.val() >= 0"}
+      }
+    },
+
+    "comments": {
+      ".read": "auth !== null",
+      ".write": false,
+      ".indexOn": ["postId", "timestamp", "createdAt", "at", "replyCount"],
+
+      "$postId": {
+        "$commentId": {
+          ".validate": "newData.hasChildren(['uid','text','createdAt'])",
+          "uid": {".validate": "newData.isString()"},
+          "text": {".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500"},
+          "createdAt": {".validate": "newData.isNumber()"},
+          "replyCount": {".validate": "newData.isNumber() && newData.val() >= 0"},
+          "likeCount": {".validate": "newData.isNumber() && newData.val() >= 0"}
+        }
+      }
+    },
+
+    "commentLikes": {
+      "$postId": {
+        "$commentId": {
+          "$uid": {
+            ".read": "auth !== null",
+            ".write": false,
+            ".validate": "newData.val() === true || newData.val() === null"
+          }
+        }
+      }
+    },
+
+    "userLikes": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": false,
+
+        "$postId": {
+          ".validate": "newData.val() === true || newData.val() === null"
+        }
+      }
+    },
+
+    "userSaves": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": false,
+
+        "$postId": {
+          ".validate": "newData.hasChildren(['timestamp']) || newData.val() === null",
+          "timestamp": {".validate": "newData.isNumber()"}
+        }
+      }
+    },
+
+    "follows": {
+      "$uid": {
+        ".read": true,
+        ".write": false,
+        ".indexOn": ["timestamp"]
+      }
+    },
+
+    "followers": {
+      "$uid": {
+        ".read": true,
+        ".write": false
+      }
+    },
+
+    "hashtags": {
+      ".read": "auth !== null",
+      ".write": false,
+      ".indexOn": ["timestamp", "likes"],
+      "$tag": {
+        ".read": "auth !== null"
+      }
+    },
+
+    "hashtagStats": {
+      ".read": "auth !== null",
+      ".write": false,
+      ".indexOn": ["postCount", "lastUpdated"]
+    },
+
+    "notifications": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        ".indexOn": ["createdAt", "read"]
+      }
+    },
+
+    "blocked": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": false
+      }
+    },
+
+    "userBlocked": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+
+    "userMuted": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+
+    "reports": {
+      ".read": false,
+      ".write": "auth !== null",
+      ".indexOn": ["createdAt", "status"],
+      "$reportId": {
+        ".validate": "newData.hasChildren(['byUid','reportedUid','reason','createdAt'])",
+        "byUid": {".validate": "newData.val() === auth.uid"},
+        "reason": {".validate": "newData.val() === 'harassment' || newData.val() === 'spam' || newData.val() === 'abuse' || newData.val() === 'inappropriate' || newData.val() === 'hate_speech' || newData.val() === 'scam'"},
+        "status": {".validate": "newData.val() === 'pending' || newData.val() === 'reviewed' || newData.val() === 'actioned'"}
+      }
+    },
+
+    "usernames": {
+      ".read": "auth !== null",
+      ".write": false,
+      ".indexOn": [".value"]
+    },
+
+    "leaderboard": {
+      ".read": "auth !== null",
+      ".write": false,
+      ".indexOn": ["pts", "seasonPts"]
+    },
+
+    "seasonWinners": {
+      ".read": "auth !== null",
+      ".write": false
+    },
+
+    "premiumInterest": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        "at": {".validate": "newData.isNumber()"},
+        "email": {".validate": "newData.isString() && newData.val().length <= 254"},
+        "$other": {".validate": false}
+      }
+    },
+
+    "chats": {
+      "$chatId": {
+        ".read": "auth !== null && $chatId.contains(auth.uid)",
+
+        "members": {
+          "$memberUid": {
+            ".write": "auth !== null && $chatId.contains(auth.uid) && $chatId.contains($memberUid)",
+            ".validate": "newData.val() === true"
+          }
+        },
+
+        "messages": {
+          ".indexOn": ["at"],
+          "$msgId": {
+            ".write": "auth !== null && $chatId.contains(auth.uid) && !data.exists()",
+            ".validate": "newData.hasChildren(['from','text','at'])",
+            "from": {".validate": "newData.val() === auth.uid"},
+            "text": {".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500"},
+            "at": {".validate": "newData.isNumber()"},
+            "$other": {".validate": false}
+          }
+        }
+      }
+    },
+
+    "fcmTokens": {
+      "$uid": {
+        ".read": false,
+        ".write": "$uid === auth.uid",
+        "token": {".validate": "newData.isString() && newData.val().length < 512"},
+        "updatedAt": {".validate": "newData.isNumber()"},
+        "$other": {".validate": false}
+      }
+    },
+
+    "chatMeta": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".indexOn": ["lastAt"],
+
+        "$chatId": {
+          ".write": "auth !== null && $chatId.contains(auth.uid) && $chatId.contains($uid)",
+          "peerUid": {".validate": "newData.isString()"},
+          "peerName": {".validate": "newData.isString() && newData.val().length <= 30"},
+          "lastText": {".validate": "newData.isString() && newData.val().length <= 500"},
+          "lastAt": {".validate": "newData.isNumber()"},
+          "unread": {".validate": "newData.isNumber() && newData.val() >= 0"},
+          "$other": {".validate": false}
+        }
+      }
+    }
+  }
+}

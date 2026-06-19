@@ -1,0 +1,31 @@
+// Firebase Storage Rules for Flash Arena
+// Apply at: Firebase Console → Storage → Rules
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Only authenticated users can upload
+    match /feed/{userId}_{timestamp} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && request.resource.size < 50 * 1024 * 1024  // 50MB max
+                   && request.resource.contentType in ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
+    }
+
+    // Deny everything else
+    match /{allPaths=**} {
+      allow read: false;
+      allow write: false;
+    }
+  }
+}
+
+// Notes:
+// - Users can only write to feed/{theirUID}_{timestamp}
+// - Only authenticated users can read files
+// - Max file size 50MB (videos)
+// - Only allowed MIME types
+// - Replace {bucket} with your bucket name:
+//   flasharena-f35b1.firebasestorage.app

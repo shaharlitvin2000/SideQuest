@@ -1,0 +1,34 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /missions/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && fileName.matches(request.auth.uid + '_.*')
+                   && request.resource.size < 50 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*|video/.*');
+    }
+
+    match /uservideos/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && fileName.matches(request.auth.uid + '_.*')
+                   && request.resource.size < 100 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*|video/.*');
+    }
+
+    match /avatars/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && fileName.matches(request.auth.uid + '.*')
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    match /{allPaths=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

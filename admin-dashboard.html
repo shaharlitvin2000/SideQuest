@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flash Arena - Admin Dashboard</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f23;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #1a1a2e;
+      padding-bottom: 20px;
+    }
+    .header h1 {
+      font-size: 28px;
+      color: #00d4ff;
+    }
+    .logout-btn {
+      background: #ff3d5a;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .logout-btn:hover {
+      background: #ff1744;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #1a1a2e;
+    }
+    .tab {
+      padding: 12px 20px;
+      background: transparent;
+      color: #8888a8;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      color: #00d4ff;
+      border-bottom-color: #00d4ff;
+    }
+    .tab:hover {
+      color: #b0b0c8;
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: #1a1a2e;
+      border: 1px solid #2d2d44;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #8888a8;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #00d4ff;
+    }
+    .stat-change {
+      font-size: 12px;
+      color: #4ade80;
+      margin-top: 8px;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #1a1a2e;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .table thead {
+      background: #2d2d44;
+    }
+    .table th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #8888a8;
+      border-bottom: 2px solid #3d3d54;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    .table td {
+      padding: 15px;
+      border-bottom: 1px solid #2d2d44;
+      color: #e0e0e0;
+    }
+    .table tr:hover {
+      background: #252540;
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-delete {
+      background: #ff3d5a;
+      color: white;
+    }
+    .btn-delete:hover {
+      background: #ff1744;
+    }
+    .btn-block {
+      background: #ffa726;
+      color: white;
+    }
+    .btn-block:hover {
+      background: #fb8c00;
+    }
+    .btn-view {
+      background: #2563eb;
+      color: white;
+    }
+    .btn-view:hover {
+      background: #1d4ed8;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-verified {
+      background: #4ade80;
+      color: #000;
+    }
+    .badge-rejected {
+      background: #ff3d5a;
+      color: white;
+    }
+    .badge-pending {
+      background: #fbbf24;
+      color: #000;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #8888a8;
+    }
+    .spinner {
+      border: 3px solid #2d2d44;
+      border-top: 3px solid #00d4ff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.show {
+      display: flex;
+    }
+    .modal-content {
+      background: #1a1a2e;
+      border: 1px solid #2d2d44;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #00d4ff;
+    }
+    .modal-body {
+      margin-bottom: 20px;
+      color: #e0e0e0;
+    }
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .modal button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-cancel {
+      background: #2d2d44;
+      color: #8888a8;
+    }
+    .btn-confirm {
+      background: #ff3d5a;
+      color: white;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      flex: 1;
+      padding: 10px 15px;
+      background: #2d2d44;
+      border: 1px solid #3d3d54;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 14px;
+    }
+    .search-bar input::placeholder {
+      color: #8888a8;
+    }
+    .search-bar button {
+      padding: 10px 20px;
+      background: #00d4ff;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⚙️ Admin Dashboard</h1>
+      <button class="logout-btn" onclick="adminLogout()">Logout</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
+      <button class="tab" onclick="switchTab('posts')">📸 Content Moderation</button>
+      <button class="tab" onclick="switchTab('users')">👥 Users</button>
+      <button class="tab" onclick="switchTab('feedback')">💬 Feedback</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div id="overview" class="tab-content active">
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value" id="stat-users">-</div>
+          <div class="stat-change" id="stat-users-change"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Users (Today)</div>
+          <div class="stat-value" id="stat-active">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Posts</div>
+          <div class="stat-value" id="stat-posts">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending Verification</div>
+          <div class="stat-value" id="stat-pending">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Likes</div>
+          <div class="stat-value" id="stat-likes">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Blocked Users</div>
+          <div class="stat-value" id="stat-blocked">0</div>
+        </div>
+      </div>
+      <h3 style="margin: 30px 0 20px; color: #00d4ff;">Top Creators</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Posts</th>
+            <th>Total Likes</th>
+            <th>Followers</th>
+          </tr>
+        </thead>
+        <tbody id="top-creators">
+          <tr><td colspan="4" class="loading">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- POSTS TAB -->
+    <div id="posts" class="tab-content">
+      <div class="search-bar">
+        <input type="text" id="post-search" placeholder="Search by username or ID...">
+        <button onclick="searchPosts()">Search</button>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Mission</th>
+            <th>Status</th>
+            <th>Likes</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="posts-list">
+          <tr><td colspan="6" class="loading">Loading posts...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- USERS TAB -->
+    <div id="users" class="tab-content">
+      <div class="search-bar">
+        <input type="text" id="user-search" placeholder="Search by username or email...">
+        <button onclick="searchUsers()">Search</button>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Points</th>
+            <th>Missions</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="users-list">
+          <tr><td colspan="6" class="loading">Loading users...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FEEDBACK TAB -->
+    <div id="feedback" class="tab-content">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Message</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="feedback-list">
+          <tr><td colspan="4" class="loading">Loading feedback...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ACTION MODAL -->
+  <div id="action-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header" id="modal-title">Confirm Action</div>
+      <div class="modal-body" id="modal-body">Are you sure?</div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-confirm" onclick="confirmAction()" id="confirm-btn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Firebase Config (same as main app)
+    const firebaseConfig = {
+      apiKey: 'AIzaSyDqgPlLdP7-96l8pNvL_lG7AccwP4qaHMA',
+      authDomain: 'flasharena-f35b1.firebaseapp.com',
+      databaseURL: 'https://flasharena-f35b1-default-rtdb.europe-west1.firebasedatabase.app',
+      projectId: 'flasharena-f35b1',
+      storageBucket: 'flasharena-f35b1.firebasestorage.app',
+      messagingSenderId: '208737763122',
+      appId: '1:208737763122:web:752bd9566561a85211612b'
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    let currentUser = null;
+
+    // ✅ ADMIN USERS - CONFIGURED
+    let adminUsers = new Set(['shahar070510@gmail.com']);
+
+    let pendingAction = null;
+
+    // Check auth
+    auth.onAuthStateChanged(user => {
+      if (!user || !adminUsers.has(user.email)) {
+        window.location.href = '/index.html';
+        return;
+      }
+      currentUser = user;
+      loadDashboard();
+    });
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+
+      if (tabName === 'overview') loadOverview();
+      if (tabName === 'posts') loadPosts();
+      if (tabName === 'users') loadUsers();
+      if (tabName === 'feedback') loadFeedback();
+    }
+
+    function loadDashboard() {
+      loadOverview();
+    }
+
+    function loadOverview() {
+      // Users
+      db.ref('users').once('value', snap => {
+        const count = snap.numChildren();
+        document.getElementById('stat-users').textContent = count;
+      });
+
+      // Posts
+      db.ref('feed').once('value', snap => {
+        const count = snap.numChildren();
+        document.getElementById('stat-posts').textContent = count;
+      });
+
+      // Pending posts
+      db.ref('feed').orderByChild('status').equalTo('pending').once('value', snap => {
+        document.getElementById('stat-pending').textContent = snap.numChildren();
+      });
+
+      // Top creators
+      db.ref('feed').orderByChild('uid').once('value', snap => {
+        const creators = {};
+        snap.forEach(c => {
+          const p = c.val();
+          if (!creators[p.uid]) {
+            creators[p.uid] = { uid: p.uid, username: p.username, posts: 0, likes: 0 };
+          }
+          creators[p.uid].posts++;
+          creators[p.uid].likes += (p.likes || 0);
+        });
+
+        const sorted = Object.values(creators)
+          .sort((a, b) => b.likes - a.likes)
+          .slice(0, 10);
+
+        document.getElementById('top-creators').innerHTML = sorted.map(c => `
+          <tr>
+            <td>${c.username}</td>
+            <td>${c.posts}</td>
+            <td>${c.likes}</td>
+            <td>-</td>
+          </tr>
+        `).join('');
+      });
+    }
+
+    function loadPosts() {
+      db.ref('feed').orderByChild('timestamp').limitToLast(100).once('value', snap => {
+        const posts = [];
+        snap.forEach(c => {
+          posts.unshift({ id: c.key, ...c.val() });
+        });
+
+        document.getElementById('posts-list').innerHTML = posts.map(p => `
+          <tr>
+            <td>${p.username}</td>
+            <td>${p.missionTitle}</td>
+            <td><span class="badge badge-${p.status}">${p.status}</span></td>
+            <td>${p.likes || 0}</td>
+            <td>${new Date(p.timestamp).toLocaleDateString()}</td>
+            <td>
+              <button class="action-btn btn-view" onclick="viewPost('${p.id}')">View</button>
+              <button class="action-btn btn-delete" onclick="deletePost('${p.id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      });
+    }
+
+    function loadUsers() {
+      db.ref('users').orderByChild('pts').limitToLast(100).once('value', snap => {
+        const users = [];
+        snap.forEach(c => {
+          users.unshift({ uid: c.key, ...c.val() });
+        });
+
+        document.getElementById('users-list').innerHTML = users.map(u => `
+          <tr>
+            <td>${u.username}</td>
+            <td>${u.pts || 0}</td>
+            <td>${u.totalMissionsDone || 0}</td>
+            <td>${u.blocked ? '<span class="badge badge-rejected">BLOCKED</span>' : '<span class="badge badge-verified">ACTIVE</span>'}</td>
+            <td>-</td>
+            <td>
+              ${u.blocked ? `
+                <button class="action-btn btn-view" onclick="unblockUser('${u.uid}')">Unblock</button>
+              ` : `
+                <button class="action-btn btn-block" onclick="blockUser('${u.uid}')">Block</button>
+              `}
+            </td>
+          </tr>
+        `).join('');
+      });
+    }
+
+    function loadFeedback() {
+      db.ref('feedback').limitToLast(50).once('value', snap => {
+        const feedback = [];
+        snap.forEach(c => {
+          feedback.unshift({ id: c.key, ...c.val() });
+        });
+
+        document.getElementById('feedback-list').innerHTML = feedback.map(f => `
+          <tr>
+            <td>${f.username}</td>
+            <td>${f.message.substring(0, 50)}...</td>
+            <td>${new Date(f.timestamp).toLocaleDateString()}</td>
+            <td>Received</td>
+          </tr>
+        `).join('');
+      });
+    }
+
+    function deletePost(postId) {
+      showModal('Delete Post', 'Are you sure you want to delete this post?', () => {
+        db.ref(`feed/${postId}`).remove().then(() => {
+          alert('Post deleted');
+          loadPosts();
+        });
+      });
+    }
+
+    function blockUser(uid) {
+      showModal('Block User', 'Block this user from posting?', () => {
+        db.ref(`users/${uid}`).update({ blocked: true }).then(() => {
+          alert('User blocked');
+          loadUsers();
+        });
+      });
+    }
+
+    function unblockUser(uid) {
+      db.ref(`users/${uid}`).update({ blocked: false }).then(() => {
+        alert('User unblocked');
+        loadUsers();
+      });
+    }
+
+    function viewPost(postId) {
+      db.ref(`feed/${postId}`).once('value', snap => {
+        const p = snap.val();
+        alert(`Post by ${p.username}\nMission: ${p.missionTitle}\nStatus: ${p.status}\nLikes: ${p.likes}`);
+      });
+    }
+
+    function searchPosts() {
+      const query = document.getElementById('post-search').value.toLowerCase();
+      if (!query) return loadPosts();
+
+      db.ref('feed').once('value', snap => {
+        const posts = [];
+        snap.forEach(c => {
+          const p = { id: c.key, ...c.val() };
+          if (p.username.toLowerCase().includes(query) || c.key.includes(query)) {
+            posts.push(p);
+          }
+        });
+
+        document.getElementById('posts-list').innerHTML = posts.length ? posts.map(p => `
+          <tr>
+            <td>${p.username}</td>
+            <td>${p.missionTitle}</td>
+            <td><span class="badge badge-${p.status}">${p.status}</span></td>
+            <td>${p.likes || 0}</td>
+            <td>${new Date(p.timestamp).toLocaleDateString()}</td>
+            <td>
+              <button class="action-btn btn-delete" onclick="deletePost('${p.id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('') : '<tr><td colspan="6" style="text-align: center; color: #8888a8;">No results</td></tr>';
+      });
+    }
+
+    function searchUsers() {
+      const query = document.getElementById('user-search').value.toLowerCase();
+      if (!query) return loadUsers();
+
+      db.ref('users').once('value', snap => {
+        const users = [];
+        snap.forEach(c => {
+          const u = { uid: c.key, ...c.val() };
+          if (u.username.toLowerCase().includes(query)) {
+            users.push(u);
+          }
+        });
+
+        document.getElementById('users-list').innerHTML = users.length ? users.map(u => `
+          <tr>
+            <td>${u.username}</td>
+            <td>${u.pts || 0}</td>
+            <td>${u.totalMissionsDone || 0}</td>
+            <td>${u.blocked ? '<span class="badge badge-rejected">BLOCKED</span>' : '<span class="badge badge-verified">ACTIVE</span>'}</td>
+            <td>-</td>
+            <td>
+              ${u.blocked ? `
+                <button class="action-btn btn-view" onclick="unblockUser('${u.uid}')">Unblock</button>
+              ` : `
+                <button class="action-btn btn-block" onclick="blockUser('${u.uid}')">Block</button>
+              `}
+            </td>
+          </tr>
+        `).join('') : '<tr><td colspan="6" style="text-align: center; color: #8888a8;">No results</td></tr>';
+      });
+    }
+
+    function showModal(title, body, callback) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').textContent = body;
+      pendingAction = callback;
+      document.getElementById('action-modal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('action-modal').classList.remove('show');
+      pendingAction = null;
+    }
+
+    function confirmAction() {
+      if (pendingAction) pendingAction();
+      closeModal();
+    }
+
+    function adminLogout() {
+      auth.signOut().then(() => {
+        window.location.href = '/index.html';
+      });
+    }
+  </script>
+</body>
+</html>

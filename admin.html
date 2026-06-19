@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>FlashArena — ניהול</title>
+<style>
+:root{--bg:#0f1117;--bg2:#181b25;--bg3:#222633;--text:#f1f2f6;--muted:#8b91a5;--accent:#ff3d5a;--gold:#fbbf24;--green:#34d399;--blue:#60a5fa;--border:#2a2f3e}
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh;padding:20px}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-size:22px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:24px}
+.login-box{max-width:360px;margin:80px auto;background:var(--bg2);border-radius:16px;padding:28px;text-align:center}
+.login-box h2{margin-bottom:16px}
+.inp{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--text);outline:none;margin-bottom:10px}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 20px;font-size:14px;font-weight:700;cursor:pointer;width:100%}
+.btn:disabled{opacity:.5}
+.btn-sm{width:auto;padding:6px 14px;font-size:12px;border-radius:8px}
+.btn-green{background:var(--green);color:#06281c}
+.btn-gray{background:var(--bg3);color:var(--text)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:var(--bg2);border-radius:14px;padding:18px;text-align:center}
+.stat .n{font-size:26px;font-weight:800}
+.stat .l{font-size:12px;color:var(--muted);margin-top:4px}
+.section{background:var(--bg2);border-radius:14px;padding:18px;margin-bottom:20px}
+.section h2{font-size:16px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:right;color:var(--muted);font-weight:600;padding:8px;border-bottom:1px solid var(--border)}
+td{padding:8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.tag-pending{background:#78350f;color:var(--gold)}
+.tag-done{background:#064e3b;color:var(--green)}
+.tag-rejected{background:#7f1d1d;color:#fca5a5}
+.code{font-family:monospace;background:var(--bg3);padding:2px 8px;border-radius:6px;font-size:12px}
+.err{color:#fca5a5;font-size:13px;margin-top:10px;min-height:18px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.muted{color:var(--muted)}
+.empty{color:var(--muted);text-align:center;padding:20px;font-size:13px}
+#refresh-btn{width:auto}
+@media(max-width:600px){table{font-size:11px}td,th{padding:5px}}
+</style>
+</head>
+<body>
+
+<div class="login-box" id="login-box">
+  <h2>🔐 כניסת מנהל</h2>
+  <input class="inp" id="adm-email" type="email" placeholder="אימייל" dir="ltr">
+  <input class="inp" id="adm-pass" type="password" placeholder="סיסמה" dir="ltr">
+  <button class="btn" id="login-btn" onclick="adminLogin()">כניסה</button>
+  <button class="btn btn-gray" style="margin-top:8px" onclick="adminGoogle()">כניסה עם Google</button>
+  <div class="err" id="login-err"></div>
+</div>
+
+<div class="wrap" id="dash" style="display:none">
+  <div class="topbar">
+    <div>
+      <h1>⚡ FlashArena — ניהול</h1>
+      <div class="sub" id="adm-who"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-sm btn-gray" id="refresh-btn" onclick="loadDashboard()">🔄 רענן</button>
+      <button class="btn btn-sm btn-gray" onclick="firebase.auth().signOut();location.reload()">יציאה</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="section">
+    <h2>🎁 פדיונות פרסים</h2>
+    <div id="redemptions"></div>
+  </div>
+
+  <div class="section">
+    <h2>🚩 דיווחים</h2>
+    <div id="reports"></div>
+  </div>
+
+  <div class="section">
+    <h2>👥 משתמשים אחרונים</h2>
+    <div id="users"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: 'AIzaSyCo35i4mXPRmGy0IM5L-8s6YH3Zr5O_vMY',
+  authDomain: 'flasharena-f35b1.firebaseapp.com',
+  databaseURL: 'https://flasharena-f35b1-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId: 'flasharena-f35b1',
+  storageBucket: 'flasharena-f35b1.firebasestorage.app',
+  messagingSenderId: '208737763122',
+  appId: '1:208737763122:web:752bd9566561a85211612b'
+});
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtDate(ts){return ts?new Date(ts).toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'}):'—';}
+
+async function adminLogin(){
+  const email=document.getElementById('adm-email').value.trim();
+  const pass=document.getElementById('adm-pass').value;
+  const btn=document.getElementById('login-btn');
+  const err=document.getElementById('login-err');
+  err.textContent='';
+  btn.disabled=true;
+  try{
+    await firebase.auth().signInWithEmailAndPassword(email,pass);
+  }catch(e){
+    err.textContent='התחברות נכשלה: '+(e.message||'');
+  }
+  btn.disabled=false;
+}
+
+async function adminGoogle(){
+  const err=document.getElementById('login-err');
+  err.textContent='';
+  try{
+    await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+  }catch(e){
+    err.textContent='התחברות נכשלה: '+(e.message||'');
+  }
+}
+
+firebase.auth().onAuthStateChanged(async user=>{
+  if(!user) return;
+  document.getElementById('login-box').style.display='none';
+  document.getElementById('dash').style.display='block';
+  document.getElementById('adm-who').textContent=user.email;
+  loadDashboard();
+});
+
+async function loadDashboard(){
+  const statsEl=document.getElementById('stats');
+  statsEl.innerHTML='<div class="empty">טוען...</div>';
+  try{
+    const res=await firebase.functions().httpsCallable('adminGetDashboard')({});
+    render(res.data);
+  }catch(e){
+    statsEl.innerHTML='<div class="empty">⚠️ '+esc(e.message)+'<br><span class="muted" style="font-size:11px">אם זה "Admin access only" — המייל הזה לא מורשה. אם "not-found" — הפונקציות עדיין לא פרוסות.</span></div>';
+  }
+}
+
+function render(d){
+  document.getElementById('stats').innerHTML=
+    '<div class="stat"><div class="n" style="color:var(--blue)">'+d.stats.totalUsers+'</div><div class="l">משתמשים</div></div>'+
+    '<div class="stat"><div class="n" style="color:var(--green)">'+d.stats.totalPosts+'</div><div class="l">פוסטים</div></div>'+
+    '<div class="stat"><div class="n" style="color:var(--gold)">'+d.stats.pendingRedemptions+'</div><div class="l">פדיונות ממתינים</div></div>'+
+    '<div class="stat"><div class="n" style="color:var(--accent)">'+d.stats.pendingReports+'</div><div class="l">דיווחים ממתינים</div></div>';
+
+  // Redemptions
+  const rd=document.getElementById('redemptions');
+  if(!d.redemptions.length){rd.innerHTML='<div class="empty">אין פדיונות עדיין</div>';}
+  else{
+    rd.innerHTML='<table><tr><th>תאריך</th><th>משתמש</th><th>פרס</th><th>קוד</th><th>סטטוס</th><th></th></tr>'+
+      d.redemptions.map(r=>{
+        const tag=r.status==='fulfilled'?'<span class="tag tag-done">נשלח</span>':
+                  r.status==='rejected'?'<span class="tag tag-rejected">נדחה</span>':
+                  '<span class="tag tag-pending">ממתין</span>';
+        const actions=r.status==='pending'?
+          '<button class="btn btn-sm btn-green" onclick="setRedemption(\''+esc(r.id)+'\',\'fulfilled\')">✓ סומן כנשלח</button> '+
+          '<button class="btn btn-sm btn-gray" onclick="setRedemption(\''+esc(r.id)+'\',\'rejected\')">✕</button>':'';
+        return '<tr><td>'+fmtDate(r.createdAt)+'</td><td class="code" dir="ltr">'+esc((r.byUid||'').slice(0,10))+'…</td><td>'+esc(r.redeemId)+' ($'+esc(r.value)+')</td><td class="code" dir="ltr">'+esc(r.code)+'</td><td>'+tag+'</td><td>'+actions+'</td></tr>';
+      }).join('')+'</table>';
+  }
+
+  // Reports
+  const rp=document.getElementById('reports');
+  if(!d.reports.length){rp.innerHTML='<div class="empty">אין דיווחים 🎉</div>';}
+  else{
+    rp.innerHTML='<table><tr><th>תאריך</th><th>מדווח</th><th>על</th><th>סיבה</th><th>סטטוס</th><th></th></tr>'+
+      d.reports.map(r=>{
+        const tag=r.status==='reviewed'||r.status==='actioned'?'<span class="tag tag-done">טופל</span>':'<span class="tag tag-pending">ממתין</span>';
+        const actions=(!r.status||r.status==='pending')?
+          '<button class="btn btn-sm btn-green" onclick="setReport(\''+esc(r.id)+'\',\'reviewed\')">✓ טופל</button> '+
+          '<button class="btn btn-sm btn-gray" onclick="blockUser(\''+esc(r.reportedUid)+'\')">🚫 חסום משתמש</button>':'';
+        return '<tr><td>'+fmtDate(r.createdAt)+'</td><td class="code" dir="ltr">'+esc((r.byUid||'').slice(0,10))+'…</td><td class="code" dir="ltr">'+esc((r.reportedUid||'').slice(0,10))+'…</td><td>'+esc(r.reason)+'</td><td>'+tag+'</td><td>'+actions+'</td></tr>';
+      }).join('')+'</table>';
+  }
+
+  // Users
+  const us=document.getElementById('users');
+  us.innerHTML='<table><tr><th>שם</th><th>אימייל</th><th>נקודות</th><th>משימות</th><th>הצטרף</th><th>מצב</th><th></th></tr>'+
+    d.users.map(u=>{
+      const tag=u.blocked?'<span class="tag tag-rejected">חסום</span>':'<span class="tag tag-done">פעיל</span>';
+      const action=u.blocked?
+        '<button class="btn btn-sm btn-gray" onclick="setBlocked(\''+esc(u.uid)+'\',false)">בטל חסימה</button>':
+        '<button class="btn btn-sm btn-gray" onclick="setBlocked(\''+esc(u.uid)+'\',true)">חסום</button>';
+      return '<tr><td>'+esc(u.username)+'</td><td dir="ltr">'+esc(u.email)+'</td><td>★ '+(u.pts||0).toLocaleString()+'</td><td>'+(u.missions||0)+'</td><td>'+fmtDate(u.createdAt)+'</td><td>'+tag+'</td><td>'+action+'</td></tr>';
+    }).join('')+'</table>';
+}
+
+async function setRedemption(id,status){
+  try{await firebase.functions().httpsCallable('adminUpdateRedemption')({id:id,status:status});loadDashboard();}
+  catch(e){alert('שגיאה: '+e.message);}
+}
+async function setReport(id,status){
+  try{await firebase.functions().httpsCallable('adminUpdateReport')({id:id,status:status});loadDashboard();}
+  catch(e){alert('שגיאה: '+e.message);}
+}
+async function setBlocked(uid,blocked){
+  if(blocked&&!confirm('לחסום את המשתמש הזה?'))return;
+  try{await firebase.functions().httpsCallable('adminSetBlocked')({uid:uid,blocked:blocked});loadDashboard();}
+  catch(e){alert('שגיאה: '+e.message);}
+}
+async function blockUser(uid){setBlocked(uid,true);}
+
+document.getElementById('adm-pass').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin();});
+</script>
+</body>
+</html>
