@@ -22,6 +22,8 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;scrollbar-width:none;-ms-overflow-style:none}
 *::-webkit-scrollbar{display:none}
+:focus{outline:none}
+button:focus-visible,input:focus-visible,a:focus-visible,.setting-row:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 :root{
   --font:'Rubik','Assistant',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans Hebrew',sans-serif;
   --bg:#0f0f12;--bg2:#17171c;--bg3:#202027;
@@ -216,7 +218,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .achievements-wrap{padding:20px 16px 0}
 .achievements-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .achievements-icon{display:flex;align-items:center;justify-content:center}
-.achievements-title{font-size:15px;font-weight:800;color:var(--text)}
+.achievements-title{font-size:var(--t-h);font-weight:600;color:var(--text)}
 .achievements-sub{font-size:11px;color:var(--muted);margin-top:2px}
 .ach-count{flex-shrink:0;display:inline-flex;align-items:center;background:var(--accent-soft);border:1px solid rgba(16,185,129,.25);border-radius:20px;padding:6px 14px;font-family:var(--font);font-size:14px;font-weight:800;line-height:1}
 .ach-count-num{color:var(--accent)}
@@ -250,7 +252,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 /* ── HOME ── */
 .hero{padding:26px 20px 0}
 .hero-label{font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;letter-spacing:.4px;text-transform:uppercase}
-.hero-title{font-family:var(--font);font-size:30px;font-weight:800;line-height:1.12;letter-spacing:-.8px}
+.hero-title{font-family:var(--font);font-size:var(--t-title);font-weight:700;line-height:1.15;letter-spacing:-.5px}
 .hero-sub{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.5}
 .hero-sub b{color:var(--accent)}
 .progress-wrap{margin:18px 20px 0;background:var(--bg2);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh0)}
@@ -319,14 +321,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .pf-name{font-family:var(--font);font-size:22px;font-weight:800}
 .pf-level{display:inline-block;font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;background:var(--bg);border:1.5px solid var(--border2);color:var(--text)}
 .pf-avatar{width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:30px;font-weight:800;color:#fff}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px 0}
-.stat{background:var(--bg2);border:none;border-radius:var(--rl);padding:18px 14px 15px;text-align:center;box-shadow:var(--sh1);position:relative;overflow:hidden}
-.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:0}
-.stat:nth-child(1)::before{background:linear-gradient(90deg,var(--gold),#f59e0b)}
-.stat:nth-child(2)::before{background:linear-gradient(90deg,var(--accent),var(--accent2))}
-.stat:nth-child(3)::before{background:linear-gradient(90deg,var(--green),#22c55e)}
-.stat:nth-child(4)::before{background:linear-gradient(90deg,var(--blue),#60a5fa)}
-.stat-n{font-family:var(--font);font-size:30px;font-weight:800;line-height:1}
+.stats-grid{display:flex;align-items:stretch;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:15px 0;margin:16px 20px 0}
+.stat{flex:1;text-align:center;background:none;box-shadow:none;padding:0 6px;border-radius:0;position:relative;overflow:visible}
+.stat::before{display:none}
+.stat+.stat{border-inline-start:1px solid var(--border)}
+.stat-n{font-family:var(--font);font-size:21px;font-weight:700;line-height:1;color:var(--text)}
 .stat-l{font-size:11px;color:var(--muted);margin-top:6px;font-weight:500}
 .rank-wrap{padding:16px 20px 0}
 .rank-box{background:var(--bg2);border:none;border-radius:var(--rl);padding:18px;box-shadow:var(--sh1)}
@@ -375,7 +374,7 @@ svg.ic-lg{width:19px;height:19px}
 @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:36px;height:4px;background:var(--muted);opacity:.2;border-radius:2px;margin:0 auto 20px}
 .modal-badge-d{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 11px;border-radius:20px;display:inline-block;margin-bottom:9px}
-.modal-title{font-family:var(--font);font-size:22px;font-weight:800;line-height:1.2;margin-bottom:8px}
+.modal-title{font-family:var(--font);font-size:var(--t-title);font-weight:700;line-height:1.2;margin-bottom:8px}
 .modal-desc{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:18px}
 .modal-meta{display:flex;gap:10px;margin-bottom:18px}
 .mm{flex:1;background:var(--bg3);border-radius:var(--r);padding:14px 8px;text-align:center}
@@ -518,7 +517,7 @@ svg.ic-lg{width:19px;height:19px}
 .liked-header{display:flex;align-items:center;gap:10px;padding:20px 18px 14px}
 .liked-header-left{display:flex;align-items:center;gap:8px}
 .liked-header-icon{font-size:17px}
-.liked-header-text{font-family:var(--font);font-size:15px;font-weight:800;color:var(--text)}
+.liked-header-text{font-family:var(--font);font-size:var(--t-h);font-weight:600;color:var(--text)}
 .liked-header-count{font-size:12px;font-weight:700;color:var(--muted);background:var(--bg3);border:1px solid var(--border);padding:3px 10px;border-radius:20px}
 .liked-header-line{flex:1;height:1px;background:var(--border)}
 .liked-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 18px 24px;box-sizing:border-box}
@@ -530,7 +529,7 @@ svg.ic-lg{width:19px;height:19px}
 .my-videos-header{display:flex;align-items:center;gap:10px;padding:20px 18px 14px}
 .my-videos-header-left{display:flex;align-items:center;gap:8px}
 .my-videos-header-icon{font-size:17px}
-.my-videos-header-text{font-family:var(--font);font-size:15px;font-weight:800;color:var(--text)}
+.my-videos-header-text{font-family:var(--font);font-size:var(--t-h);font-weight:600;color:var(--text)}
 .my-videos-header-count{font-size:12px;font-weight:700;color:var(--muted);background:var(--bg3);border:1px solid var(--border);padding:3px 10px;border-radius:20px}
 .my-videos-header-line{flex:1;height:1px;background:var(--border)}
 .my-videos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 18px 24px;box-sizing:border-box}
@@ -710,7 +709,7 @@ svg.ic-lg{width:19px;height:19px}
         <span class="msg-dot" id="notif-dot"></span>
       </button>
       <div class="rank-pill" id="rank-pill" onclick="openRanksModal()"><span id="rank-emoji">🌱</span> <span id="rank-name-top">Rookie</span></div>
-      <div class="streak-pill">🔥 <span class="num" id="streak-num">7</span> <span style="color:var(--muted);font-size:10px" data-i="days">days</span></div>
+      <div class="streak-pill"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> <span class="num" id="streak-num">7</span> <span style="color:var(--muted);font-size:10px" data-i="days">days</span></div>
       <div class="pts-pill">★ <span id="pts">1,240</span></div>
     </div>
   </div>
@@ -720,7 +719,7 @@ svg.ic-lg{width:19px;height:19px}
     <!-- HOME SCREEN -->
     <div class="screen active" id="s-home">
       <div class="hero">
-        <div class="hero-label" id="greeting">Hey 👋</div>
+        <div class="hero-label" id="greeting">Hey</div>
         <div class="hero-title" data-i="heroTitle">Ready for<br>today's missions?</div>
         <div class="hero-sub"><b id="left">2</b> <span data-i="remaining">missions remaining today</span></div>
       </div>
@@ -738,8 +737,8 @@ svg.ic-lg{width:19px;height:19px}
         <div class="ad-cta" data-i="watch">Watch</div>
       </div>
       <div class="verify-info">
-        <div class="verify-info-title" data-i="howItWorks">🤖 How it works</div>
-        <div class="verify-info-text" data-i="howItWorksText">Upload a photo or video of yourself completing the mission. Our AI checks it's genuine — any real attempt gets approved!</div>
+        <div class="verify-info-title" data-i="howItWorks">How it works</div>
+        <div class="verify-info-text" data-i="howItWorksText">Upload a photo or video of you completing the mission — every genuine attempt counts.</div>
       </div>
 
       <div class="sec" data-i="todaysMissions">Today's missions</div>
@@ -850,10 +849,10 @@ svg.ic-lg{width:19px;height:19px}
         </div>
       </div>
       <div class="stats-grid">
-        <div class="stat"><div class="stat-n" style="color:var(--gold)" id="pf-pts">0</div><div class="stat-l" data-i="weeklyPoints">Total points</div></div>
-        <div class="stat"><div class="stat-n" style="color:var(--accent)" id="pf-streak">0</div><div class="stat-l" data-i="dayStreak">Day streak</div></div>
-        <div class="stat"><div class="stat-n" style="color:var(--green)" id="pf-missions">0</div><div class="stat-l" data-i="missionsDone">Missions done</div></div>
-        <div class="stat"><div class="stat-n" style="color:var(--blue)" id="pf-rank">#—</div><div class="stat-l" data-i="friendRank">Global rank</div></div>
+        <div class="stat"><div class="stat-n" id="pf-pts">0</div><div class="stat-l" data-i="weeklyPoints">Total points</div></div>
+        <div class="stat"><div class="stat-n" id="pf-streak">0</div><div class="stat-l" data-i="dayStreak">Day streak</div></div>
+        <div class="stat"><div class="stat-n" id="pf-missions">0</div><div class="stat-l" data-i="missionsDone">Missions done</div></div>
+        <div class="stat"><div class="stat-n" id="pf-rank">#—</div><div class="stat-l" data-i="friendRank">Global rank</div></div>
       </div>
       <div class="rank-wrap">
         <div class="rank-box">
@@ -1032,7 +1031,7 @@ svg.ic-lg{width:19px;height:19px}
     <div class="tips-box"><div class="tips-title" data-i="tips">Tips</div><div id="m-tips"></div></div>
 
     <div class="check-box">
-      <div class="check-title">🤖 What AI will check:</div>
+      <div class="check-title">What we look for:</div>
       <div class="check-item">✓ Does the image/video show a genuine attempt?</div>
       <div class="check-item">✓ Is the person actually doing what the mission asks?</div>
       <div class="check-item">✓ Can we see clear evidence (person, action, location)?</div>
@@ -1137,41 +1136,41 @@ const LANGS=[
 
 const T={
   en:{langTitle:'Choose your language',langSub:'You can change this later in settings',continue:'Continue →',register:'Sign Up',login:'Log In',back:'Back',createAccountTitle:'Create account',loginTitle:'Welcome back',authSub:'Start completing missions and climbing the ranks',username:'Username',email:'Email',password:'Password',createAccount:'Create Account',logIn:'Log In',or:'or',continueGoogle:'Continue with Google',days:'days',heroTitle:"Ready for today's missions?",remaining:'missions remaining today',dailyProgress:'Daily progress',adMain:'Watch a short ad',adSub:'+50 bonus points · watch up to 10x/day',watch:'Watch',todaysMissions:"Today's missions",social:'Social',dare:'Dare',explore:'Explore',easy:'Easy',medium:'Medium',hard:'Hard',done:'✓ Done',start:'Start →',m0title:'Ask a stranger one question',m0desc:"Approach someone you don't know and ask them one genuine question.",m1title:'Stand completely still for 60 seconds',m1desc:'Pick a public spot and freeze like a statue for a full minute.',m2title:"Find a place you've never been to",m2desc:"Walk to a street or spot you've never noticed before.",leaderboard:'Leaderboard',lbSub:'This week · resets Friday',friends:'Friends',country:'Country',global:'Global',dayStreak:'day streak',weeklyPoints:'Weekly points',missionsDone:'Missions done',friendRank:'Friend rank',rankProgress:'Rank progress',ptsToLegend:'116 pts to Legend',language:'Language',notifications:'Notifications',privacy:'Privacy',goPremium:'Go Premium',free:'Free',on:'On',logout:'Log Out',missions:'Missions',ranks:'Ranks',feed:'Scroll',profile:'Profile',points:'Points',difficulty:'Difficulty',estTime:'Est. time',tips:'Tips',uploadProof:'Upload your proof',photoOrVideo:'Photo or short video',markComplete:'Mark as completed ✓',cancel:'Cancel',greeting:'Hey',
-  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'🏅 All Ranks',allRanksSub:'Earn points to climb the ranks',
+  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',
   adComeBack:'Come back tomorrow',adDone:'Done',adLeft:'left today',adAllDone:'All ads watched today',ptsTo:'pts to',maxRank:'Max rank reached!',
   lbPoints:'Points',lbMissions:'Missions',lbStreak:'Streak',season:'Season',seasonEnds:'Season ends in',daysShort:'d',
-  notifTitle:'🔔 Notifications',notifEmpty:'No notifications yet',notifLiked:'liked your video',notifFollowed:'started following you',notifCommented:'commented on your video',notifReplied:'replied to your comment',notifReferral:'joined with your invite — +200!',justNow:'now',minShort:'m',hrShort:'h',dayShort2:'d',
-  reportTitle:'⚑ Report',reportSub:'Why are you reporting',reportThanks:'Thanks — our team will review it',reportSelf:"You can't report yourself",
-  chats:'Chats',loading:'Loading...',editProfile:'✏️ Edit Profile',changePhoto:'📷 Change photo',editBio:'Bio',editLink:'Link',editAge:'Age',editCountry:'Country',profileSaved:'Profile saved!',addBio:'+ Add a bio',
+  notifTitle:'Notifications',notifEmpty:'No notifications yet',notifLiked:'liked your video',notifFollowed:'started following you',notifCommented:'commented on your video',notifReplied:'replied to your comment',notifReferral:'joined with your invite — +200!',justNow:'now',minShort:'m',hrShort:'h',dayShort2:'d',
+  reportTitle:'Report',reportSub:'Why are you reporting',reportThanks:'Thanks — our team will review it',reportSelf:"You can't report yourself",
+  chats:'Chats',loading:'Loading...',editProfile:'Edit Profile',changePhoto:'Change photo',editBio:'Bio',editLink:'Link',editAge:'Age',editCountry:'Country',profileSaved:'Profile saved!',addBio:'+ Add a bio',
   dailyTitle:'Daily Reward',dailyReward:'Daily Reward',dailySub:'Come back every day for bigger rewards!',dailyClaim:'Claim reward',dailyClaimed:'Claimed ✓ — back tomorrow!',
-  titlesTitle:'🏷️ Titles',titlesSub:'Unlock titles and show one on your profile',titleEquip:'Equip',titleSet:'Title updated',chooseTitle:'Choose a title',
-  shareTitle:'📤 Share',shareCopy:'Copy Link',shareMore:'More',linkCopied:'Link copied!',linkCopiedPaste:'Link copied — paste it to share',referralWelcome:'Welcome bonus!',
+  titlesTitle:'Titles',titlesSub:'Unlock titles and show one on your profile',titleEquip:'Equip',titleSet:'Title updated',chooseTitle:'Choose a title',
+  shareTitle:'Share',shareCopy:'Copy Link',shareMore:'More',linkCopied:'Link copied!',linkCopiedPaste:'Link copied — paste it to share',referralWelcome:'Welcome bonus!',
   searchHint:'Search people, videos, missions',people:'People',videos:'Videos',hashtags:'Hashtags',noResults:'No results',photoUpdated:'Photo updated!',
-  messages:'Messages',message:'Message',rewards:'Rewards',inviteFriends:'Invite',noChats:'No conversations yet — visit a profile and say hi! 👋',chatStart:'Say hello 👋',chatSendFail:'Could not send message',
-  rewardsShop:'🎁 Rewards Shop',yourBalance:'Your balance:',rewardsNote:'Rewards are processed manually within 48h.',redeem:'Redeem',locked:'Locked',redeemConfirm:'Redeem',
+  messages:'Messages',message:'Message',rewards:'Rewards',inviteFriends:'Invite',noChats:'No conversations yet — visit a profile and say hi!',chatStart:'Say hello',chatSendFail:'Could not send message',
+  rewardsShop:'Rewards Shop',yourBalance:'Your balance:',rewardsNote:'Rewards are processed manually within 48h.',redeem:'Redeem',locked:'Locked',redeemConfirm:'Redeem',
   achievements:'Achievements',achTapHint:"Tap one to see what's needed",achUnlockedYes:'Unlocked! ✓',achNeed:'Need',achUnit_missions:'more missions',achUnit_points:'more points',achUnit_followers:'more followers',achUnit_streak:'more days streak',achCat_missions:'Missions',achCat_points:'Points',achCat_followers:'Followers',achCat_streak:'Streak',showAll:'Show all',showLess:'Show less',achFirst:'First Mission',achDays:'Day Streak',
-  howItWorks:'🤖 How it works',howItWorksText:"Upload a photo or video of yourself completing the mission. Our AI checks it's genuine — any real attempt gets approved!",
+  howItWorks:'How it works',howItWorksText:"Upload a photo or video of you completing the mission — every genuine attempt counts.",
   followingLbl:'Following',followersLbl:'Followers',uploadVideo:'Upload Video',totalViews:'Total Views',totalLikes:'Total Likes',avgWatch:'Avg Watch',
-  forYou:'For You',followingTab:'Following',phUsername:'e.g. shahar_arena',phPassword:'Min 6 characters',followBtn:'Follow',followingBtn:'Following ✓',noFollowingPosts:'No posts from creators you follow',errName:'Please enter a username',errEmail:'Please enter a valid email',errPass:'Password must be at least 6 characters',
+  forYou:'For You',followingTab:'Following',phUsername:'e.g. shahar_arena',phPassword:'Min 6 characters',followBtn:'Follow',followingBtn:'Following ✓',noFollowingPosts:'No posts from creators you follow',errName:'Please enter a username',errEmail:'Please enter a valid email',errPass:'Password must be at least 6 characters',statusVerified:'verified',statusPending:'pending',viewsShort:'views',analyzing:'Analyzing…',
   likedPosts:'Liked',savedPosts:'Saved',myVideos:'My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
   exportData:'Export My Data (GDPR)',deleteAccountBtn:'🗑️ Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
-  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'🏅 כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',
+  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',
   adComeBack:'חזור מחר',adDone:'הושלם',adLeft:'נותרו היום',adAllDone:'צפית בכל הפרסומות היום',ptsTo:'נק׳ עד',maxRank:'הגעת לדרגה הגבוהה ביותר!',
   lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
-  notifTitle:'🔔 התראות',notifEmpty:'אין התראות עדיין',notifLiked:'אהב את הסרטון שלך',notifFollowed:'התחיל לעקוב אחריך',notifCommented:'הגיב על הסרטון שלך',notifReplied:'הגיב לתגובה שלך',notifReferral:'הצטרף דרך ההזמנה שלך — +200!',justNow:'עכשיו',minShort:'ד׳',hrShort:'ש׳',dayShort2:'ימ׳',
-  reportTitle:'⚑ דיווח',reportSub:'למה אתה מדווח על',reportThanks:'תודה — הצוות שלנו יבדוק',reportSelf:'אי אפשר לדווח על עצמך',
-  chats:'צ׳אטים',loading:'טוען...',editProfile:'✏️ עריכת פרופיל',changePhoto:'📷 שנה תמונה',editBio:'ביו',editLink:'קישור',editAge:'גיל',editCountry:'מדינה',profileSaved:'הפרופיל נשמר!',addBio:'+ הוסף ביו',
+  notifTitle:'התראות',notifEmpty:'אין התראות עדיין',notifLiked:'אהב את הסרטון שלך',notifFollowed:'התחיל לעקוב אחריך',notifCommented:'הגיב על הסרטון שלך',notifReplied:'הגיב לתגובה שלך',notifReferral:'הצטרף דרך ההזמנה שלך — +200!',justNow:'עכשיו',minShort:'ד׳',hrShort:'ש׳',dayShort2:'ימ׳',
+  reportTitle:'דיווח',reportSub:'למה אתה מדווח על',reportThanks:'תודה — הצוות שלנו יבדוק',reportSelf:'אי אפשר לדווח על עצמך',
+  chats:'צ׳אטים',loading:'טוען...',editProfile:'עריכת פרופיל',changePhoto:'שנה תמונה',editBio:'ביו',editLink:'קישור',editAge:'גיל',editCountry:'מדינה',profileSaved:'הפרופיל נשמר!',addBio:'+ הוסף ביו',
   dailyTitle:'תגמול יומי',dailyReward:'תגמול יומי',dailySub:'חזור כל יום לתגמולים גדולים יותר!',dailyClaim:'אסוף תגמול',dailyClaimed:'נאסף ✓ — חזור מחר!',
-  titlesTitle:'🏷️ תארים',titlesSub:'פתח תארים והצג אחד בפרופיל',titleEquip:'בחר',titleSet:'התואר עודכן',chooseTitle:'בחר תואר',
-  shareTitle:'📤 שיתוף',shareCopy:'העתק קישור',shareMore:'עוד',linkCopied:'הקישור הועתק!',linkCopiedPaste:'הקישור הועתק — הדבק כדי לשתף',referralWelcome:'בונוס הצטרפות!',
+  titlesTitle:'תארים',titlesSub:'פתח תארים והצג אחד בפרופיל',titleEquip:'בחר',titleSet:'התואר עודכן',chooseTitle:'בחר תואר',
+  shareTitle:'שיתוף',shareCopy:'העתק קישור',shareMore:'עוד',linkCopied:'הקישור הועתק!',linkCopiedPaste:'הקישור הועתק — הדבק כדי לשתף',referralWelcome:'בונוס הצטרפות!',
   searchHint:'חפש אנשים, סרטונים, משימות',people:'אנשים',videos:'סרטונים',hashtags:'האשטגים',noResults:'אין תוצאות',photoUpdated:'התמונה עודכנה!',
-  messages:'הודעות',message:'הודעה',rewards:'פרסים',inviteFriends:'הזמן',noChats:'אין שיחות עדיין — בקר בפרופיל ותגיד שלום! 👋',chatStart:'תגיד שלום 👋',chatSendFail:'לא ניתן לשלוח הודעה',
-  rewardsShop:'🎁 חנות פרסים',yourBalance:'היתרה שלך:',rewardsNote:'הפרסים מטופלים ידנית תוך 48 שעות.',redeem:'פדה',locked:'נעול',redeemConfirm:'לפדות',
+  messages:'הודעות',message:'הודעה',rewards:'פרסים',inviteFriends:'הזמן',noChats:'אין שיחות עדיין — בקר בפרופיל ותגיד שלום!',chatStart:'תגיד שלום',chatSendFail:'לא ניתן לשלוח הודעה',
+  rewardsShop:'חנות פרסים',yourBalance:'היתרה שלך:',rewardsNote:'הפרסים מטופלים ידנית תוך 48 שעות.',redeem:'פדה',locked:'נעול',redeemConfirm:'לפדות',
   achievements:'הישגים',achTapHint:'לחץ על הישג לראות מה חסר',achUnlockedYes:'נפתח! ✓',achNeed:'חסרים עוד',achUnit_missions:'משימות',achUnit_points:'נקודות',achUnit_followers:'עוקבים',achUnit_streak:'ימי רצף',achCat_missions:'משימות',achCat_points:'נקודות',achCat_followers:'עוקבים',achCat_streak:'סטריק',showAll:'הצג הכל',showLess:'הצג פחות',achFirst:'משימה ראשונה',achDays:'ימי רצף',
-  howItWorks:'🤖 איך זה עובד',howItWorksText:'העלה תמונה או סרטון שלך משלים את המשימה. ה-AI שלנו בודק שזה אמיתי — כל ניסיון אמיתי מאושר!',
+  howItWorks:'איך זה עובד',howItWorksText:'העלה תמונה או סרטון שלך משלים את המשימה — כל ניסיון אמיתי נחשב.',
   followingLbl:'עוקב',followersLbl:'עוקבים',uploadVideo:'העלה סרטון',totalViews:'צפיות',totalLikes:'לייקים',avgWatch:'צפייה ממוצעת',
-  forYou:'בשבילך',followingTab:'נעקבים',phUsername:'לדוגמה: shahar_arena',phPassword:'לפחות 6 תווים',followBtn:'עקוב',followingBtn:'עוקב ✓',noFollowingPosts:'אין פוסטים מיוצרים שאתה עוקב אחריהם',errName:'נא להזין שם משתמש',errEmail:'נא להזין אימייל תקין',errPass:'הסיסמה חייבת להכיל לפחות 6 תווים',
+  forYou:'בשבילך',followingTab:'נעקבים',phUsername:'לדוגמה: shahar_arena',phPassword:'לפחות 6 תווים',followBtn:'עקוב',followingBtn:'עוקב ✓',noFollowingPosts:'אין פוסטים מיוצרים שאתה עוקב אחריהם',errName:'נא להזין שם משתמש',errEmail:'נא להזין אימייל תקין',errPass:'הסיסמה חייבת להכיל לפחות 6 תווים',statusVerified:'מאומת',statusPending:'ממתין',viewsShort:'צפיות',analyzing:'מנתח…',
   likedPosts:'אהבתי',savedPosts:'שמורים',myVideos:'הסרטונים שלי',noPostsYet:'אין פוסטים עדיין',noPostsSub:'השלם משימה והעלה הוכחה — זה יופיע כאן!',noLikedYet:'אין פוסטים שאהבת',noLikedSub:'לך לפיד ולחץ ❤️ על פוסטים שאהבת',noSavedYet:'אין פוסטים שמורים',noSavedSub:'לחץ על הסימנייה כדי לשמור פוסטים',followToSee:'עקוב אחרי יוצרים כדי לראות את הפוסטים שלהם',
   exportData:'ייצוא הנתונים שלי (GDPR)',deleteAccountBtn:'🗑️ מחק את החשבון שלי',dataPrivacy:'נתונים ופרטיות'},
 };
@@ -1297,7 +1296,7 @@ function applyTranslations(){
   if(userName){
     const g=id=>document.getElementById(id);
     const av=userName[0].toUpperCase();
-    if(g('greeting')) g('greeting').textContent=t('greeting')+' '+userName.split(' ')[0]+' 👋';
+    if(g('greeting')) g('greeting').textContent=t('greeting')+' '+userName.split(' ')[0];
     if(g('pf-name'))  g('pf-name').textContent=userName;
     if(g('pf-av'))    g('pf-av').textContent=av;
     if(g('lb-av-me'))   g('lb-av-me').textContent=av;
@@ -2802,7 +2801,7 @@ function feedRenderPost(post,slot){
       +'<div class="feed-username-big" id="feed-uname-link" style="pointer-events:all;cursor:pointer">@'+escHtml(postUser)+(iFollow?' <span style="font-size:11px;color:var(--accent2);font-weight:700;vertical-align:middle">'+t('followingBtn')+'</span>':'')+'</div>'
       +'<div class="feed-caption">🎯 '+feedLinkifyTags(post.missionTitle||'Mission')+'</div>'
       +(post.caption?'<div class="feed-caption">'+feedLinkifyTags(post.caption)+'</div>':'')
-      +'<div class="feed-pts-tag">★ +'+(post.pts||0)+' points · <span style="color:#60a5fa">🤖 '+(post.status==='verified'?'verified':'pending')+'</span> · 👁️ '+(post.views||0)+'</div>'
+      +'<div class="feed-pts-tag">★ +'+(post.pts||0)+' '+t('points')+' · <span style="color:var(--blue)">'+(post.status==='verified'?t('statusVerified'):t('statusPending'))+'</span> · '+(post.views||0)+' '+t('viewsShort')+'</div>'
       +(age?'<div class="feed-ts">'+age+'</div>':'')
     +'</div>'
   +'</div>';
@@ -4902,7 +4901,7 @@ function verifySetState(state, msg){
   box.style.display=msg?'block':'none';
   box.innerHTML=msg||'';
   if(state==='loading'){
-    if(btn){btn.disabled=true;btn.textContent='🤖 Analyzing...';}
+    if(btn){btn.disabled=true;btn.textContent=t('analyzing');}
     if(cancel) cancel.style.pointerEvents='none';
   } else {
     if(btn){btn.disabled=false;}
