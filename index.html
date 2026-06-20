@@ -200,6 +200,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .achievements-icon{font-size:24px}
 .achievements-title{font-size:15px;font-weight:800;color:var(--text)}
 .achievements-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.ach-count{flex-shrink:0;display:flex;align-items:baseline;gap:1px;background:var(--accent-soft);border:1px solid rgba(16,185,129,.25);border-radius:14px;padding:6px 12px}
+.ach-count-num{font-size:18px;font-weight:800;color:var(--accent);font-family:var(--font)}
+.ach-count-total{font-size:12px;font-weight:700;color:var(--muted)}
 .ach-cat{margin-bottom:18px}
 .ach-cat-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1.5px solid var(--bg3);font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
 .ach-cat-cnt{font-size:11px;font-weight:700;color:var(--muted)}
@@ -833,8 +836,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
       <div class="achievements-wrap" id="achievements-wrap" style="display:none">
         <div class="achievements-header">
           <div class="achievements-icon">🏆</div>
-          <div><div class="achievements-title" data-i="achievements">Achievements</div>
+          <div style="flex:1"><div class="achievements-title" data-i="achievements">Achievements</div>
           <div class="achievements-sub" data-i="achTapHint">Tap one to see what's needed</div></div>
+          <div class="ach-count" id="ach-count"><span class="ach-count-num" id="ach-count-num">0</span><span class="ach-count-total" id="ach-count-total">/16</span></div>
         </div>
         <div id="achievements-grid"></div>
       </div>
@@ -3888,6 +3892,8 @@ function renderAchievements(){
   const followersCnt=parseInt(document.getElementById('my-followers-cnt')?.textContent)||0;
   const isUnlocked=a=>{const v=a.cat==='missions'?(totalMissionsDone||0):a.cat==='points'?(pts||0):a.cat==='followers'?followersCnt:(streak||0);return v>=a.target;};
   const total=ACHIEVEMENTS.length, unlocked=ACHIEVEMENTS.filter(isUnlocked).length;
+  const cn=document.getElementById('ach-count-num'); if(cn) cn.textContent=unlocked;
+  const ct=document.getElementById('ach-count-total'); if(ct) ct.textContent='/'+total;
   let html='';
   ACH_CATS.forEach(function(cat,idx){
     const items=ACHIEVEMENTS.filter(a=>a.cat===cat.id);
@@ -3900,7 +3906,7 @@ function renderAchievements(){
         return '<div class="achievement-badge'+(u?' unlocked':'')+'" onclick="showAchievementInfo(\''+a.id+'\')"><span class="ach-state">'+(u?'✓':'🔒')+'</span><div class="achievement-icon">'+a.icon+'</div><div class="achievement-name">'+achName(a)+'</div></div>';
       }).join('')+'</div></div>';
   });
-  html+='<button class="ach-toggle" onclick="toggleAchievements()">'+(_achExpanded?t('showLess'):(t('showAll')+' ('+unlocked+'/'+total+')'))+'</button>';
+  html+='<button class="ach-toggle" onclick="toggleAchievements()">'+(_achExpanded?t('showLess'):t('showAll'))+'</button>';
   grid.innerHTML=html;
 }
 
