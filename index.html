@@ -1537,7 +1537,7 @@ function applyLoadedData(data, user){
   totalMissionsDone=data.totalMissionsDone||0;
   myLastDailyClaim=data.lastDailyClaim||'';
   myDailyStreak=data.dailyClaimStreak||0;
-  myBio=data.bio||''; myAvatarURL=data.avatarURL||''; myLink=data.link||''; myAge=data.age||''; myCountryName=data.profileCountry||''; myTitle=data.title||'';
+  myBio=data.bio||''; myAvatarURL=data.avatarURL||''; myAvatarColor=data.avatarColor||''; myLink=data.link||''; myAge=data.age||''; myCountryName=data.profileCountry||''; myTitle=data.title||'';
   curLang=data.lang||'en'; selLang=curLang;
   myPushEnabled = data.pushEnabled !== false; // default ON unless explicitly disabled
   syncPushToggle();
@@ -4453,7 +4453,38 @@ function sendChatMessage(){
 }
 
 // ══════════ EDIT PROFILE (bio, avatar, link, age, country) ══════════
-let myBio='',myAvatarURL='',myLink='',myAge='',myCountryName='';
+let myBio='',myAvatarURL='',myLink='',myAge='',myCountryName='',myAvatarColor='';
+
+// Compute the dominant color of an <img> via canvas. Returns "#rrggbb" or null.
+function computeDominantFromImg(img){
+  try{
+    var s=24,c=document.createElement('canvas');c.width=s;c.height=s;
+    var ctx=c.getContext('2d');ctx.drawImage(img,0,0,s,s);
+    var d=ctx.getImageData(0,0,s,s).data,r=0,g=0,b=0,n=0;
+    for(var i=0;i<d.length;i+=4){
+      var rr=d[i],gg=d[i+1],bb=d[i+2],a=d[i+3];
+      if(a<125) continue;
+      var mx=Math.max(rr,gg,bb),mn=Math.min(rr,gg,bb);
+      if(mx>245&&mn>235) continue;   // skip near-white
+      if(mx<22) continue;            // skip near-black
+      r+=rr;g+=gg;b+=bb;n++;
+    }
+    if(!n) return null;
+    r=Math.round(r/n);g=Math.round(g/n);b=Math.round(b/n);
+    return '#'+[r,g,b].map(function(v){return ('0'+v.toString(16)).slice(-2);}).join('');
+  }catch(e){return null;}
+}
+
+// Extract dominant color from a LOCAL file (no CORS needed) and call cb(hex|null).
+function extractDominantFromFile(file,cb){
+  try{
+    var url=URL.createObjectURL(file);
+    var img=new Image();
+    img.onload=function(){var hex=computeDominantFromImg(img);URL.revokeObjectURL(url);cb(hex);};
+    img.onerror=function(){URL.revokeObjectURL(url);cb(null);};
+    img.src=url;
+  }catch(e){cb(null);}
+}
 function renderProfileExtras(){
   const bioEl=document.getElementById('pf-bio');
   if(bioEl){ bioEl.textContent=myBio||t('addBio'); bioEl.classList.toggle('empty',!myBio); }
@@ -4483,6 +4514,11 @@ async function uploadAvatar(inp){
     const prev=document.getElementById('ep-avatar');
     if(prev){prev.style.backgroundImage='url('+url+')';prev.style.backgroundSize='cover';prev.style.backgroundPosition='center';prev.textContent='';}
     if(db) db.ref('users/'+userUID+'/avatarURL').set(url).catch(function(){});
+    // Derive ring color from the local file (no CORS needed) and persist it.
+    extractDominantFromFile(file,function(hex){
+      if(hex){ myAvatarColor=hex; if(db) db.ref('users/'+userUID+'/avatarColor').set(hex).catch(function(){}); }
+      try{applyMyHeroColor();}catch(e){}
+    });
     renderProfileExtras(); toast('✅ '+t('photoUpdated'));
   }catch(e){ console.error('[Avatar]',e); toast('⚠️ Could not upload photo'); }
 }
@@ -4691,30 +4727,18 @@ function applyMyHeroColor() {
     if (ring) ring.style.background = color;
     if (bg) bg.style.background = 'radial-gradient(ellipse at 50% 0%, ' + color + '28 0%, transparent 72%)';
   }
+  // Preferred: color computed & stored at upload time (no CORS needed).
+  if (myAvatarColor) { setColor(myAvatarColor); return; }
   // No photo -> subtle neutral ring (no turquoise).
   if (!myAvatarURL) { setColor(neutral); return; }
-  // With a photo -> tint the ring with the photo's dominant color.
+  // Legacy photo with no stored color -> best-effort canvas read (needs CORS),
+  // otherwise stay neutral.
   try {
     var img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = function(){
-      try {
-        var s=24, c=document.createElement('canvas'); c.width=s; c.height=s;
-        var ctx=c.getContext('2d'); ctx.drawImage(img,0,0,s,s);
-        var d=ctx.getImageData(0,0,s,s).data, r=0,g=0,b=0,n=0;
-        for(var i=0;i<d.length;i+=4){
-          var rr=d[i],gg=d[i+1],bb=d[i+2],a=d[i+3];
-          if(a<125) continue;
-          var mx=Math.max(rr,gg,bb),mn=Math.min(rr,gg,bb);
-          if(mx>245&&mn>235) continue;   // skip near-white
-          if(mx<22) continue;            // skip near-black
-          r+=rr;g+=gg;b+=bb;n++;
-        }
-        if(!n){ setColor(neutral); return; }
-        r=Math.round(r/n);g=Math.round(g/n);b=Math.round(b/n);
-        var hex='#'+[r,g,b].map(function(v){return ('0'+v.toString(16)).slice(-2);}).join('');
-        setColor(hex);
-      } catch(e){ setColor(neutral); } // tainted canvas (no CORS) -> fallback
+      var hex = computeDominantFromImg(img);
+      setColor(hex || neutral);
     };
     img.onerror = function(){ setColor(neutral); };
     img.src = myAvatarURL;
