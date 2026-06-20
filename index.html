@@ -26,14 +26,14 @@
 button:focus-visible,input:focus-visible,a:focus-visible,.setting-row:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 :root{
   --font:'Rubik','Assistant',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans Hebrew',sans-serif;
-  --bg:#0f0f12;--bg2:#17171c;--bg3:#202027;
-  --accent:#10b981;--accent2:#34d399;
-  --accent-soft:rgba(16,185,129,0.12);--accent-glow:rgba(16,185,129,0.16);
-  --gold:#e6b450;--gold-soft:rgba(230,180,80,0.12);
-  --green:#34d399;--green-soft:rgba(52,211,153,0.12);
-  --blue:#5b9bd5;--blue-soft:rgba(91,155,213,0.12);
+  --bg:#0d0f11;--bg2:#161a1d;--bg3:#1f2429;
+  --accent:#2dd4bf;--accent2:#5eead4;
+  --accent-soft:rgba(45,212,191,0.12);--accent-glow:rgba(45,212,191,0.16);
+  --gold:#e9c46a;--gold-soft:rgba(233,196,106,0.12);
+  --green:#2dd4bf;--green-soft:rgba(45,212,191,0.12);
+  --blue:#6aa6cf;--blue-soft:rgba(106,166,207,0.12);
   --purple:#9d8bd0;--purple-soft:rgba(157,139,208,0.12);
-  --text:#ededf2;--muted:#888d9c;
+  --text:#f1f2f5;--muted:#9aa1b0;
   --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);
   --sh0:0 1px 3px rgba(0,0,0,0.35);
   --sh1:0 2px 10px rgba(0,0,0,0.32);
@@ -43,7 +43,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,.setting-row:focus-visi
   --t-title:25px;--t-h:15px;--t-body:14px;--t-cap:12px;
 }
 html,body{height:100%;overflow:hidden}
-body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:430px;margin:0 auto;display:flex;flex-direction:column;height:100%;position:relative;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:430px;margin:0 auto;display:flex;flex-direction:column;height:100%;position:relative;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-synthesis:none;letter-spacing:.1px}
 
 
 /* ───── LOADING ───── */
@@ -69,7 +69,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .lang-opt{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 13px;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:10px;box-shadow:var(--sh0)}
 .lang-opt:active{transform:scale(0.95)}
-.lang-opt.sel{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 4px rgba(16,185,129,.07)}
+.lang-opt.sel{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 4px rgba(45,212,191,.07)}
 .lang-flag{font-size:22px;flex-shrink:0}
 .lang-info{}
 .lang-name{font-size:13px;font-weight:600;line-height:1.2}
@@ -111,9 +111,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .streak-pill{display:flex;align-items:center;gap:5px;background:rgba(251,191,36,.1);border:1.5px solid rgba(251,191,36,.25);border-radius:20px;padding:5px 11px;font-size:12px;font-weight:700;transition:transform .15s,box-shadow .15s}
 .streak-pill .num{color:var(--gold);transition:transform .2s,color .2s}
 .streak-pill.bump{transform:scale(1.18);box-shadow:0 0 16px rgba(217,119,6,.4)}
-.streak-pill .num.count-up{transform:scale(1.35);color:#f59e0b}
+.streak-pill .num.count-up{transform:scale(1.35);color:var(--gold)}
 .pts-pill{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:var(--gold)}
-.rank-pill{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:800;color:var(--accent);background:var(--accent-soft);border:1.5px solid rgba(16,185,129,.28);border-radius:20px;padding:5px 10px;cursor:pointer;transition:transform .15s;white-space:nowrap}
+.rank-pill{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:800;color:var(--accent);background:var(--accent-soft);border:1.5px solid rgba(45,212,191,.28);border-radius:20px;padding:5px 10px;cursor:pointer;transition:transform .15s;white-space:nowrap}
 .rank-pill #rank-emoji{font-size:14px}
 .rank-pill:active{transform:scale(.92)}
 .name-badge{font-size:.95em;line-height:1}
@@ -126,7 +126,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .rank-item-name{font-size:14px;font-weight:800;color:var(--text)}
 .rank-item-req{font-size:12px;color:var(--muted);margin-top:2px}
 .rank-item-state{font-size:13px;font-weight:800;color:var(--accent)}
-.season-banner{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 16px 0;padding:10px 14px;background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(16,185,129,.06));border:1.5px solid rgba(251,191,36,.25);border-radius:14px;font-size:12px;font-weight:700;color:var(--text)}
+.season-banner{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 16px 0;padding:10px 14px;background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(45,212,191,.06));border:1.5px solid rgba(251,191,36,.25);border-radius:14px;font-size:12px;font-weight:700;color:var(--text)}
 .season-icon{font-size:16px}
 .fpp-report-btn{position:absolute;top:14px;right:60px;z-index:30;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.55);border:1.5px solid var(--border2);font-size:15px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
 .fpp-report-btn:active{transform:scale(.86)}
@@ -154,7 +154,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .share-opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:11px;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s}
 .share-opt:active{transform:scale(.95)}
 .share-ic{font-size:24px;line-height:1}
-.pf-title-chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid rgba(16,185,129,.25);border-radius:14px;padding:4px 12px;margin-top:8px;cursor:pointer}
+.pf-title-chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid rgba(45,212,191,.25);border-radius:14px;padding:4px 12px;margin-top:8px;cursor:pointer}
 .pf-title-chip.empty{color:var(--muted);background:var(--bg3);border-color:var(--border)}
 .pf-bio{font-size:15px;font-weight:500;margin-top:10px;max-width:300px;line-height:1.5;cursor:pointer;color:var(--text);text-align:center}
 .pf-bio.empty{color:var(--muted);font-weight:600}
@@ -220,7 +220,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .achievements-icon{display:flex;align-items:center;justify-content:center}
 .achievements-title{font-size:var(--t-h);font-weight:600;color:var(--text)}
 .achievements-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.ach-count{flex-shrink:0;display:inline-flex;align-items:center;background:var(--accent-soft);border:1px solid rgba(16,185,129,.25);border-radius:20px;padding:6px 14px;font-family:var(--font);font-size:14px;font-weight:800;line-height:1}
+.ach-count{flex-shrink:0;display:inline-flex;align-items:center;background:var(--accent-soft);border:1px solid rgba(45,212,191,.25);border-radius:20px;padding:6px 14px;font-family:var(--font);font-size:14px;font-weight:800;line-height:1}
 .ach-count-num{color:var(--accent)}
 .ach-count-total{color:var(--muted);font-weight:700}
 .ach-cat{margin-bottom:18px}
@@ -259,7 +259,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600}
 .progress-track{height:7px;background:var(--bg3);border-radius:10px;overflow:hidden}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .5s cubic-bezier(.4,0,.2,1)}
-.ad-banner{margin:14px 20px 0;background:linear-gradient(135deg,rgba(251,191,36,.06),rgba(16,185,129,.04));border:1.5px solid rgba(251,191,36,.22);border-radius:var(--rl);padding:14px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:transform .15s;position:relative;overflow:hidden;box-shadow:var(--sh0)}
+.ad-banner{margin:14px 20px 0;background:linear-gradient(135deg,rgba(251,191,36,.06),rgba(45,212,191,.04));border:1.5px solid rgba(251,191,36,.22);border-radius:var(--rl);padding:14px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:transform .15s;position:relative;overflow:hidden;box-shadow:var(--sh0)}
 .ad-banner:active{transform:scale(.97)}
 .ad-icon{width:46px;height:46px;flex-shrink:0;background:rgba(251,191,36,.12);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px}
 .ad-text{flex:1}
@@ -307,7 +307,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .lb-list{padding:14px 20px 0;display:flex;flex-direction:column;gap:10px}
 .lb-row{display:flex;align-items:center;gap:12px;background:var(--bg2);border:none;border-radius:var(--rl);padding:13px 15px;box-shadow:var(--sh1);transition:transform .1s}
 .lb-row:active{transform:scale(.98)}
-.lb-row.me{background:rgba(16,185,129,.04);box-shadow:0 0 0 2px var(--accent),var(--sh1)}
+.lb-row.me{background:rgba(45,212,191,.04);box-shadow:0 0 0 2px var(--accent),var(--sh1)}
 .lb-rank{font-family:var(--font);font-size:17px;font-weight:800;min-width:26px;text-align:center}
 .r1{color:var(--gold)}.r2{color:#a0a8b8}.r3{color:#c87c4a}
 .lb-av{width:42px;height:42px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:16px;font-weight:800;box-shadow:var(--sh0)}
@@ -353,7 +353,7 @@ svg.ic-lg{width:19px;height:19px}
 .chevron{color:var(--muted);font-size:16px}
 .logout-btn{margin:14px 20px 0;width:calc(100% - 40px);background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:var(--r);padding:14px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:background .15s ease,transform .15s ease;box-shadow:none}
 .logout-btn:active{transform:scale(.98)}
-.logout-btn:active{transform:scale(.98);background:rgba(16,185,129,.12)}
+.logout-btn:active{transform:scale(.98);background:rgba(45,212,191,.12)}
 
 /* ── BOTTOM NAV ── */
 .bottom-nav{display:flex;background:rgba(0,0,0,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:8px 10px env(safe-area-inset-bottom,8px);flex-shrink:0;gap:4px}
@@ -407,7 +407,7 @@ svg.ic-lg{width:19px;height:19px}
 .verify-box{border-radius:var(--r);padding:14px 15px;margin-bottom:16px;font-size:13px;line-height:1.6;font-weight:500;display:none;word-break:break-word}
 .verify-box.loading{background:rgba(99,102,241,.08);color:#4f46e5;border:1.5px solid rgba(99,102,241,.16);animation:pulse 1.5s infinite}
 .verify-box.ok{background:var(--green-soft);color:var(--green);border:1.5px solid rgba(22,163,74,.22)}
-.verify-box.fail{background:var(--accent-soft);color:var(--accent);border:1.5px solid rgba(16,185,129,.22)}
+.verify-box.fail{background:var(--accent-soft);color:var(--accent);border:1.5px solid rgba(45,212,191,.22)}
 .verify-bot-icon{font-size:18px;margin-right:5px;vertical-align:baseline}
 @keyframes pulse{0%{opacity:.8}50%{opacity:1}100%{opacity:.8}}
 
@@ -425,13 +425,13 @@ svg.ic-lg{width:19px;height:19px}
 .feed-overlay{position:absolute;bottom:0;left:0;right:0;padding:80px 74px 22px 15px;background:linear-gradient(transparent 0%,rgba(0,0,0,.38) 40%,rgba(0,0,0,.88) 100%);color:#fff;pointer-events:none;direction:ltr}
 .feed-username-big{font-family:var(--font);font-weight:800;font-size:16px;text-shadow:0 1px 8px rgba(0,0,0,.8);margin-bottom:5px;letter-spacing:-.2px}
 .feed-caption{font-size:13px;line-height:1.45;margin-bottom:5px;text-shadow:0 1px 4px rgba(0,0,0,.7);opacity:.95}
-.hashtag{color:#60a5fa;font-weight:700;cursor:pointer}
+.hashtag{color:var(--blue);font-weight:700;cursor:pointer}
 .pf-bell-btn,.pf-edit-btn{position:absolute;top:14px;z-index:3;background:rgba(0,0,0,.4);border:1px solid var(--border2);color:var(--text);width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:transform .12s}
 .pf-bell-btn{inset-inline-end:16px}
 .pf-edit-btn{inset-inline-start:16px;font-size:17px}
 .pf-bell-btn:active,.pf-edit-btn:active{transform:scale(.88)}
 .pf-bell-btn svg{width:21px;height:21px}
-.feed-pts-tag{font-size:13px;color:#fbbf24;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6);margin-bottom:3px}
+.feed-pts-tag{font-size:13px;color:var(--gold);font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6);margin-bottom:3px}
 .feed-ts{font-size:11px;color:rgba(255,255,255,.42)}
 .feed-actions{position:absolute;right:10px;bottom:28px;display:flex;flex-direction:column;align-items:center;gap:18px;z-index:4;pointer-events:all;direction:ltr}
 .fpv-body .feed-actions{bottom:20px}
@@ -440,8 +440,8 @@ svg.ic-lg{width:19px;height:19px}
 .feed-action-btn:active{transform:scale(.80)}
 .feed-action-btn svg{width:26px;height:26px;display:block}
 .feed-action-btn.liked{color:#f0566e}
-.feed-action-btn.liked svg{filter:drop-shadow(0 1px 3px rgba(16,185,129,.35))}
-.feed-action-btn.saved{color:#fbbf24}
+.feed-action-btn.liked svg{filter:drop-shadow(0 1px 3px rgba(45,212,191,.35))}
+.feed-action-btn.saved{color:var(--gold)}
 .feed-action-btn.saved svg{fill:currentColor;filter:drop-shadow(0 1px 3px rgba(251,191,36,.35))}
 .feed-action-count{font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7);text-align:center;width:52px;height:16px;display:flex;align-items:center;justify-content:center}
 .feed-av-side-wrap{position:relative;display:flex;justify-content:center}
@@ -537,8 +537,8 @@ svg.ic-lg{width:19px;height:19px}
 .my-video-cell:active{transform:scale(.91)}
 .my-video-cell img,.my-video-cell video{width:100%;height:100%;object-fit:cover;display:block}
 .my-video-cell-label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,0.8) 100%);color:white;padding:12px 8px 8px;font-size:12px;font-weight:600;line-height:1.3;max-height:40%;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;z-index:5}
-.my-video-cell-delete{position:absolute;top:4px;right:4px;width:32px;height:32px;background:rgba(16,185,129,0.9);border:none;border-radius:50%;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:1;transition:opacity .2s,transform .15s,background .15s;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
-.my-video-cell:hover .my-video-cell-delete{background:rgba(16,185,129,1)}
+.my-video-cell-delete{position:absolute;top:4px;right:4px;width:32px;height:32px;background:rgba(45,212,191,0.9);border:none;border-radius:50%;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:1;transition:opacity .2s,transform .15s,background .15s;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.my-video-cell:hover .my-video-cell-delete{background:rgba(45,212,191,1)}
 .my-video-cell-delete:active{transform:scale(.88)}
 .liked-cell-no{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:26px;background:linear-gradient(135deg,#0f0c29,#302b63)}
 .liked-cell-overlay{position:absolute;bottom:0;left:0;right:0;padding:22px 7px 6px;background:linear-gradient(transparent,rgba(0,0,0,.75))}
@@ -591,7 +591,7 @@ svg.ic-lg{width:19px;height:19px}
 .comment-inp{flex:1;background:var(--bg3);border:1.5px solid var(--border);border-radius:24px;padding:10px 16px;font-family:var(--font);font-size:14px;color:var(--text);outline:none;transition:border-color .2s}
 .comment-inp:focus{border-color:var(--accent)}
 .comment-inp::placeholder{color:var(--muted)}
-.comment-send{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .12s,opacity .15s;box-shadow:0 3px 12px rgba(16,185,129,.18)}
+.comment-send{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .12s,opacity .15s;box-shadow:0 3px 12px rgba(45,212,191,.18)}
 .comment-send:active{transform:scale(.88);opacity:.85}
 .comment-send svg{width:18px;height:18px;color:#fff}
 /* ───── FPP FOLLOW ───── */
@@ -602,7 +602,7 @@ svg.ic-lg{width:19px;height:19px}
 .fpp-flw-num{font-family:var(--font);font-weight:800;color:var(--text);font-size:14px}
 .fpp-flw-lbl{color:var(--muted);font-size:12px;font-weight:500}
 .fpp-flw-sep{color:var(--border);margin:0 2px;font-size:18px;line-height:1;opacity:.6}
-.fpp-follow-btn{height:40px;padding:0 32px;border-radius:22px;background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s;touch-action:manipulation;box-shadow:0 4px 18px rgba(16,185,129,.18);letter-spacing:.2px}
+.fpp-follow-btn{height:40px;padding:0 32px;border-radius:22px;background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s;touch-action:manipulation;box-shadow:0 4px 18px rgba(45,212,191,.18);letter-spacing:.2px}
 .fpp-follow-btn:active{opacity:.8;transform:scale(.94)}
 .fpp-follow-btn.following{background:var(--bg2);border:1.5px solid var(--border);color:var(--text);box-shadow:0 2px 10px rgba(0,0,0,.08)}
 /* ───── FOLLOW SHEET ───── */
@@ -666,7 +666,7 @@ svg.ic-lg{width:19px;height:19px}
     </div>
     <div class="input-group">
       <div class="input-label" data-i="email">Email</div>
-      <input class="inp" id="reg-email" type="email" placeholder="you@example.com">
+      <input class="inp" id="reg-email" type="email" placeholder="you@example.com" data-i="phEmail">
       <div class="auth-error" id="err-email" data-i="errEmail">Please enter a valid email</div>
     </div>
     <div class="input-group">
@@ -680,7 +680,7 @@ svg.ic-lg{width:19px;height:19px}
   <div id="auth-log" style="display:none">
     <div class="input-group">
       <div class="input-label" data-i="email">Email</div>
-      <input class="inp" id="log-email" type="email" placeholder="you@example.com">
+      <input class="inp" id="log-email" type="email" placeholder="you@example.com" data-i="phEmail">
     </div>
     <div class="input-group">
       <div class="input-label" data-i="password">Password</div>
@@ -1151,7 +1151,7 @@ const T={
   achievements:'Achievements',achTapHint:"Tap one to see what's needed",achUnlockedYes:'Unlocked! ✓',achNeed:'Need',achUnit_missions:'more missions',achUnit_points:'more points',achUnit_followers:'more followers',achUnit_streak:'more days streak',achCat_missions:'Missions',achCat_points:'Points',achCat_followers:'Followers',achCat_streak:'Streak',showAll:'Show all',showLess:'Show less',achFirst:'First Mission',achDays:'Day Streak',
   howItWorks:'How it works',howItWorksText:"Upload a photo or video of you completing the mission — every genuine attempt counts.",
   followingLbl:'Following',followersLbl:'Followers',uploadVideo:'Upload Video',totalViews:'Total Views',totalLikes:'Total Likes',avgWatch:'Avg Watch',
-  forYou:'For You',followingTab:'Following',phUsername:'e.g. shahar_arena',phPassword:'Min 6 characters',followBtn:'Follow',followingBtn:'Following ✓',noFollowingPosts:'No posts from creators you follow',errName:'Please enter a username',errEmail:'Please enter a valid email',errPass:'Password must be at least 6 characters',statusVerified:'verified',statusPending:'pending',viewsShort:'views',analyzing:'Analyzing…',
+  forYou:'For You',followingTab:'Following',phUsername:'Choose a username',phEmail:'Your email address',phPassword:'Min 6 characters',followBtn:'Follow',followingBtn:'Following ✓',noFollowingPosts:'No posts from creators you follow',errName:'Please enter a username',errEmail:'Please enter a valid email',errPass:'Password must be at least 6 characters',statusVerified:'verified',statusPending:'pending',viewsShort:'views',analyzing:'Analyzing…',
   likedPosts:'Liked',savedPosts:'Saved',myVideos:'My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
   exportData:'Export My Data (GDPR)',deleteAccountBtn:'🗑️ Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
@@ -1170,7 +1170,7 @@ const T={
   achievements:'הישגים',achTapHint:'לחץ על הישג לראות מה חסר',achUnlockedYes:'נפתח! ✓',achNeed:'חסרים עוד',achUnit_missions:'משימות',achUnit_points:'נקודות',achUnit_followers:'עוקבים',achUnit_streak:'ימי רצף',achCat_missions:'משימות',achCat_points:'נקודות',achCat_followers:'עוקבים',achCat_streak:'סטריק',showAll:'הצג הכל',showLess:'הצג פחות',achFirst:'משימה ראשונה',achDays:'ימי רצף',
   howItWorks:'איך זה עובד',howItWorksText:'העלה תמונה או סרטון שלך משלים את המשימה — כל ניסיון אמיתי נחשב.',
   followingLbl:'עוקב',followersLbl:'עוקבים',uploadVideo:'העלה סרטון',totalViews:'צפיות',totalLikes:'לייקים',avgWatch:'צפייה ממוצעת',
-  forYou:'בשבילך',followingTab:'נעקבים',phUsername:'לדוגמה: shahar_arena',phPassword:'לפחות 6 תווים',followBtn:'עקוב',followingBtn:'עוקב ✓',noFollowingPosts:'אין פוסטים מיוצרים שאתה עוקב אחריהם',errName:'נא להזין שם משתמש',errEmail:'נא להזין אימייל תקין',errPass:'הסיסמה חייבת להכיל לפחות 6 תווים',statusVerified:'מאומת',statusPending:'ממתין',viewsShort:'צפיות',analyzing:'מנתח…',
+  forYou:'בשבילך',followingTab:'נעקבים',phUsername:'בחירת שם משתמש',phEmail:'כתובת האימייל שלך',phPassword:'לפחות 6 תווים',followBtn:'עקוב',followingBtn:'עוקב ✓',noFollowingPosts:'אין פוסטים מיוצרים שאתה עוקב אחריהם',errName:'נא להזין שם משתמש',errEmail:'נא להזין אימייל תקין',errPass:'הסיסמה חייבת להכיל לפחות 6 תווים',statusVerified:'מאומת',statusPending:'ממתין',viewsShort:'צפיות',analyzing:'מנתח…',
   likedPosts:'אהבתי',savedPosts:'שמורים',myVideos:'הסרטונים שלי',noPostsYet:'אין פוסטים עדיין',noPostsSub:'השלם משימה והעלה הוכחה — זה יופיע כאן!',noLikedYet:'אין פוסטים שאהבת',noLikedSub:'לך לפיד ולחץ ❤️ על פוסטים שאהבת',noSavedYet:'אין פוסטים שמורים',noSavedSub:'לחץ על הסימנייה כדי לשמור פוסטים',followToSee:'עקוב אחרי יוצרים כדי לראות את הפוסטים שלהם',
   exportData:'ייצוא הנתונים שלי (GDPR)',deleteAccountBtn:'🗑️ מחק את החשבון שלי',dataPrivacy:'נתונים ופרטיות'},
 };
@@ -1352,7 +1352,7 @@ function tryInitFirebase(attempts){
     showPage('p-auth');
     // Show guest banner
     const banner = document.createElement('div');
-    banner.style.cssText = 'background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#10b981;text-align:center';
+    banner.style.cssText = 'background:rgba(45,212,191,0.08);border:1px solid rgba(45,212,191,0.2);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--accent);text-align:center';
     banner.textContent = '⚠️ Offline mode — progress won\'t be saved';
     const authInner = document.querySelector('.auth-inner');
     if(authInner) authInner.insertBefore(banner, authInner.firstChild);
@@ -1921,7 +1921,7 @@ function showGDPRNotice(){
 
   const notice=document.createElement('div');
   notice.id='gdpr-banner';
-  notice.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;border-top:2px solid #10b981;padding:20px;z-index:500;max-width:430px;margin:0 auto;box-shadow:0 -4px 20px rgba(0,0,0,0.3)';
+  notice.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;border-top:2px solid var(--accent);padding:20px;z-index:500;max-width:430px;margin:0 auto;box-shadow:0 -4px 20px rgba(0,0,0,0.3)';
   notice.innerHTML=`
     <div style="color:#e0e0e0;font-size:13px;line-height:1.5;margin-bottom:15px">
       📋 <strong>Privacy Notice:</strong> We use cookies and tracking to improve your experience. By using Flash Arena, you agree to our <a href="#" style="color:#00d4ff">Privacy Policy</a> and <a href="#" style="color:#00d4ff">Terms of Service</a>.
@@ -3808,7 +3808,7 @@ function updateAdBanner(){
 const LB_COLORS=[
   'rgba(251,191,36,.15);color:#d97706',
   'rgba(96,165,250,.15);color:#2563eb',
-  'rgba(16,185,129,.15);color:#10b981',
+  'rgba(45,212,191,.15);color:var(--accent)',
   'rgba(167,139,250,.15);color:#a78bfa',
   'rgba(34,197,94,.15);color:#16a34a',
   'rgba(251,146,60,.15);color:#ea580c',
@@ -4573,7 +4573,7 @@ function refreshFeedSlotFollowState() {
     if (iFollow && !badge) {
       var sp = document.createElement('span');
       sp.className = 'flw-badge';
-      sp.style.cssText = 'font-size:11px;color:#4ade80;font-weight:700;vertical-align:middle;margin-left:4px';
+      sp.style.cssText = 'font-size:11px;color:var(--accent2);font-weight:700;vertical-align:middle;margin-left:4px';
       sp.textContent = '✓ Following';
       unameEl.appendChild(sp);
     } else if (!iFollow && badge) {
