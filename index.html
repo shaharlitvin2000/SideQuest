@@ -1113,7 +1113,7 @@ const T={
   titlesTitle:'🏷️ Titles',titlesSub:'Unlock titles and show one on your profile',titleEquip:'Equip',titleSet:'Title updated',chooseTitle:'Choose a title',
   shareTitle:'📤 Share',shareCopy:'Copy Link',shareMore:'More',linkCopied:'Link copied!',linkCopiedPaste:'Link copied — paste it to share',referralWelcome:'Welcome bonus!',
   searchHint:'Search people, videos, missions',people:'People',videos:'Videos',hashtags:'Hashtags',noResults:'No results',photoUpdated:'Photo updated!',
-  messages:'Messages',message:'Message',rewards:'Rewards',inviteFriends:'Invite',noChats:'No conversations yet — visit a profile and say hi! 👋',chatStart:'Say hello 👋',
+  messages:'Messages',message:'Message',rewards:'Rewards',inviteFriends:'Invite',noChats:'No conversations yet — visit a profile and say hi! 👋',chatStart:'Say hello 👋',chatSendFail:'Could not send message',
   rewardsShop:'🎁 Rewards Shop',yourBalance:'Your balance:',rewardsNote:'Rewards are processed manually within 48h.',redeem:'Redeem',locked:'Locked',redeemConfirm:'Redeem',
   achievements:'Achievements',achTapHint:"Tap one to see what's needed",achUnlockedYes:'Unlocked! ✓',achNeed:'Need',achUnit_missions:'more missions',achUnit_points:'more points',achUnit_followers:'more followers',achUnit_streak:'more days streak',achCat_missions:'Missions',achCat_points:'Points',achCat_followers:'Followers',achCat_streak:'Streak',showAll:'Show all',showLess:'Show less',achFirst:'First Mission',achDays:'Day Streak',
   howItWorks:'🤖 How it works',howItWorksText:"Upload a photo or video of yourself completing the mission. Our AI checks it's genuine — any real attempt gets approved!",
@@ -1131,7 +1131,7 @@ const T={
   titlesTitle:'🏷️ תארים',titlesSub:'פתח תארים והצג אחד בפרופיל',titleEquip:'בחר',titleSet:'התואר עודכן',chooseTitle:'בחר תואר',
   shareTitle:'📤 שיתוף',shareCopy:'העתק קישור',shareMore:'עוד',linkCopied:'הקישור הועתק!',linkCopiedPaste:'הקישור הועתק — הדבק כדי לשתף',referralWelcome:'בונוס הצטרפות!',
   searchHint:'חפש אנשים, סרטונים, משימות',people:'אנשים',videos:'סרטונים',hashtags:'האשטגים',noResults:'אין תוצאות',photoUpdated:'התמונה עודכנה!',
-  messages:'הודעות',message:'הודעה',rewards:'פרסים',inviteFriends:'הזמן',noChats:'אין שיחות עדיין — בקר בפרופיל ותגיד שלום! 👋',chatStart:'תגיד שלום 👋',
+  messages:'הודעות',message:'הודעה',rewards:'פרסים',inviteFriends:'הזמן',noChats:'אין שיחות עדיין — בקר בפרופיל ותגיד שלום! 👋',chatStart:'תגיד שלום 👋',chatSendFail:'לא ניתן לשלוח הודעה',
   rewardsShop:'🎁 חנות פרסים',yourBalance:'היתרה שלך:',rewardsNote:'הפרסים מטופלים ידנית תוך 48 שעות.',redeem:'פדה',locked:'נעול',redeemConfirm:'לפדות',
   achievements:'הישגים',achTapHint:'לחץ על הישג לראות מה חסר',achUnlockedYes:'נפתח! ✓',achNeed:'חסרים עוד',achUnit_missions:'משימות',achUnit_points:'נקודות',achUnit_followers:'עוקבים',achUnit_streak:'ימי רצף',achCat_missions:'משימות',achCat_points:'נקודות',achCat_followers:'עוקבים',achCat_streak:'סטריק',showAll:'הצג הכל',showLess:'הצג פחות',achFirst:'משימה ראשונה',achDays:'ימי רצף',
   howItWorks:'🤖 איך זה עובד',howItWorksText:'העלה תמונה או סרטון שלך משלים את המשימה. ה-AI שלנו בודק שזה אמיתי — כל ניסיון אמיתי מאושר!',
@@ -4332,12 +4332,20 @@ function closeChat(){
   if(_chatListener){_chatListener.ref.off('value',_chatListener.fn);_chatListener=null;}
   document.getElementById('chat-overlay')?.classList.remove('show');
 }
-async function sendChatMessage(){
+function sendChatMessage(){
   var inp=document.getElementById('chat-input'); var text=(inp?inp.value:'').trim();
-  if(!text||!_chatPeerUid) return;
+  if(!text||!_chatPeerUid||!db||!userUID) return;
+  if(text.length>500) text=text.slice(0,500);
   inp.value='';
-  try{ await firebase.functions().httpsCallable('sendMessage')({toUid:_chatPeerUid,text:text}); }
-  catch(err){ if(!isFnUnavailable(err)){ toast('⚠️ '+(err.message||'Could not send')); inp.value=text; } else { toast('⚠️ Messages need the server (Blaze)'); } }
+  var now=firebase.database.ServerValue.TIMESTAMP;
+  var preview=text.slice(0,120);
+  // Write the message directly (security rules allow chat members to write)
+  db.ref('chats/'+_chatId+'/messages').push({from:userUID,text:text,at:now})
+    .catch(function(e){ console.error('[Chat] send failed',e); toast('⚠️ '+t('chatSendFail')); if(inp){inp.value=text;} });
+  // Update both conversation previews
+  db.ref('chatMeta/'+userUID+'/'+_chatId).update({peerUid:_chatPeerUid,peerName:_chatPeerName||'Player',lastText:preview,lastAt:now,unread:0}).catch(function(){});
+  db.ref('chatMeta/'+_chatPeerUid+'/'+_chatId).update({peerUid:userUID,peerName:userName||'Player',lastText:preview,lastAt:now}).catch(function(){});
+  db.ref('chatMeta/'+_chatPeerUid+'/'+_chatId+'/unread').transaction(function(c){return (c||0)+1;}).catch(function(){});
 }
 
 // ══════════ EDIT PROFILE (bio, avatar, link, age, country) ══════════
