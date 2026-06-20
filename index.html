@@ -640,8 +640,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 <div class="auth-inner">
   <div class="auth-back" onclick="showPage('p-lang')">← <span id="auth-back-txt">Back</span></div>
   <div class="auth-logo">Flash<span>Arena</span></div>
-  <div class="auth-title" id="auth-title">Create account</div>
-  <div class="auth-sub" id="auth-sub">Start completing missions and climbing the ranks</div>
+  <div class="auth-title" id="auth-title" data-i="createAccountTitle">Create account</div>
+  <div class="auth-sub" id="auth-sub" data-i="authSub">Start completing missions and climbing the ranks</div>
 
   <div class="auth-tabs">
     <div class="auth-tab active" id="tab-reg" onclick="switchAuthTab('reg')" data-i="register">Sign Up</div>
@@ -651,18 +651,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
   <div id="auth-reg">
     <div class="input-group">
       <div class="input-label" data-i="username">Username</div>
-      <input class="inp" id="reg-name" type="text" placeholder="e.g. shahar_arena">
-      <div class="auth-error" id="err-name">Please enter a username</div>
+      <input class="inp" id="reg-name" type="text" placeholder="e.g. shahar_arena" data-i="phUsername">
+      <div class="auth-error" id="err-name" data-i="errName">Please enter a username</div>
     </div>
     <div class="input-group">
       <div class="input-label" data-i="email">Email</div>
       <input class="inp" id="reg-email" type="email" placeholder="you@example.com">
-      <div class="auth-error" id="err-email">Please enter a valid email</div>
+      <div class="auth-error" id="err-email" data-i="errEmail">Please enter a valid email</div>
     </div>
     <div class="input-group">
       <div class="input-label" data-i="password">Password</div>
-      <input class="inp" id="reg-pass" type="password" placeholder="Min 6 characters">
-      <div class="auth-error" id="err-pass">Password must be at least 6 characters</div>
+      <input class="inp" id="reg-pass" type="password" placeholder="Min 6 characters" data-i="phPassword">
+      <div class="auth-error" id="err-pass" data-i="errPass">Password must be at least 6 characters</div>
     </div>
     <button class="auth-btn" onclick="doRegister()" data-i="createAccount">Create Account</button>
   </div>
@@ -918,8 +918,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
     <div class="screen" id="s-feed">
       <div class="feed-top-bar">
         <div class="feed-tabs">
-          <div class="feed-tab active" onclick="feedSwitchMode('foryou')">For You</div>
-          <div class="feed-tab" onclick="feedSwitchMode('following')">Following</div>
+          <div class="feed-tab active" onclick="feedSwitchMode('foryou')" data-i="forYou">For You</div>
+          <div class="feed-tab" onclick="feedSwitchMode('following')" data-i="followingTab">Following</div>
           <button class="feed-search-btn" onclick="openSearch()" aria-label="Search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
           </button>
@@ -1141,6 +1141,7 @@ const T={
   achievements:'Achievements',achTapHint:"Tap one to see what's needed",achUnlockedYes:'Unlocked! ✓',achNeed:'Need',achUnit_missions:'more missions',achUnit_points:'more points',achUnit_followers:'more followers',achUnit_streak:'more days streak',achCat_missions:'Missions',achCat_points:'Points',achCat_followers:'Followers',achCat_streak:'Streak',showAll:'Show all',showLess:'Show less',achFirst:'First Mission',achDays:'Day Streak',
   howItWorks:'🤖 How it works',howItWorksText:"Upload a photo or video of yourself completing the mission. Our AI checks it's genuine — any real attempt gets approved!",
   followingLbl:'Following',followersLbl:'Followers',uploadVideo:'Upload Video',totalViews:'Total Views',totalLikes:'Total Likes',avgWatch:'Avg Watch',
+  forYou:'For You',followingTab:'Following',phUsername:'e.g. shahar_arena',phPassword:'Min 6 characters',followBtn:'Follow',followingBtn:'Following ✓',noFollowingPosts:'No posts from creators you follow',errName:'Please enter a username',errEmail:'Please enter a valid email',errPass:'Password must be at least 6 characters',
   likedPosts:'❤️ Liked',savedPosts:'📌 Saved',myVideos:'🎬 My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
   exportData:'Export My Data (GDPR)',deleteAccountBtn:'🗑️ Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
@@ -1159,6 +1160,7 @@ const T={
   achievements:'הישגים',achTapHint:'לחץ על הישג לראות מה חסר',achUnlockedYes:'נפתח! ✓',achNeed:'חסרים עוד',achUnit_missions:'משימות',achUnit_points:'נקודות',achUnit_followers:'עוקבים',achUnit_streak:'ימי רצף',achCat_missions:'משימות',achCat_points:'נקודות',achCat_followers:'עוקבים',achCat_streak:'סטריק',showAll:'הצג הכל',showLess:'הצג פחות',achFirst:'משימה ראשונה',achDays:'ימי רצף',
   howItWorks:'🤖 איך זה עובד',howItWorksText:'העלה תמונה או סרטון שלך משלים את המשימה. ה-AI שלנו בודק שזה אמיתי — כל ניסיון אמיתי מאושר!',
   followingLbl:'עוקב',followersLbl:'עוקבים',uploadVideo:'העלה סרטון',totalViews:'צפיות',totalLikes:'לייקים',avgWatch:'צפייה ממוצעת',
+  forYou:'בשבילך',followingTab:'נעקבים',phUsername:'לדוגמה: shahar_arena',phPassword:'לפחות 6 תווים',followBtn:'עקוב',followingBtn:'עוקב ✓',noFollowingPosts:'אין פוסטים מיוצרים שאתה עוקב אחריהם',errName:'נא להזין שם משתמש',errEmail:'נא להזין אימייל תקין',errPass:'הסיסמה חייבת להכיל לפחות 6 תווים',
   likedPosts:'❤️ אהבתי',savedPosts:'📌 שמורים',myVideos:'🎬 הסרטונים שלי',noPostsYet:'אין פוסטים עדיין',noPostsSub:'השלם משימה והעלה הוכחה — זה יופיע כאן!',noLikedYet:'אין פוסטים שאהבת',noLikedSub:'לך לפיד ולחץ ❤️ על פוסטים שאהבת',noSavedYet:'אין פוסטים שמורים',noSavedSub:'לחץ על הסימנייה כדי לשמור פוסטים',followToSee:'עקוב אחרי יוצרים כדי לראות את הפוסטים שלהם',
   exportData:'ייצוא הנתונים שלי (GDPR)',deleteAccountBtn:'🗑️ מחק את החשבון שלי',dataPrivacy:'נתונים ופרטיות'},
 };
@@ -1937,6 +1939,7 @@ function addGDPRSettings(){
     <button class="logout-btn" style="width:calc(100% - 40px);margin:0 20px;background:rgba(240,86,110,.1);color:#f0566e;border:1px solid rgba(240,86,110,.25)" onclick="deleteMyAccount()" data-i="deleteAccountBtn">🗑️ Delete My Account</button>
   `;
   settingsListEl.insertAdjacentElement('afterend',gdprSection);
+  try{applyTranslations();}catch(e){} // section added after initial pass — translate now
 }
 
 function resetMissions(){
@@ -2123,7 +2126,7 @@ function feedOpenProfile(uid,username,init){
     if(!isMe&&followBtn){
       followBtn.style.display='block';
       var iAmFollowing=myFollowSnap&&myFollowSnap.exists();
-      followBtn.textContent=iAmFollowing?'Following ✓':'Follow';
+      followBtn.textContent=iAmFollowing?t('followingBtn'):t('followBtn');
       if(iAmFollowing) followBtn.classList.add('following');
       else followBtn.classList.remove('following');
     }
@@ -2523,7 +2526,7 @@ function loadFeed(isRefresh){
     }
 
     if(!feedAllPosts.length){
-      if(wrap) wrap.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">🎬</div><div class="feed-empty-text">'+(feedMode==='following'?'No posts from creators you follow':'No posts yet')+'</div><div class="feed-empty-sub">Complete a mission and upload proof — it\'ll appear right here!</div></div>';
+      if(wrap) wrap.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">🎬</div><div class="feed-empty-text">'+(feedMode==='following'?t('noFollowingPosts'):t('noPostsYet'))+'</div><div class="feed-empty-sub">'+t('noPostsSub')+'</div></div>';
       return;
     }
     // feedDisplayPosts = one entry per unique mediaURL (for profile viewer)
@@ -2785,7 +2788,7 @@ function feedRenderPost(post,slot){
       +'</div>'
     +'</div>'
     +'<div class="feed-overlay">'
-      +'<div class="feed-username-big" id="feed-uname-link" style="pointer-events:all;cursor:pointer">@'+escHtml(postUser)+(iFollow?' <span style="font-size:11px;color:#4ade80;font-weight:700;vertical-align:middle">✓ Following</span>':'')+'</div>'
+      +'<div class="feed-username-big" id="feed-uname-link" style="pointer-events:all;cursor:pointer">@'+escHtml(postUser)+(iFollow?' <span style="font-size:11px;color:var(--accent2);font-weight:700;vertical-align:middle">'+t('followingBtn')+'</span>':'')+'</div>'
       +'<div class="feed-caption">🎯 '+feedLinkifyTags(post.missionTitle||'Mission')+'</div>'
       +(post.caption?'<div class="feed-caption">'+feedLinkifyTags(post.caption)+'</div>':'')
       +'<div class="feed-pts-tag">★ +'+(post.pts||0)+' points · <span style="color:#60a5fa">🤖 '+(post.status==='verified'?'verified':'pending')+'</span> · 👁️ '+(post.views||0)+'</div>'
