@@ -17,6 +17,7 @@
         "verified": {".validate": "newData.isBoolean()"},
         "premium": {".read": true, ".write": false, ".validate": "newData.isBoolean()"},
         "blocked": {".validate": "newData.isBoolean()"},
+        "pushEnabled": {".validate": "newData.isBoolean()"},
         "email": {".write": "false"},
         "createdAt": {".write": "false"},
         "public": {".read": true},

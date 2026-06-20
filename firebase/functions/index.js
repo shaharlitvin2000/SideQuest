@@ -989,6 +989,12 @@ async function writeNotification(targetUid, type, fromUid, fromUsername, extra) 
 
 async function sendPushNotification(targetUid, title, body, data) {
   try {
+    // Respect the user's push preference — skip if they turned notifications off.
+    const prefSnap = await db.ref(`users/${targetUid}/pushEnabled`).once('value');
+    if (prefSnap.val() === false) {
+      console.log(`[Push] Skipped — ${targetUid} disabled notifications`);
+      return;
+    }
     // Get user's FCM tokens
     const tokensSnap = await db.ref(`users/${targetUid}/fcmTokens`).once('value');
     const tokens = tokensSnap.val() || {};
@@ -2127,6 +2133,9 @@ exports.compressUploadedVideo = functions.storage
 
 async function sendPushTo(uid, title, body, data) {
   try {
+    // Respect the user's push preference — skip if they turned notifications off.
+    const prefSnap = await db.ref(`users/${uid}/pushEnabled`).once('value');
+    if (prefSnap.val() === false) return false;
     const snap = await db.ref(`fcmTokens/${uid}/token`).once('value');
     const token = snap.val();
     if (!token) return false;

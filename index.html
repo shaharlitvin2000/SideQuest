@@ -328,6 +328,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .setting-icon{font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border-radius:10px}
 .setting-label{font-size:14px;font-weight:600}
 .setting-value{font-size:12px;color:var(--muted);max-width:120px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toggle-input{flex-shrink:0;width:46px;height:27px;-webkit-appearance:none;appearance:none;background:var(--bg3);border:1px solid var(--border2);border-radius:14px;position:relative;cursor:pointer;transition:background .2s}
+.toggle-input:checked{background:var(--accent);border-color:var(--accent)}
+.toggle-input::after{content:'';position:absolute;top:2px;left:2px;width:21px;height:21px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle-input:checked::after{transform:translateX(19px)}
 .chevron{color:var(--muted);font-size:16px}
 .logout-btn{margin:14px 20px 0;width:calc(100% - 40px);background:rgba(16,185,129,.07);border:none;color:var(--accent);border-radius:var(--rl);padding:15px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:background .15s,transform .12s;box-shadow:var(--sh0)}
 .logout-btn:active{transform:scale(.98);background:rgba(16,185,129,.12)}
@@ -881,9 +885,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
           <div class="setting-left"><div class="setting-icon">🌐</div><div class="setting-label" data-i="language">Language</div></div>
           <div style="display:flex;align-items:center;gap:6px"><div class="setting-value" id="cur-lang-val">English</div><div class="chevron">›</div></div>
         </div>
-        <div class="setting-row" onclick="toast('Coming soon!')">
+        <div class="setting-row" onclick="togglePush()">
           <div class="setting-left"><div class="setting-icon">🔔</div><div class="setting-label" data-i="notifications">Notifications</div></div>
-          <div style="display:flex;align-items:center;gap:6px"><div class="setting-value" data-i="on">On</div><div class="chevron">›</div></div>
+          <input type="checkbox" id="push-toggle" class="toggle-input" onclick="event.stopPropagation();togglePush()">
         </div>
         <div class="setting-row" onclick="toast('Coming soon!')">
           <div class="setting-left"><div class="setting-icon">🛡️</div><div class="setting-label" data-i="privacy">Privacy</div></div>
@@ -1204,6 +1208,7 @@ let userName='', userUID='';
 let pts=0, completed=0, total=3, curMission=1;
 let adsWatched=0, completedMissions=[], proofUploaded=false;
 let streak=0, totalMissionsDone=0;
+let myPushEnabled=true;
 let firebaseReady=false;
 let _likedSet=new Set();
 const PRELOAD_MAX=50;
@@ -1309,6 +1314,11 @@ const firebaseConfig={
   messagingSenderId:'208737763122',
   appId:'1:208737763122:web:752bd9566561a85211612b'
 };
+
+// Web Push (FCM) VAPID public key. Get it from Firebase Console →
+// Project settings → Cloud Messaging → Web Push certificates → "Key pair".
+// Leave empty until then; push registration is skipped safely while empty.
+const VAPID_KEY='';
 
 function tryInitFirebase(attempts){
   if(attempts>30){
@@ -1505,6 +1515,8 @@ function applyLoadedData(data, user){
   myDailyStreak=data.dailyClaimStreak||0;
   myBio=data.bio||''; myAvatarURL=data.avatarURL||''; myLink=data.link||''; myAge=data.age||''; myCountryName=data.profileCountry||''; myTitle=data.title||'';
   curLang=data.lang||'en'; selLang=curLang;
+  myPushEnabled = data.pushEnabled !== false; // default ON unless explicitly disabled
+  syncPushToggle();
 
   if(data.missionsDate!==todayStr()){
     completed=0; adsWatched=0; completedMissions=[];
@@ -1523,6 +1535,59 @@ function applyLoadedData(data, user){
     // support both new string format (cm) and old formats for backward compat
     completedMissions=parseMissions(data.cm!==undefined?data.cm:data.completedMissions);
   }
+}
+
+// ══════════ PUSH NOTIFICATIONS TOGGLE ══════════
+// Reflects the stored preference into the settings switch.
+function syncPushToggle(){
+  const el=document.getElementById('push-toggle');
+  if(el) el.checked = !!myPushEnabled;
+}
+
+// Toggles push notifications on/off. When OFF we (1) persist the preference so the
+// Cloud Functions skip this user, and (2) delete any saved FCM token so the device
+// stops receiving pushes immediately — even before Blaze/functions are live.
+function togglePush(){
+  if(!userUID){ toast(curLang==='he'?'התחבר תחילה':'Sign in first'); return; }
+  myPushEnabled = !myPushEnabled;
+  syncPushToggle();
+  // Persist preference (respected by sendPushNotification / sendPushTo on Blaze).
+  db.ref('users/'+userUID).update({pushEnabled: myPushEnabled}).catch(e=>console.warn('[push] save',e));
+  if(myPushEnabled){
+    toast(curLang==='he'?'🔔 התראות הופעלו':'🔔 Notifications on');
+    registerPushToken();
+  } else {
+    toast(curLang==='he'?'🔕 התראות כובו':'🔕 Notifications off');
+    // Remove device token so no push can reach this phone.
+    try{ db.ref('fcmTokens/'+userUID).remove().catch(()=>{}); }catch(e){}
+    try{ db.ref('users/'+userUID+'/fcmTokens').remove().catch(()=>{}); }catch(e){}
+    try{
+      if(typeof firebase!=='undefined' && firebase.messaging && firebase.messaging.isSupported && firebase.messaging.isSupported()){
+        firebase.messaging().deleteToken().catch(()=>{});
+      }
+    }catch(e){}
+  }
+}
+
+// Registers an FCM token for this device (only when the user has push enabled).
+// Safe no-op on Spark / unsupported browsers — kept here so it "just works" on Blaze.
+function registerPushToken(){
+  if(!userUID || !myPushEnabled) return;
+  try{
+    if(!VAPID_KEY) return; // no web-push key configured yet (set it for Blaze)
+    if(typeof firebase==='undefined' || !firebase.messaging || !firebase.messaging.isSupported || !firebase.messaging.isSupported()) return;
+    if(!('Notification' in window)) return;
+    Notification.requestPermission().then(perm=>{
+      if(perm!=='granted') return;
+      const messaging=firebase.messaging();
+      messaging.getToken({vapidKey:VAPID_KEY}).then(token=>{
+        if(!token) return;
+        const now=firebase.database.ServerValue.TIMESTAMP;
+        db.ref('fcmTokens/'+userUID).set({token:token,updatedAt:now}).catch(()=>{});
+        db.ref('users/'+userUID+'/fcmTokens/'+token).set(true).catch(()=>{});
+      }).catch(e=>console.warn('[push] getToken',e));
+    }).catch(()=>{});
+  }catch(e){console.warn('[push] register',e);}
 }
 
 function finishLoad(){
