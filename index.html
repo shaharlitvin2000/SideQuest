@@ -1850,11 +1850,11 @@ function addGDPRSettings(){
 
   const gdprSection=document.createElement('div');
   gdprSection.id='gdpr-section';
-  gdprSection.style.cssText='margin-top:20px;padding-top:20px;border-top:1px solid var(--border)';
+  gdprSection.style.cssText='margin-top:20px;padding-top:18px;border-top:1px solid var(--border)';
   gdprSection.innerHTML=`
-    <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px" data-i="dataPrivacy">Data & Privacy</div>
-    <button class="logout-btn" style="width:100%;margin-bottom:10px;background:rgba(37,99,235,.08);color:var(--blue);border:1px solid rgba(37,99,235,.2)" onclick="exportMyData()" data-i="exportData">Export My Data (GDPR)</button>
-    <button class="logout-btn" style="width:100%;background:rgba(220,38,38,.08);color:#dc2626;border:1px solid rgba(220,38,38,.2)" onclick="deleteMyAccount()" data-i="deleteAccountBtn">🗑️ Delete My Account</button>
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:0 20px 10px" data-i="dataPrivacy">Data & Privacy</div>
+    <button class="logout-btn" style="width:calc(100% - 40px);margin:0 20px 10px;background:rgba(59,158,255,.1);color:var(--blue);border:1px solid rgba(59,158,255,.25)" onclick="exportMyData()" data-i="exportData">Export My Data (GDPR)</button>
+    <button class="logout-btn" style="width:calc(100% - 40px);margin:0 20px;background:rgba(240,86,110,.1);color:#f0566e;border:1px solid rgba(240,86,110,.25)" onclick="deleteMyAccount()" data-i="deleteAccountBtn">🗑️ Delete My Account</button>
   `;
   settingsListEl.insertAdjacentElement('afterend',gdprSection);
 }
