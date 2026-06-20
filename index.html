@@ -4684,12 +4684,41 @@ function loadMyFollowCounts() {
 
 function applyMyHeroColor() {
   if (!userUID && !userName) return;
-  // Use the brand accent (not a random per-user color) for a clean, consistent ring.
-  var color = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2dd4bf';
+  var neutral = (getComputedStyle(document.documentElement).getPropertyValue('--bg3').trim()) || '#1f2429';
   var ring = document.getElementById('my-hero-ring');
-  if (ring) ring.style.background = color;
   var bg = document.getElementById('my-hero-bg');
-  if (bg) bg.style.background = 'radial-gradient(ellipse at 50% 0%, ' + color + '28 0%, transparent 72%)';
+  function setColor(color){
+    if (ring) ring.style.background = color;
+    if (bg) bg.style.background = 'radial-gradient(ellipse at 50% 0%, ' + color + '28 0%, transparent 72%)';
+  }
+  // No photo -> subtle neutral ring (no turquoise).
+  if (!myAvatarURL) { setColor(neutral); return; }
+  // With a photo -> tint the ring with the photo's dominant color.
+  try {
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function(){
+      try {
+        var s=24, c=document.createElement('canvas'); c.width=s; c.height=s;
+        var ctx=c.getContext('2d'); ctx.drawImage(img,0,0,s,s);
+        var d=ctx.getImageData(0,0,s,s).data, r=0,g=0,b=0,n=0;
+        for(var i=0;i<d.length;i+=4){
+          var rr=d[i],gg=d[i+1],bb=d[i+2],a=d[i+3];
+          if(a<125) continue;
+          var mx=Math.max(rr,gg,bb),mn=Math.min(rr,gg,bb);
+          if(mx>245&&mn>235) continue;   // skip near-white
+          if(mx<22) continue;            // skip near-black
+          r+=rr;g+=gg;b+=bb;n++;
+        }
+        if(!n){ setColor(neutral); return; }
+        r=Math.round(r/n);g=Math.round(g/n);b=Math.round(b/n);
+        var hex='#'+[r,g,b].map(function(v){return ('0'+v.toString(16)).slice(-2);}).join('');
+        setColor(hex);
+      } catch(e){ setColor(neutral); } // tainted canvas (no CORS) -> fallback
+    };
+    img.onerror = function(){ setColor(neutral); };
+    img.src = myAvatarURL;
+  } catch(e){ setColor(neutral); }
 }
 
 function showFollowSheet(type, uid) {
