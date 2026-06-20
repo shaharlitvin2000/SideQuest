@@ -4315,15 +4315,20 @@ function openChatWith(peerUid,peerName){
   var box=document.getElementById('chat-messages'); box.innerHTML='<div class="empty-sheet">'+t('chatStart')+'</div>';
   document.getElementById('chat-overlay').classList.add('show');
   if(_chatListener){_chatListener.ref.off('value',_chatListener.fn);_chatListener=null;}
-  var ref=db.ref('chats/'+_chatId+'/messages').orderByChild('at').limitToLast(100);
+  // Read all messages in this chat (no orderBy → no index needed; sort client-side)
+  var ref=db.ref('chats/'+_chatId+'/messages').limitToLast(200);
   var fn=ref.on('value',function(snap){
-    var msgs=[];snap.forEach(c=>msgs.push(c.val()));
+    var msgs=[];snap.forEach(function(c){var v=c.val();if(v)msgs.push(v);});
+    msgs.sort(function(a,b){return (a.at||0)-(b.at||0);});
     if(!msgs.length){box.innerHTML='<div class="empty-sheet">'+t('chatStart')+'</div>';return;}
     box.innerHTML=msgs.map(function(m){
       var mine=m.from===userUID;
       return '<div class="chat-msg '+(mine?'mine':'theirs')+'">'+escHtml(m.text||'')+'</div>';
     }).join('');
     box.scrollTop=box.scrollHeight;
+  },function(err){
+    console.error('[Chat] read failed:',err);
+    box.innerHTML='<div class="empty-sheet">'+t('chatSendFail')+'</div>';
   });
   _chatListener={ref:ref,fn:fn};
   if(userUID) db.ref('chatMeta/'+userUID+'/'+_chatId+'/unread').set(0).catch(()=>{});
