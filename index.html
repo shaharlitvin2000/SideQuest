@@ -1462,7 +1462,9 @@ function saveUserData(){
   try{localStorage.setItem('fa_'+userUID,JSON.stringify(d));}catch(e){}
 
   if(!userUID||!db) return;
-  db.ref('users/'+userUID).update(d).catch(e=>console.error('[DB] save error:',e));
+  db.ref('users/'+userUID).update(d).catch(e=>{if(!isFnUnavailable(e))console.error('[DB] save error:',e);});
+  // Publish my public leaderboard entry so I appear in rankings (client-authoritative on Spark)
+  db.ref('leaderboard/'+userUID).update({username:userName,pts:pts||0,missions:totalMissionsDone||0,streak:streak||0}).catch(()=>{});
 
   // Reset daily quotas if new day
   db.ref('userStorage/'+userUID+'/adsDate').once('value').then(snap=>{
@@ -5185,11 +5187,10 @@ tryInitFirebase(0);
 checkOpenSharedPost();
 try{captureReferral();}catch(e){}
 
-// Run safety cleanup in background (non-blocking)
+// Run safety cleanup in background — only once signed in (/feed needs auth), silent on failure
 setTimeout(function(){
-  if(db&&firebaseReady){
-    console.log('[SAFETY] Running automatic feed cleanup...');
-    cleanHatefulPosts().catch(e=>console.error('[SAFETY] Cleanup error:',e));
+  if(db&&firebaseReady&&userUID){
+    cleanHatefulPosts().catch(function(){});
   }
 }, 5000);
 

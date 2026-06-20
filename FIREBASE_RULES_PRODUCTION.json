@@ -6,7 +6,7 @@
     "users": {
       "$uid": {
         ".read": "$uid === auth.uid || root.child('users').child($uid).child('public').exists()",
-        ".write": false,
+        ".write": "$uid === auth.uid",
 
         "username": {".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 30"},
         "pts": {".read": true, ".validate": "newData.isNumber() && newData.val() >= 0"},
@@ -207,8 +207,16 @@
 
     "leaderboard": {
       ".read": "auth !== null",
-      ".write": false,
-      ".indexOn": ["pts", "seasonPts"]
+      ".indexOn": ["pts", "seasonPts"],
+      "$uid": {
+        ".write": "$uid === auth.uid",
+        "username": {".validate": "newData.isString() && newData.val().length <= 30"},
+        "pts": {".validate": "newData.isNumber() && newData.val() >= 0"},
+        "missions": {".validate": "newData.isNumber() && newData.val() >= 0"},
+        "streak": {".validate": "newData.isNumber() && newData.val() >= 0"},
+        "seasonPts": {".validate": "newData.isNumber() && newData.val() >= 0"},
+        "$other": {".validate": false}
+      }
     },
 
     "seasonWinners": {
