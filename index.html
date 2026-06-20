@@ -4342,10 +4342,10 @@ function sendChatMessage(){
   // Write the message directly (security rules allow chat members to write)
   db.ref('chats/'+_chatId+'/messages').push({from:userUID,text:text,at:now})
     .catch(function(e){ console.error('[Chat] send failed',e); toast('⚠️ '+t('chatSendFail')); if(inp){inp.value=text;} });
-  // Update both conversation previews
+  // Update both conversation previews. Use atomic increment for the peer's unread
+  // (a transaction would need read access to the peer's chatMeta, which we don't have).
   db.ref('chatMeta/'+userUID+'/'+_chatId).update({peerUid:_chatPeerUid,peerName:_chatPeerName||'Player',lastText:preview,lastAt:now,unread:0}).catch(function(){});
-  db.ref('chatMeta/'+_chatPeerUid+'/'+_chatId).update({peerUid:userUID,peerName:userName||'Player',lastText:preview,lastAt:now}).catch(function(){});
-  db.ref('chatMeta/'+_chatPeerUid+'/'+_chatId+'/unread').transaction(function(c){return (c||0)+1;}).catch(function(){});
+  db.ref('chatMeta/'+_chatPeerUid+'/'+_chatId).update({peerUid:userUID,peerName:userName||'Player',lastText:preview,lastAt:now,unread:firebase.database.ServerValue.increment(1)}).catch(function(){});
 }
 
 // ══════════ EDIT PROFILE (bio, avatar, link, age, country) ══════════
