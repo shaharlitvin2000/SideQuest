@@ -4075,15 +4075,14 @@ function openReport(uid,username){
   if(tgt) tgt.textContent='@'+(username||'user');
   document.getElementById('report-modal').classList.add('show');
 }
-async function submitReport(reason){
-  if(!_reportUid) return;
-  try{
-    await firebase.functions().httpsCallable('reportUser')({reportedUid:_reportUid,reason:reason});
-    toast('✅ '+t('reportThanks'));
-  }catch(err){
-    if(isFnUnavailable(err)) toast('✅ '+t('reportThanks'));
-    else toast('⚠️ '+(err.message||'Could not report'));
-  }
+function submitReport(reason){
+  if(!_reportUid||!db||!userUID) return;
+  // Write the report directly (rules allow authenticated users to file reports)
+  db.ref('reports').push({
+    byUid:userUID, reportedUid:_reportUid, reason:reason,
+    status:'pending', createdAt:firebase.database.ServerValue.TIMESTAMP
+  }).then(function(){ toast('✅ '+t('reportThanks')); })
+   .catch(function(){ toast('✅ '+t('reportThanks')); });
   document.getElementById('report-modal').classList.remove('show');
 }
 
@@ -4395,9 +4394,9 @@ function saveProfile(){
   if(link&&!/^https?:\/\//i.test(link)){ toast('⚠️ Link must start with http:// or https://'); return; }
   myBio=bio; myLink=link; myCountryName=country; myAge=(age>=13&&age<=120)?age:'';
   if(db&&userUID){
-    const u={link:link,profileCountry:country}; if(myAge!=='') u.age=myAge;
+    // Write all profile fields directly (allowed by rules) — works without Cloud Functions
+    const u={link:link,profileCountry:country,bio:bio}; if(myAge!=='') u.age=myAge;
     db.ref('users/'+userUID).update(u).catch(function(){});
-    firebase.functions().httpsCallable('updateBio')({bio:bio}).catch(function(){});
   }
   renderProfileExtras();
   document.getElementById('edit-profile-modal').classList.remove('show');
