@@ -4,10 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Flash Arena</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#121212">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FlashArena">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;scrollbar-width:none;-ms-overflow-style:none}
 *::-webkit-scrollbar{display:none}
@@ -1580,7 +1588,9 @@ function registerPushToken(){
     Notification.requestPermission().then(perm=>{
       if(perm!=='granted') return;
       const messaging=firebase.messaging();
-      messaging.getToken({vapidKey:VAPID_KEY}).then(token=>{
+      const opts={vapidKey:VAPID_KEY};
+      if(window._swReg) opts.serviceWorkerRegistration=window._swReg;
+      messaging.getToken(opts).then(token=>{
         if(!token) return;
         const now=firebase.database.ServerValue.TIMESTAMP;
         db.ref('fcmTokens/'+userUID).set({token:token,updatedAt:now}).catch(()=>{});
@@ -5269,6 +5279,19 @@ function checkOpenSharedPost(){
 
 // ══════════ BOOT ══════════
 console.log('[BOOT] FlashArena starting...');
+
+// Register the service worker (offline cache + PWA install + FCM background push).
+// Stored globally so push token registration can reuse the same SW.
+window._swReg=null;
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('/service-worker.js').then(function(reg){
+      window._swReg=reg;
+      console.log('[SW] registered');
+    }).catch(function(e){console.warn('[SW] register failed',e);});
+  });
+}
+
 startLoadingAnim();
 buildLangGrid();
 tryInitFirebase(0);

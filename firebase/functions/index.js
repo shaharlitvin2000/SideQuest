@@ -1008,7 +1008,7 @@ async function sendPushNotification(targetUid, title, body, data) {
       notification: {
         title: title,
         body: body,
-        icon: 'https://firebasestorage.googleapis.com/v0/b/flasharena-f35b1.appspot.com/o/icon.png?alt=media'
+        icon: 'https://flasharena-f35b1.web.app/icon-192.png'
       },
       data: {
         type: data.type || 'general',
@@ -1023,7 +1023,7 @@ async function sendPushNotification(targetUid, title, body, data) {
           title: title,
           body: body,
           tag: data.type || 'notification',
-          icon: 'https://firebasestorage.googleapis.com/v0/b/flasharena-f35b1.appspot.com/o/icon.png?alt=media'
+          icon: 'https://flasharena-f35b1.web.app/icon-192.png'
         }
       }
     }));
