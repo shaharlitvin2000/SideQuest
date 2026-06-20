@@ -4684,7 +4684,8 @@ function loadMyFollowCounts() {
 
 function applyMyHeroColor() {
   if (!userUID && !userName) return;
-  var color = getUserColor(userUID || userName);
+  // Use the brand accent (not a random per-user color) for a clean, consistent ring.
+  var color = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2dd4bf';
   var ring = document.getElementById('my-hero-ring');
   if (ring) ring.style.background = color;
   var bg = document.getElementById('my-hero-bg');
