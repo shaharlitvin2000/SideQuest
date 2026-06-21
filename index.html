@@ -119,6 +119,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;m
 .auth-consent a{color:var(--accent);font-weight:600;text-decoration:none}
 .auth-legal-note{margin-top:14px;font-size:11px;color:var(--muted);text-align:center;line-height:1.5}
 .auth-legal-note a{color:var(--accent);text-decoration:none;font-weight:600}
+.forgot-pw{text-align:end;font-size:12px;color:var(--accent);font-weight:600;cursor:pointer;margin:-4px 2px 12px}
 .auth-or{display:flex;align-items:center;gap:10px;margin:20px 0;color:var(--muted);font-size:12px}
 .auth-or::before,.auth-or::after{content:'';flex:1;height:1px;background:var(--border)}
 .google-btn{width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:14px;font-weight:600;cursor:pointer;transition:border-color .2s,box-shadow .2s;color:var(--text);box-shadow:var(--sh0)}
@@ -154,6 +155,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;m
 .season-icon{font-size:16px}
 .fpp-report-btn{position:absolute;top:14px;right:60px;z-index:30;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.55);border:1.5px solid var(--border2);font-size:15px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .fpp-report-btn:active{transform:scale(.86)}
+.fpp-block-btn{position:absolute;top:14px;right:106px;z-index:30;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.55);border:1.5px solid var(--border2);cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.fpp-block-btn svg{width:17px;height:17px}
+.fpp-block-btn.active{color:#e0697f;border-color:rgba(224,105,127,.5)}
+.fpp-block-btn:active{transform:scale(.86)}
+#block-sheet,#blocked-overlay{z-index:1000}
+.blocked-list{display:flex;flex-direction:column;gap:8px;margin:8px 0 4px;max-height:50vh;overflow-y:auto}
+.blocked-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r)}
+.blocked-av{width:38px;height:38px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted);flex-shrink:0}
+.blocked-name{flex:1;font-size:14px;font-weight:600;color:var(--text)}
+.blocked-unbtn{background:var(--accent-soft);border:1px solid rgba(45,212,191,.3);color:var(--accent);font-family:var(--font);font-size:12px;font-weight:700;padding:7px 14px;border-radius:10px;cursor:pointer}
+.blocked-unbtn:active{transform:scale(.95)}
 .report-reasons{display:flex;flex-direction:column;gap:8px;margin:16px 0}
 .report-reason{text-align:start;padding:14px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s}
 .report-reason:active{transform:scale(.98)}
@@ -751,6 +763,7 @@ svg.ic-lg{width:19px;height:19px}
       <input class="inp" id="log-pass" type="password" placeholder="Your password">
       <div class="auth-error" id="err-login">Wrong email or password</div>
     </div>
+    <div class="forgot-pw" onclick="doForgotPassword()" data-i="forgotPw">Forgot password?</div>
     <button class="auth-btn" onclick="doLogin()" data-i="logIn">Log In</button>
   </div>
 
@@ -1001,6 +1014,10 @@ svg.ic-lg{width:19px;height:19px}
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="setting-label" data-i="privacy">Privacy</div></div>
             <div class="chevron">›</div>
           </div>
+          <div class="setting-row" onclick="closeSettings();openBlockedList()">
+            <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg></div><div class="setting-label" data-i="blockedUsers">Blocked users</div></div>
+            <div class="chevron">›</div>
+          </div>
           <div class="setting-row" onclick="toast('Coming soon!')">
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="setting-label" data-i="goPremium">Go Premium</div></div>
             <div style="display:flex;align-items:center;gap:6px"><div class="setting-value" style="color:var(--gold)" data-i="free">Free</div><div class="chevron">›</div></div>
@@ -1023,6 +1040,7 @@ svg.ic-lg{width:19px;height:19px}
     <div class="fpp-page">
       <button class="fpp-x-btn" onclick="feedCloseProfile()">✕</button>
       <button class="fpp-report-btn" onclick="openReport(_fppCurrentUID,_fppCurrentUsername)" aria-label="Report">⚑</button>
+      <button class="fpp-block-btn" id="fpp-block-btn" onclick="toggleBlockFromProfile()" aria-label="Block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg></button>
       <div class="fpp-body-scroll">
         <div id="fpp-loading-wrap" class="fpp-loading-center">
           <div class="fpp-spinner"></div>
@@ -1192,7 +1210,7 @@ const LANGS=[
 
 const T={
   en:{langTitle:'Choose your language',langSub:'You can change this later in settings',continue:'Continue →',register:'Sign Up',login:'Log In',back:'Back',createAccountTitle:'Create account',loginTitle:'Welcome back',authSub:'Start completing missions and climbing the ranks',username:'Username',email:'Email',password:'Password',createAccount:'Create Account',logIn:'Log In',or:'or',continueGoogle:'Continue with Google',days:'days',heroTitle:"Ready for today's missions?",remaining:'missions remaining today',dailyProgress:'Daily progress',adMain:'Watch a short ad',adSub:'+50 bonus points · watch up to 10x/day',watch:'Watch',todaysMissions:"Today's missions",social:'Social',dare:'Dare',explore:'Explore',easy:'Easy',medium:'Medium',hard:'Hard',done:'✓ Done',start:'Start →',m0title:'Ask a stranger one question',m0desc:"Approach someone you don't know and ask them one genuine question.",m1title:'Stand completely still for 60 seconds',m1desc:'Pick a public spot and freeze like a statue for a full minute.',m2title:"Find a place you've never been to",m2desc:"Walk to a street or spot you've never noticed before.",leaderboard:'Leaderboard',lbSub:'This week · resets Friday',friends:'Friends',country:'Country',global:'Global',dayStreak:'day streak',weeklyPoints:'Weekly points',missionsDone:'Missions done',friendRank:'Friend rank',rankProgress:'Rank progress',ptsToLegend:'116 pts to Legend',language:'Language',notifications:'Notifications',privacy:'Privacy',goPremium:'Go Premium',free:'Free',on:'On',logout:'Log Out',missions:'Missions',ranks:'Ranks',feed:'Scroll',profile:'Profile',points:'Points',difficulty:'Difficulty',estTime:'Est. time',tips:'Tips',uploadProof:'Upload your proof',photoOrVideo:'Photo or short video',markComplete:'Mark as completed ✓',cancel:'Cancel',greeting:'Hey',
-  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',
+  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',forgotPw:'Forgot password?',resetSent:'Password reset email sent',verifyEmailSent:'Verification email sent — check your inbox',blockTitle:'Block user',blockReport:'Block & Report',blockOnly:'Just block',blockedDone:'blocked',unblockedDone:'Unblocked',blockedUsers:'Blocked users',noBlocked:"You haven't blocked anyone",unblock:'Unblock',
   adComeBack:'Come back tomorrow',adDone:'Done',adLeft:'left today',adAllDone:'All ads watched today',ptsTo:'pts to',maxRank:'Max rank reached!',
   lbPoints:'Points',lbMissions:'Missions',lbStreak:'Streak',season:'Season',seasonEnds:'Season ends in',daysShort:'d',
   notifTitle:'Notifications',notifEmpty:'No notifications yet',notifLiked:'liked your video',notifFollowed:'started following you',notifCommented:'commented on your video',notifReplied:'replied to your comment',notifReferral:'joined with your invite — +200!',justNow:'now',minShort:'m',hrShort:'h',dayShort2:'d',
@@ -1211,7 +1229,7 @@ const T={
   likedPosts:'Liked',savedPosts:'Saved',myVideos:'My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
   exportData:'Export My Data (GDPR)',deleteAccountBtn:'Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
-  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',
+  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',forgotPw:'שכחת סיסמה?',resetSent:'נשלח אימייל לאיפוס הסיסמה',verifyEmailSent:'נשלח אימייל אימות — בדוק את התיבה',blockTitle:'חסימת משתמש',blockReport:'חסום ודווח',blockOnly:'חסום בלבד',blockedDone:'נחסם',unblockedDone:'החסימה הוסרה',blockedUsers:'משתמשים חסומים',noBlocked:'לא חסמת אף אחד',unblock:'הסר חסימה',
   adComeBack:'חזור מחר',adDone:'הושלם',adLeft:'נותרו היום',adAllDone:'צפית בכל הפרסומות היום',ptsTo:'נק׳ עד',maxRank:'הגעת לדרגה הגבוהה ביותר!',
   lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
   notifTitle:'התראות',notifEmpty:'אין התראות עדיין',notifLiked:'אהב את הסרטון שלך',notifFollowed:'התחיל לעקוב אחריך',notifCommented:'הגיב על הסרטון שלך',notifReplied:'הגיב לתגובה שלך',notifReferral:'הצטרף דרך ההזמנה שלך — +200!',justNow:'עכשיו',minShort:'ד׳',hrShort:'ש׳',dayShort2:'ימ׳',
@@ -1728,6 +1746,7 @@ function finishLoad(){
   try{loadLeaderboard();}catch(e){console.error('[finishLoad] lb',e);}
   try{loadFeed();}catch(e){console.error('[finishLoad] feed',e);}
   try{loadMyFollowing();}catch(e){console.error('[finishLoad] following',e);}
+  try{loadMyBlocked();}catch(e){}
   try{watchNotifUnread();}catch(e){}
   try{updateDailyDot();}catch(e){}
   try{maybeClaimReferral();}catch(e){}
@@ -1848,6 +1867,8 @@ function doRegister(){
       .then(cred => {
         userName=name;
         userUID=cred.user.uid;
+        // Send a verification email (non-blocking — account still works)
+        try{ cred.user.sendEmailVerification().catch(function(){}); }catch(e){}
         return cred.user.updateProfile({displayName:name});
       })
       .then(() => {
@@ -1868,6 +1889,7 @@ function doRegister(){
         updateUI();
         updateAdBanner();
         toast('✅ '+t('regSuccess'));
+        setTimeout(function(){toast('📧 '+t('verifyEmailSent'));},2000);
         showPage('p-app');
         loadLeaderboard();
         try{loadFeed();}catch(e){};
@@ -1886,6 +1908,14 @@ function doRegister(){
   });
 }
 
+function doForgotPassword(){
+  if(!auth){toast(t('noConnection'));return;}
+  var email=(document.getElementById('log-email').value||'').trim();
+  if(!email||!email.includes('@')){toast('⚠️ '+t('errEmail'));return;}
+  auth.sendPasswordResetEmail(email)
+    .then(function(){toast('📧 '+t('resetSent'));})
+    .catch(function(e){console.warn('[reset]',e);toast('⚠️ '+((e&&e.message)||t('errEmail')));});
+}
 function doLogin(){
   const email=document.getElementById('log-email').value.trim();
   const pass=document.getElementById('log-pass').value;
@@ -2158,6 +2188,7 @@ function feedOpenProfile(uid,username,init){
   var isMe=(uid===userUID);
   // Can't report yourself — hide the report button on your own profile.
   var _rb=document.querySelector('#fpp-overlay .fpp-report-btn'); if(_rb) _rb.style.display=isMe?'none':'';
+  var _bb=document.getElementById('fpp-block-btn'); if(_bb){ _bb.style.display=isMe?'none':'flex'; try{updateFppBlockBtn();}catch(e){} }
   // reset bio + achievements between opens
   var _b=document.getElementById('fpp-bio'); if(_b){_b.style.display='none';_b.textContent='';}
   var _as=document.getElementById('fpp-ach-strip'); if(_as) _as.innerHTML='';
@@ -4553,6 +4584,71 @@ async function redeemReward(id,btn){
 // ══════════ DIRECT MESSAGES ══════════
 var _chatPeerUid=null,_chatPeerName=null,_chatId=null,_chatListener=null;
 function chatIdFor(a,b){return [a,b].sort().join('_');}
+
+// ══════════ BLOCKING ══════════
+var _blockedSet=new Set();      // uids I blocked
+var _blockedInfo={};            // uid -> name (for the blocked list)
+var _blockTargetUid=null,_blockTargetName=null;
+function loadMyBlocked(){
+  if(!db||!userUID) return;
+  db.ref('userBlocked/'+userUID).on('value',function(snap){
+    _blockedSet=new Set(); _blockedInfo={};
+    snap.forEach(function(c){ if(c.val()){ _blockedSet.add(c.key); var v=c.val(); _blockedInfo[c.key]=(v&&v.name)?v.name:'Player'; } });
+    var clo=document.getElementById('chat-list-overlay'); if(clo&&clo.classList.contains('show')) openChatList();
+  },function(){});
+}
+function isBlocked(uid){ return _blockedSet.has(uid); }
+function openBlockSheet(uid,name){
+  if(!uid||uid===userUID) return;
+  _blockTargetUid=uid; _blockTargetName=name||'Player';
+  var tt=document.getElementById('block-sheet-name'); if(tt) tt.textContent='@'+_blockTargetName;
+  document.getElementById('block-sheet').classList.add('show');
+}
+function closeBlockSheet(){ var o=document.getElementById('block-sheet'); if(o) o.classList.remove('show'); }
+function doBlock(alsoReport){
+  var uid=_blockTargetUid,name=_blockTargetName;
+  if(!db||!userUID||!uid) { closeBlockSheet(); return; }
+  db.ref('userBlocked/'+userUID+'/'+uid).set({name:name||'Player',at:firebase.database.ServerValue.TIMESTAMP}).catch(function(e){console.warn('[block]',e);});
+  _blockedSet.add(uid); _blockedInfo[uid]=name||'Player';
+  closeBlockSheet();
+  try{ updateFppBlockBtn(); }catch(e){}
+  if(alsoReport){ openReport(uid,name); }
+  else toast('🚫 @'+(name||'Player')+' '+t('blockedDone'));
+}
+function unblockUser(uid,name){
+  if(!db||!userUID) return;
+  db.ref('userBlocked/'+userUID+'/'+uid).remove().catch(function(){});
+  _blockedSet.delete(uid); delete _blockedInfo[uid];
+  toast('✓ '+t('unblockedDone'));
+  try{ updateFppBlockBtn(); }catch(e){}
+  try{ renderBlockedList(); }catch(e){}
+}
+function toggleBlockFromProfile(){
+  var uid=_fppCurrentUID,name=_fppCurrentUsername;
+  if(!uid||uid===userUID) return;
+  if(isBlocked(uid)) unblockUser(uid,name); else openBlockSheet(uid,name);
+}
+function updateFppBlockBtn(){
+  var b=document.getElementById('fpp-block-btn'); if(!b) return;
+  var blk=isBlocked(_fppCurrentUID);
+  b.classList.toggle('active',blk);
+  b.setAttribute('aria-label', blk?'Unblock':'Block');
+  b.innerHTML = blk
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>';
+}
+// Blocked-users list (opened from Settings)
+function openBlockedList(){ var o=document.getElementById('blocked-overlay'); if(o){ o.classList.add('show'); renderBlockedList(); } }
+function closeBlockedList(){ var o=document.getElementById('blocked-overlay'); if(o) o.classList.remove('show'); }
+function renderBlockedList(){
+  var list=document.getElementById('blocked-list'); if(!list) return;
+  var uids=Object.keys(_blockedInfo);
+  if(!uids.length){ list.innerHTML='<div class="empty-sheet">'+t('noBlocked')+'</div>'; return; }
+  list.innerHTML=uids.map(function(uid){
+    var nm=_blockedInfo[uid]||'Player'; var ini=nm[0].toUpperCase();
+    return '<div class="blocked-row"><div class="blocked-av">'+escHtml(ini)+'</div><div class="blocked-name">@'+escHtml(nm)+'</div><button class="blocked-unbtn" onclick="unblockUser(\''+escHtml(uid)+'\',\''+escHtml(nm)+'\')">'+t('unblock')+'</button></div>';
+  }).join('');
+}
 function openChatList(){
   const ov=document.getElementById('chat-list-overlay'),list=document.getElementById('chat-list');
   if(!ov||!list) return;
@@ -4560,7 +4656,7 @@ function openChatList(){
   if(!db||!userUID){list.innerHTML='<div class="empty-sheet">'+t('noChats')+'</div>';return;}
   list.innerHTML='<div class="empty-sheet">'+t('loading')+'</div>';
   db.ref('chatMeta/'+userUID).orderByChild('lastAt').once('value').then(function(snap){
-    var chats=[];snap.forEach(c=>chats.push({chatId:c.key,...c.val()}));chats.reverse();
+    var chats=[];snap.forEach(c=>chats.push({chatId:c.key,...c.val()}));chats=chats.filter(c=>!_blockedSet.has(c.peerUid));chats.reverse();
     if(!chats.length){list.innerHTML='<div class="empty-sheet">'+t('noChats')+'</div>';return;}
     list.innerHTML=chats.map(function(c){
       var ini=(c.peerName||'?')[0].toUpperCase();
@@ -4581,7 +4677,7 @@ function openChatWith(peerUid,peerName){
   // Read all messages in this chat (no orderBy → no index needed; sort client-side)
   var ref=db.ref('chats/'+_chatId+'/messages').limitToLast(200);
   var fn=ref.on('value',function(snap){
-    var msgs=[];snap.forEach(function(c){var v=c.val();if(v)msgs.push(v);});
+    var msgs=[];snap.forEach(function(c){var v=c.val();if(v && !_blockedSet.has(v.from))msgs.push(v);});
     msgs.sort(function(a,b){return (a.at||0)-(b.at||0);});
     if(!msgs.length){box.innerHTML='<div class="empty-sheet">'+t('chatStart')+'</div>';return;}
     box.innerHTML=msgs.map(function(m){
@@ -5692,6 +5788,28 @@ window.addEventListener('beforeunload',function(){
       <button class="share-opt" onclick="shareVia('native')"><span class="share-ic">•••</span><span data-i="shareMore">More</span></button>
     </div>
     <button class="modal-cancel" onclick="document.getElementById('share-modal').classList.remove('show')" data-i="close">Close</button>
+  </div>
+</div>
+
+<div class="overlay" id="block-sheet" onclick="if(event.target===this)closeBlockSheet()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" data-i="blockTitle">Block user</div>
+    <div class="modal-desc"><span id="block-sheet-name">@user</span></div>
+    <div class="report-reasons">
+      <button class="report-reason" onclick="doBlock(true)">🚩 <span data-i="blockReport">Block & Report</span></button>
+      <button class="report-reason" onclick="doBlock(false)">🚫 <span data-i="blockOnly">Just block</span></button>
+    </div>
+    <button class="modal-cancel" onclick="closeBlockSheet()" data-i="cancel">Cancel</button>
+  </div>
+</div>
+
+<div class="overlay" id="blocked-overlay" onclick="if(event.target===this)closeBlockedList()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" data-i="blockedUsers">Blocked users</div>
+    <div id="blocked-list" class="blocked-list"></div>
+    <button class="modal-cancel" onclick="closeBlockedList()" data-i="close">Close</button>
   </div>
 </div>
 
