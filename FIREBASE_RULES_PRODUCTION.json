@@ -171,7 +171,11 @@
       "$uid": {
         ".read": "$uid === auth.uid",
         ".write": "$uid === auth.uid",
-        ".indexOn": ["createdAt", "read"]
+        ".indexOn": ["createdAt", "read"],
+        "$nid": {
+          ".write": "auth !== null && !data.exists()",
+          ".validate": "newData.hasChildren(['type','createdAt']) && (newData.child('byUid').val() === auth.uid || $uid === auth.uid)"
+        }
       }
     },
 

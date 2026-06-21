@@ -2920,6 +2920,7 @@ function feedLikePost(postId,btn){
         if(post){
           post.likes=(post.likes||0)+1;
           if(countEl) countEl.textContent=formatFeedCount(post.likes);
+          try{ if(post.uid) pushNotification(post.uid,'like',{postId:postId}); }catch(e){}
         }
       })
       .catch(err=>{
@@ -4438,6 +4439,13 @@ function submitReport(reason){
 }
 
 // ══════════ NOTIFICATIONS INBOX ══════════
+// Create an in-app notification for another user (client-authoritative on Spark).
+function pushNotification(targetUid,type,extra){
+  if(!db||!userUID||!targetUid||targetUid===userUID) return;
+  var n={type:type,byUid:userUID,byUsername:userName||'Player',read:false,createdAt:firebase.database.ServerValue.TIMESTAMP};
+  if(extra){ for(var k in extra) n[k]=extra[k]; }
+  db.ref('notifications/'+targetUid).push(n).catch(function(){});
+}
 function notifText(n){
   const who=n.byUsername||'Someone';
   switch(n.type){
@@ -4967,6 +4975,7 @@ function followUser(targetUID, targetUsername) {
     .then(() => {
       _myFollowingSet.add(targetUID);
       toast('👥 Following @' + targetUsername + '!');
+      try{ pushNotification(targetUID,'follow'); }catch(e){}
       if (feedMode === 'following') refreshFollowingFeed();
       refreshFeedSlotFollowState();
     })
@@ -5221,6 +5230,7 @@ function submitComment(){
   .then(result=>{
     inp.value='';
     if(sendBtn) sendBtn.style.opacity='1';
+    try{ var _p=feedAllPosts.find(function(x){return x.id===_cmtPostId;}); if(_p&&_p.uid) pushNotification(_p.uid,'comment',{postId:_cmtPostId}); }catch(e){}
     loadCommentsFull(_cmtPostId);
 
     // Update count in feed
