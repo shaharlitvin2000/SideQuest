@@ -586,6 +586,9 @@ svg.ic-lg{width:19px;height:19px}
 .my-hero-bg{position:absolute;inset:0;pointer-events:none;opacity:.65}
 .my-hero-ring{width:78px;height:78px;border-radius:50%;padding:3px;margin-bottom:9px;flex-shrink:0;z-index:1;position:relative;box-shadow:0 4px 18px rgba(0,0,0,.16)}
 .my-hero-gap{width:100%;height:100%;border-radius:50%;background:var(--bg2);padding:3px;box-sizing:border-box}
+.pf-cam-btn{position:absolute;bottom:-2px;inset-inline-end:-2px;width:26px;height:26px;border-radius:50%;background:var(--accent);border:2px solid var(--bg2);color:#04140d;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;transition:transform .12s}
+.pf-cam-btn:active{transform:scale(.88)}
+.pf-cam-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .my-hero .pf-name{position:relative;z-index:1;margin-bottom:4px;letter-spacing:-.3px}
 .my-hero .pf-level{position:relative;z-index:1;margin-bottom:10px}
 .my-follow-row{display:flex;align-items:center;position:relative;z-index:1;background:var(--bg);border:1.5px solid var(--border2);border-radius:18px;overflow:hidden;box-shadow:var(--sh0)}
@@ -849,11 +852,13 @@ svg.ic-lg{width:19px;height:19px}
       <div class="my-hero">
         <div class="my-hero-bg" id="my-hero-bg"></div>
         <button class="pf-edit-btn" onclick="openEditProfile()" aria-label="Edit">✏️</button>
-        <div class="my-hero-ring" id="my-hero-ring" onclick="openEditProfile()" style="cursor:pointer">
+        <div class="my-hero-ring" id="my-hero-ring" onclick="document.getElementById('pf-avatar-file').click()" style="cursor:pointer">
           <div class="my-hero-gap">
             <div class="pf-avatar" id="pf-av">S</div>
           </div>
+          <button class="pf-cam-btn" onclick="event.stopPropagation();document.getElementById('pf-avatar-file').click()" aria-label="Change photo"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
         </div>
+        <input type="file" id="pf-avatar-file" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
         <div class="pf-name" id="pf-name">Player</div>
         <div class="pf-level" id="pf-level">🔥 Daredevil</div>
         <div class="pf-title-chip empty" id="pf-title" onclick="openTitles()"></div>
@@ -4604,6 +4609,7 @@ function openEditProfile(){
 }
 async function uploadAvatar(inp){
   const file=inp.files&&inp.files[0];
+  console.log('[Avatar] selected:', file && file.name, file && file.type, file && file.size, 'storage?', !!storage, 'uid?', !!userUID);
   if(!file){ return; }
   if(!userUID){ toast('⚠️ '+ (curLang==='he'?'התחבר תחילה':'Sign in first')); inp.value=''; return; }
   if(!storage){ toast('⚠️ '+ (curLang==='he'?'האחסון לא זמין':'Storage unavailable')); inp.value=''; return; }

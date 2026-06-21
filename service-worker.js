@@ -3,7 +3,7 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'flash-arena-v3';
+const CACHE_NAME = 'flash-arena-v4';
 // App shell precached so the app still opens offline. HTML uses a
 // network-first strategy below, so online users always get the latest version.
 const urlsToCache = [
