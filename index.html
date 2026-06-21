@@ -4612,8 +4612,8 @@ function doBlock(alsoReport){
   _blockedSet.add(uid); _blockedInfo[uid]=name||'Player';
   closeBlockSheet();
   try{ updateFppBlockBtn(); }catch(e){}
-  if(alsoReport){ openReport(uid,name); }
-  else toast('🚫 @'+(name||'Player')+' '+t('blockedDone'));
+  toast('🚫 @'+(name||'Player')+' '+t('blockedDone'));
+  if(alsoReport){ setTimeout(function(){ openReport(uid,name); },350); }
 }
 function unblockUser(uid,name){
   if(!db||!userUID) return;
