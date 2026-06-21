@@ -201,12 +201,12 @@
     },
 
     "reports": {
-      ".read": false,
+      ".read": "auth !== null && auth.token.email === 'shahar070510@gmail.com'",
       ".write": "auth !== null",
       ".indexOn": ["createdAt", "status"],
       "$reportId": {
         ".validate": "newData.hasChildren(['byUid','reportedUid','reason','createdAt'])",
-        "byUid": {".validate": "newData.val() === auth.uid"},
+        "byUid": {".validate": "newData.val() === auth.uid || auth.token.email === 'shahar070510@gmail.com'"},
         "reason": {".validate": "newData.val() === 'harassment' || newData.val() === 'spam' || newData.val() === 'abuse' || newData.val() === 'inappropriate' || newData.val() === 'hate_speech' || newData.val() === 'scam'"},
         "status": {".validate": "newData.val() === 'pending' || newData.val() === 'reviewed' || newData.val() === 'actioned'"}
       }

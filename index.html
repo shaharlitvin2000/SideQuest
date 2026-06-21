@@ -159,7 +159,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;m
 .fpp-block-btn svg{width:17px;height:17px}
 .fpp-block-btn.active{color:#e0697f;border-color:rgba(224,105,127,.5)}
 .fpp-block-btn:active{transform:scale(.86)}
-#block-sheet,#blocked-overlay{z-index:1000}
+#block-sheet,#blocked-overlay,#admin-overlay{z-index:1000}
+.admin-row{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.admin-row-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.admin-reason{font-size:14px;font-weight:700;color:var(--text)}
+.admin-status{font-size:10px;font-weight:700;text-transform:uppercase;padding:3px 8px;border-radius:10px;background:var(--bg3);color:var(--muted);flex-shrink:0}
+.admin-status.pending{color:var(--gold);background:var(--gold-soft)}
+.admin-row-sub{font-size:12px;color:var(--muted)}
+.admin-row-actions{display:flex;gap:8px}
+.admin-act{flex:1;border:none;border-radius:10px;padding:9px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer}
+.admin-act.view{background:var(--bg3);color:var(--text)}
+.admin-act.done{background:var(--accent);color:#04140d}
+.admin-act:active{transform:scale(.96)}
 .onb-overlay{position:fixed;inset:0;z-index:1100;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:24px}
 .onb-overlay.show{display:flex}
 .onb-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rxl);max-width:360px;width:100%;padding:34px 24px 24px;text-align:center;position:relative;animation:pop .25s cubic-bezier(.34,1.3,.5,1)}
@@ -1047,6 +1058,10 @@ svg.ic-lg{width:19px;height:19px}
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg></div><div class="setting-label" data-i="changeEmail">Change email</div></div>
             <div class="chevron">›</div>
           </div>
+          <div class="setting-row" id="admin-setting-row" style="display:none" onclick="closeSettings();openAdmin()">
+            <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="setting-label" data-i="moderation">Moderation</div></div>
+            <div class="chevron">›</div>
+          </div>
           <div class="setting-row" onclick="toast('Coming soon!')">
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="setting-label" data-i="goPremium">Go Premium</div></div>
             <div style="display:flex;align-items:center;gap:6px"><div class="setting-value" style="color:var(--gold)" data-i="free">Free</div><div class="chevron">›</div></div>
@@ -1239,7 +1254,7 @@ const LANGS=[
 
 const T={
   en:{langTitle:'Choose your language',langSub:'You can change this later in settings',continue:'Continue →',register:'Sign Up',login:'Log In',back:'Back',createAccountTitle:'Create account',loginTitle:'Welcome back',authSub:'Start completing missions and climbing the ranks',username:'Username',email:'Email',password:'Password',createAccount:'Create Account',logIn:'Log In',or:'or',continueGoogle:'Continue with Google',days:'days',heroTitle:"Ready for today's missions?",remaining:'missions remaining today',dailyProgress:'Daily progress',adMain:'Watch a short ad',adSub:'+50 bonus points · watch up to 10x/day',watch:'Watch',todaysMissions:"Today's missions",social:'Social',dare:'Dare',explore:'Explore',easy:'Easy',medium:'Medium',hard:'Hard',done:'✓ Done',start:'Start →',m0title:'Ask a stranger one question',m0desc:"Approach someone you don't know and ask them one genuine question.",m1title:'Stand completely still for 60 seconds',m1desc:'Pick a public spot and freeze like a statue for a full minute.',m2title:"Find a place you've never been to",m2desc:"Walk to a street or spot you've never noticed before.",leaderboard:'Leaderboard',lbSub:'This week · resets Friday',friends:'Friends',country:'Country',global:'Global',dayStreak:'day streak',weeklyPoints:'Weekly points',missionsDone:'Missions done',friendRank:'Friend rank',rankProgress:'Rank progress',ptsToLegend:'116 pts to Legend',language:'Language',notifications:'Notifications',privacy:'Privacy',goPremium:'Go Premium',free:'Free',on:'On',logout:'Log Out',missions:'Missions',ranks:'Ranks',feed:'Scroll',profile:'Profile',points:'Points',difficulty:'Difficulty',estTime:'Est. time',tips:'Tips',uploadProof:'Upload your proof',photoOrVideo:'Photo or short video',markComplete:'Mark as completed ✓',cancel:'Cancel',greeting:'Hey',
-  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',forgotPw:'Forgot password?',resetSent:'Password reset email sent',verifyEmailSent:'Verification email sent — check your inbox',blockTitle:'Block user',blockConfirm:'Are you sure you want to block',blockReport:'Block & Report',blockOnly:'Just block',blockedDone:'blocked',unblockedDone:'Unblocked',blockedUsers:'Blocked users',noBlocked:"You haven't blocked anyone",unblock:'Unblock',freezeUsed:'Streak freeze used — your {n}-day streak is safe!',changeUsername:'Change username',changePassword:'Change password',changeEmail:'Change email',newUsername:'New username:',newPassword:'New password (12+ chars, with a capital & a number):',newEmail:'New email:',reauthNeeded:'Please log out and back in, then try again',saved:'Saved!',shareBrag:'🔥 I have {pts} points and a {streak}-day streak on FlashArena! Join me:',shareJoin:'🔥 Join me on FlashArena — complete real-life missions and earn rewards:',onb1Title:'Real-life missions',onb1Text:'Every day you get fun missions to complete in the real world.',onb2Title:'Upload your proof',onb2Text:'Snap a photo or video doing the mission to earn points.',onb3Title:'Climb the ranks',onb3Text:'Earn points, keep your streak, and rise on the leaderboard.',onbNext:'Next →',onbStart:"Let's go!",onbSkip:'Skip',trending:'Trending',
+  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',forgotPw:'Forgot password?',resetSent:'Password reset email sent',verifyEmailSent:'Verification email sent — check your inbox',blockTitle:'Block user',blockConfirm:'Are you sure you want to block',blockReport:'Block & Report',blockOnly:'Just block',blockedDone:'blocked',unblockedDone:'Unblocked',blockedUsers:'Blocked users',noBlocked:"You haven't blocked anyone",unblock:'Unblock',freezeUsed:'Streak freeze used — your {n}-day streak is safe!',changeUsername:'Change username',changePassword:'Change password',changeEmail:'Change email',newUsername:'New username:',newPassword:'New password (12+ chars, with a capital & a number):',newEmail:'New email:',reauthNeeded:'Please log out and back in, then try again',saved:'Saved!',shareBrag:'🔥 I have {pts} points and a {streak}-day streak on FlashArena! Join me:',shareJoin:'🔥 Join me on FlashArena — complete real-life missions and earn rewards:',onb1Title:'Real-life missions',onb1Text:'Every day you get fun missions to complete in the real world.',onb2Title:'Upload your proof',onb2Text:'Snap a photo or video doing the mission to earn points.',onb3Title:'Climb the ranks',onb3Text:'Earn points, keep your streak, and rise on the leaderboard.',onbNext:'Next →',onbStart:"Let's go!",onbSkip:'Skip',trending:'Trending',moderation:'Moderation',noReports:'No reports 🎉',markReviewed:'Resolve',viewProfile:'View',reportedLabel:'Reported user:',
   adComeBack:'Come back tomorrow',adDone:'Done',adLeft:'left today',adAllDone:'All ads watched today',ptsTo:'pts to',maxRank:'Max rank reached!',
   lbPoints:'Points',lbMissions:'Missions',lbStreak:'Streak',season:'Season',seasonEnds:'Season ends in',daysShort:'d',
   notifTitle:'Notifications',notifEmpty:'No notifications yet',notifLiked:'liked your video',notifFollowed:'started following you',notifCommented:'commented on your video',notifReplied:'replied to your comment',notifReferral:'joined with your invite — +200!',justNow:'now',minShort:'m',hrShort:'h',dayShort2:'d',
@@ -1258,7 +1273,7 @@ const T={
   likedPosts:'Liked',savedPosts:'Saved',myVideos:'My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
   exportData:'Export My Data (GDPR)',deleteAccountBtn:'Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
-  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',forgotPw:'שכחת סיסמה?',resetSent:'נשלח אימייל לאיפוס הסיסמה',verifyEmailSent:'נשלח אימייל אימות — בדוק את התיבה',blockTitle:'חסימת משתמש',blockConfirm:'האם אתה בטוח שברצונך לחסום את',blockReport:'חסום ודווח',blockOnly:'חסום בלבד',blockedDone:'נחסם',unblockedDone:'החסימה הוסרה',blockedUsers:'משתמשים חסומים',noBlocked:'לא חסמת אף אחד',unblock:'הסר חסימה',freezeUsed:'הקפאת רצף נוצלה — רצף {n} הימים שלך נשמר!',changeUsername:'שינוי שם משתמש',changePassword:'שינוי סיסמה',changeEmail:'שינוי אימייל',newUsername:'שם משתמש חדש:',newPassword:'סיסמה חדשה (12+ תווים, אות גדולה ומספר):',newEmail:'אימייל חדש:',reauthNeeded:'התנתק והתחבר מחדש, ואז נסה שוב',saved:'נשמר!',shareBrag:'🔥 יש לי {pts} נקודות ורצף של {streak} ימים ב-FlashArena! בוא/י אליי:',shareJoin:'🔥 בוא/י ל-FlashArena — משימות אמיתיות ופרסים אמיתיים:',onb1Title:'משימות מהחיים',onb1Text:'כל יום מחכות לך משימות כיפיות לבצע בעולם האמיתי.',onb2Title:'העלה הוכחה',onb2Text:'צלם תמונה או סרטון תוך כדי המשימה כדי לזכות בנקודות.',onb3Title:'טפס בדירוג',onb3Text:'צבור נקודות, שמור על הרצף, ועלה בלוח המובילים.',onbNext:'הבא →',onbStart:'יאללה!',onbSkip:'דלג',trending:'טרנדים',
+  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',forgotPw:'שכחת סיסמה?',resetSent:'נשלח אימייל לאיפוס הסיסמה',verifyEmailSent:'נשלח אימייל אימות — בדוק את התיבה',blockTitle:'חסימת משתמש',blockConfirm:'האם אתה בטוח שברצונך לחסום את',blockReport:'חסום ודווח',blockOnly:'חסום בלבד',blockedDone:'נחסם',unblockedDone:'החסימה הוסרה',blockedUsers:'משתמשים חסומים',noBlocked:'לא חסמת אף אחד',unblock:'הסר חסימה',freezeUsed:'הקפאת רצף נוצלה — רצף {n} הימים שלך נשמר!',changeUsername:'שינוי שם משתמש',changePassword:'שינוי סיסמה',changeEmail:'שינוי אימייל',newUsername:'שם משתמש חדש:',newPassword:'סיסמה חדשה (12+ תווים, אות גדולה ומספר):',newEmail:'אימייל חדש:',reauthNeeded:'התנתק והתחבר מחדש, ואז נסה שוב',saved:'נשמר!',shareBrag:'🔥 יש לי {pts} נקודות ורצף של {streak} ימים ב-FlashArena! בוא/י אליי:',shareJoin:'🔥 בוא/י ל-FlashArena — משימות אמיתיות ופרסים אמיתיים:',onb1Title:'משימות מהחיים',onb1Text:'כל יום מחכות לך משימות כיפיות לבצע בעולם האמיתי.',onb2Title:'העלה הוכחה',onb2Text:'צלם תמונה או סרטון תוך כדי המשימה כדי לזכות בנקודות.',onb3Title:'טפס בדירוג',onb3Text:'צבור נקודות, שמור על הרצף, ועלה בלוח המובילים.',onbNext:'הבא →',onbStart:'יאללה!',onbSkip:'דלג',trending:'טרנדים',moderation:'ניהול דיווחים',noReports:'אין דיווחים 🎉',markReviewed:'טופל',viewProfile:'צפה',reportedLabel:'משתמש שדווח:',
   adComeBack:'חזור מחר',adDone:'הושלם',adLeft:'נותרו היום',adAllDone:'צפית בכל הפרסומות היום',ptsTo:'נק׳ עד',maxRank:'הגעת לדרגה הגבוהה ביותר!',
   lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
   notifTitle:'התראות',notifEmpty:'אין התראות עדיין',notifLiked:'אהב את הסרטון שלך',notifFollowed:'התחיל לעקוב אחריך',notifCommented:'הגיב על הסרטון שלך',notifReplied:'הגיב לתגובה שלך',notifReferral:'הצטרף דרך ההזמנה שלך — +200!',justNow:'עכשיו',minShort:'ד׳',hrShort:'ש׳',dayShort2:'ימ׳',
@@ -1685,7 +1700,7 @@ function applyLoadedData(data, user){
 // Settings panel (TikTok-style), opened from the profile gear button.
 function openSettings(){
   var o=document.getElementById('settings-overlay');
-  if(o){ o.classList.add('show'); try{applyTranslations();}catch(e){} try{syncPushToggle();}catch(e){} }
+  if(o){ o.classList.add('show'); try{applyTranslations();}catch(e){} try{syncPushToggle();}catch(e){} var ar=document.getElementById('admin-setting-row'); if(ar) ar.style.display=isAdmin()?'':'none'; }
   // Lock background scroll while the sheet is open
   var sc=document.querySelector('.screen.active');
   if(sc){ sc.style.overflow='hidden'; window._settingsLockedScreen=sc; }
@@ -4464,6 +4479,34 @@ function pushNotification(targetUid,type,extra){
   if(extra){ for(var k in extra) n[k]=extra[k]; }
   db.ref('notifications/'+targetUid).push(n).catch(function(){});
 }
+// ══════════ ADMIN MODERATION ══════════
+var ADMIN_EMAIL='shahar070510@gmail.com';
+function isAdmin(){ return !!(auth&&auth.currentUser&&(auth.currentUser.email||'').toLowerCase()===ADMIN_EMAIL); }
+function openAdmin(){ var o=document.getElementById('admin-overlay'); if(o){ o.classList.add('show'); renderAdminReports(); } }
+function closeAdmin(){ var o=document.getElementById('admin-overlay'); if(o) o.classList.remove('show'); }
+function renderAdminReports(){
+  var list=document.getElementById('admin-list'); if(!list) return;
+  if(!db){ list.innerHTML='<div class="empty-sheet">'+t('noConnection')+'</div>'; return; }
+  list.innerHTML='<div class="empty-sheet">'+t('loading')+'</div>';
+  db.ref('reports').orderByChild('createdAt').limitToLast(100).once('value').then(function(snap){
+    var rows=[]; snap.forEach(function(c){ rows.push({id:c.key,...c.val()}); }); rows.reverse();
+    rows=rows.filter(function(r){return r.status!=='actioned';});
+    if(!rows.length){ list.innerHTML='<div class="empty-sheet">'+t('noReports')+'</div>'; return; }
+    list.innerHTML=rows.map(function(r){
+      return '<div class="admin-row">'
+        +'<div class="admin-row-top"><span class="admin-reason">'+escHtml(r.reason||'?')+'</span><span class="admin-status '+(r.status||'pending')+'">'+escHtml(r.status||'pending')+'</span></div>'
+        +'<div class="admin-row-sub">'+t('reportedLabel')+' <b>'+escHtml((r.reportedUid||'').slice(0,10))+'…</b></div>'
+        +'<div class="admin-row-actions">'
+          +'<button class="admin-act view" onclick="closeAdmin();feedOpenProfile(\''+escHtml(r.reportedUid)+'\',\'user\',\'U\')">'+t('viewProfile')+'</button>'
+          +'<button class="admin-act done" onclick="adminResolve(\''+escHtml(r.id)+'\')">'+t('markReviewed')+'</button>'
+        +'</div></div>';
+    }).join('');
+  }).catch(function(e){ console.warn('[admin]',e); list.innerHTML='<div class="empty-sheet">'+(t('noReports'))+'</div>'; });
+}
+function adminResolve(id){
+  if(!db||!id) return;
+  db.ref('reports/'+id+'/status').set('actioned').then(function(){ toast('✅ '+t('saved')); renderAdminReports(); }).catch(function(e){ toast('⚠️ '+((e&&e.message)||'')); });
+}
 function notifText(n){
   const who=n.byUsername||'Someone';
   switch(n.type){
@@ -5923,6 +5966,15 @@ window.addEventListener('beforeunload',function(){
     <div class="onb-text" id="onb-text"></div>
     <div class="onb-dots" id="onb-dots"></div>
     <button class="onb-btn" id="onb-btn" onclick="onbNext()">Next</button>
+  </div>
+</div>
+
+<div class="overlay" id="admin-overlay" onclick="if(event.target===this)closeAdmin()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🛡️ <span data-i="moderation">Moderation</span></div>
+    <div id="admin-list" class="blocked-list"></div>
+    <button class="modal-cancel" onclick="closeAdmin()" data-i="close">Close</button>
   </div>
 </div>
 
