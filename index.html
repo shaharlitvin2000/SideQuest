@@ -529,7 +529,8 @@ svg.ic-lg{width:19px;height:19px}
 .fpp-you-badge{font-size:12px;color:var(--accent);font-weight:700;background:var(--accent-soft);border:1px solid rgba(45,212,191,.25);border-radius:10px;padding:2px 8px;vertical-align:middle;margin-inline-start:4px}
 .fpp-ach-count{font-size:12px;color:var(--muted);font-weight:600}
 .fpp-ach-strip{display:flex;flex-wrap:wrap;gap:8px;padding:4px 18px 6px}
-.fpp-ach-badge{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg2);border:1px solid var(--border)}
+.fpp-ach-badge{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg2);border:1px solid var(--border);cursor:pointer;transition:transform .12s}
+.fpp-ach-badge:active{transform:scale(.9)}
 .fpp-ach-badge.locked{opacity:.28;filter:grayscale(1)}
 .fpp-ach-empty{padding:2px 18px 8px;font-size:12px;color:var(--muted)}
 .fpp-stats-4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:16px 18px 4px;box-sizing:border-box}
@@ -2064,6 +2065,14 @@ let feedAllPosts=[],feedDisplayPosts=[],feedShuffled=[],feedIdx=-1,feedAnimating
 let feedSeen=[],feedPos=-1;
 var _fd={drag:false,vert:false,sy:0,sx:0,ly:0,lt:0,vel:0};
 var fppPosts=[],fpvIdx=0,fpvAnimating=false;
+var _fppAchVals=null; // stats of the profile currently shown in the popup (for achievement info)
+// Tap an achievement in the profile popup: show unlocked, or how much is missing.
+function showFppAchInfo(id){
+  var a=ACHIEVEMENTS.find(function(x){return x.id===id;}); if(!a) return;
+  var cur=(_fppAchVals&&_fppAchVals[a.cat])||0;
+  if(cur>=a.target){ toast(a.icon+' '+achName(a)+' — '+t('achUnlockedYes')); }
+  else { toast('🔒 '+achName(a)+': '+t('achNeed')+' '+(a.target-cur).toLocaleString()+' '+t('achUnit_'+a.cat)); }
+}
 
 // ──── PAGINATION ────
 var feedPaginationCursor=null;  // timestamp of oldest post loaded
@@ -2136,10 +2145,11 @@ function feedOpenProfile(uid,username,init){
   // Render another user's achievements from their public stats (no private reads).
   function renderFppAch(missions,points,followers,streak){
     var vals={missions:missions||0,points:points||0,followers:followers||0,streak:streak||0};
+    _fppAchVals=vals; // so taps can report progress for THIS profile
     var unlocked=0;
     var html=ACHIEVEMENTS.map(function(a){
       var ok=(vals[a.cat]||0)>=a.target; if(ok) unlocked++;
-      return '<div class="fpp-ach-badge'+(ok?'':' locked')+'" title="'+escHtml(achName(a))+'">'+a.icon+'</div>';
+      return '<div class="fpp-ach-badge'+(ok?'':' locked')+'" onclick="showFppAchInfo(\''+a.id+'\')" title="'+escHtml(achName(a))+'">'+a.icon+'</div>';
     }).join('');
     var strip=document.getElementById('fpp-ach-strip'); if(strip) strip.innerHTML=html;
     var cnt=document.getElementById('fpp-ach-count'); if(cnt) cnt.textContent=unlocked+'/'+ACHIEVEMENTS.length;
