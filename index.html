@@ -1163,24 +1163,8 @@ function trackError(category,error){
 
 // ══════════ CONSTANTS ══════════
 const LANGS=[
-  {code:'en',name:'English',native:'English',flag:'🇺🇸',dir:'ltr'},
   {code:'he',name:'Hebrew',native:'עברית',flag:'🇮🇱',dir:'rtl'},
-  {code:'ar',name:'Arabic',native:'العربية',flag:'🇸🇦',dir:'rtl'},
-  {code:'es',name:'Spanish',native:'Español',flag:'🇪🇸',dir:'ltr'},
-  {code:'fr',name:'French',native:'Français',flag:'🇫🇷',dir:'ltr'},
-  {code:'pt',name:'Portuguese',native:'Português',flag:'🇧🇷',dir:'ltr'},
-  {code:'ru',name:'Russian',native:'Русский',flag:'🇷🇺',dir:'ltr'},
-  {code:'de',name:'German',native:'Deutsch',flag:'🇩🇪',dir:'ltr'},
-  {code:'it',name:'Italian',native:'Italiano',flag:'🇮🇹',dir:'ltr'},
-  {code:'tr',name:'Turkish',native:'Türkçe',flag:'🇹🇷',dir:'ltr'},
-  {code:'nl',name:'Dutch',native:'Nederlands',flag:'🇳🇱',dir:'ltr'},
-  {code:'pl',name:'Polish',native:'Polski',flag:'🇵🇱',dir:'ltr'},
-  {code:'ko',name:'Korean',native:'한국어',flag:'🇰🇷',dir:'ltr'},
-  {code:'ja',name:'Japanese',native:'日本語',flag:'🇯🇵',dir:'ltr'},
-  {code:'zh',name:'Chinese',native:'中文',flag:'🇨🇳',dir:'ltr'},
-  {code:'hi',name:'Hindi',native:'हिन्दी',flag:'🇮🇳',dir:'ltr'},
-  {code:'id',name:'Indonesian',native:'Bahasa',flag:'🇮🇩',dir:'ltr'},
-  {code:'uk',name:'Ukrainian',native:'Українська',flag:'🇺🇦',dir:'ltr'},
+  {code:'en',name:'English',native:'English',flag:'🇺🇸',dir:'ltr'},
 ];
 
 const T={
@@ -1223,7 +1207,7 @@ const T={
   likedPosts:'אהבתי',savedPosts:'שמורים',myVideos:'הסרטונים שלי',noPostsYet:'אין פוסטים עדיין',noPostsSub:'השלם משימה והעלה הוכחה — זה יופיע כאן!',noLikedYet:'אין פוסטים שאהבת',noLikedSub:'לך לפיד ולחץ ❤️ על פוסטים שאהבת',noSavedYet:'אין פוסטים שמורים',noSavedSub:'לחץ על הסימנייה כדי לשמור פוסטים',followToSee:'עקוב אחרי יוצרים כדי לראות את הפוסטים שלהם',
   exportData:'ייצוא הנתונים שלי (GDPR)',deleteAccountBtn:'מחק את החשבון שלי',dataPrivacy:'נתונים ופרטיות'},
 };
-['ar','es','fr','pt','ru','de','it','tr','nl','pl','ko','ja','zh','hi','id','uk'].forEach(c=>{T[c]=T['en'];});
+// Only English and Hebrew are fully translated. Any legacy stored code falls back to English via t().
 
 const MISSIONS=[
   {tagKey:'social',tagCls:'b-social',titleKey:'m0title',descKey:'m0desc',pts:150,diffKey:'easy',time:'~2 min',tips:['Smile before you approach','Any simple question works','Take a photo after you finish talking']},
@@ -1439,8 +1423,8 @@ function tryInitFirebase(attempts){
     try{
       const savedLang = localStorage.getItem('selectedLang');
       if(savedLang){
-        curLang = savedLang;
-        const langObj = LANGS.find(l => l.code === curLang);
+        curLang = (savedLang==='he'||savedLang==='en')?savedLang:'en';
+        const langObj = LANGS.find(l => l.code === curLang) || LANGS[0];
         document.documentElement.dir = langObj.dir;
         applyTranslations();
         showPage('p-auth');
@@ -1475,8 +1459,8 @@ function setupAuthListener(){
         savedLang = localStorage.getItem('selectedLang');
       }catch(e){}
       if(savedLang){
-        curLang = savedLang;
-        const langObj = LANGS.find(l => l.code === curLang);
+        curLang = (savedLang==='he'||savedLang==='en')?savedLang:'en';
+        const langObj = LANGS.find(l => l.code === curLang) || LANGS[0];
         document.documentElement.dir = langObj.dir;
         applyTranslations();
         showPage('p-auth');
@@ -1593,7 +1577,7 @@ function applyLoadedData(data, user){
   myLastDailyClaim=data.lastDailyClaim||'';
   myDailyStreak=data.dailyClaimStreak||0;
   myBio=data.bio||''; myAvatarURL=data.avatarURL||''; myAvatarColor=data.avatarColor||''; myLink=data.link||''; myAge=data.age||''; myCountryName=data.profileCountry||''; myTitle=data.title||'';
-  curLang=data.lang||'en'; selLang=curLang;
+  curLang=(data.lang==='he'||data.lang==='en')?data.lang:'en'; selLang=curLang;
   myPushEnabled = data.pushEnabled !== false; // default ON unless explicitly disabled
   syncPushToggle();
 
