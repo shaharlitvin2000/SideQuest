@@ -160,6 +160,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;m
 .fpp-block-btn.active{color:#e0697f;border-color:rgba(224,105,127,.5)}
 .fpp-block-btn:active{transform:scale(.86)}
 #block-sheet,#blocked-overlay{z-index:1000}
+.onb-overlay{position:fixed;inset:0;z-index:1100;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:24px}
+.onb-overlay.show{display:flex}
+.onb-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rxl);max-width:360px;width:100%;padding:34px 24px 24px;text-align:center;position:relative;animation:pop .25s cubic-bezier(.34,1.3,.5,1)}
+.onb-skip{position:absolute;top:14px;inset-inline-end:16px;background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:var(--font)}
+.onb-emoji{font-size:54px;margin-bottom:16px;line-height:1}
+.onb-title{font-family:var(--font);font-size:21px;font-weight:700;margin-bottom:10px}
+.onb-text{font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:22px}
+.onb-dots{display:flex;gap:7px;justify-content:center;margin-bottom:20px}
+.onb-dot{width:7px;height:7px;border-radius:50%;background:var(--bg3);transition:all .2s}
+.onb-dot.on{background:var(--accent);width:20px;border-radius:4px}
+.onb-btn{width:100%;background:var(--accent);color:#04140d;border:none;border-radius:var(--r);padding:14px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s}
+.onb-btn:active{transform:scale(.98)}
 .blocked-list{display:flex;flex-direction:column;gap:8px;margin:8px 0 4px;max-height:50vh;overflow-y:auto}
 .blocked-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r)}
 .blocked-av{width:38px;height:38px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted);flex-shrink:0}
@@ -1222,7 +1234,7 @@ const LANGS=[
 
 const T={
   en:{langTitle:'Choose your language',langSub:'You can change this later in settings',continue:'Continue →',register:'Sign Up',login:'Log In',back:'Back',createAccountTitle:'Create account',loginTitle:'Welcome back',authSub:'Start completing missions and climbing the ranks',username:'Username',email:'Email',password:'Password',createAccount:'Create Account',logIn:'Log In',or:'or',continueGoogle:'Continue with Google',days:'days',heroTitle:"Ready for today's missions?",remaining:'missions remaining today',dailyProgress:'Daily progress',adMain:'Watch a short ad',adSub:'+50 bonus points · watch up to 10x/day',watch:'Watch',todaysMissions:"Today's missions",social:'Social',dare:'Dare',explore:'Explore',easy:'Easy',medium:'Medium',hard:'Hard',done:'✓ Done',start:'Start →',m0title:'Ask a stranger one question',m0desc:"Approach someone you don't know and ask them one genuine question.",m1title:'Stand completely still for 60 seconds',m1desc:'Pick a public spot and freeze like a statue for a full minute.',m2title:"Find a place you've never been to",m2desc:"Walk to a street or spot you've never noticed before.",leaderboard:'Leaderboard',lbSub:'This week · resets Friday',friends:'Friends',country:'Country',global:'Global',dayStreak:'day streak',weeklyPoints:'Weekly points',missionsDone:'Missions done',friendRank:'Friend rank',rankProgress:'Rank progress',ptsToLegend:'116 pts to Legend',language:'Language',notifications:'Notifications',privacy:'Privacy',goPremium:'Go Premium',free:'Free',on:'On',logout:'Log Out',missions:'Missions',ranks:'Ranks',feed:'Scroll',profile:'Profile',points:'Points',difficulty:'Difficulty',estTime:'Est. time',tips:'Tips',uploadProof:'Upload your proof',photoOrVideo:'Photo or short video',markComplete:'Mark as completed ✓',cancel:'Cancel',greeting:'Hey',
-  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',forgotPw:'Forgot password?',resetSent:'Password reset email sent',verifyEmailSent:'Verification email sent — check your inbox',blockTitle:'Block user',blockConfirm:'Are you sure you want to block',blockReport:'Block & Report',blockOnly:'Just block',blockedDone:'blocked',unblockedDone:'Unblocked',blockedUsers:'Blocked users',noBlocked:"You haven't blocked anyone",unblock:'Unblock',freezeUsed:'Streak freeze used — your {n}-day streak is safe!',changeUsername:'Change username',changePassword:'Change password',changeEmail:'Change email',newUsername:'New username:',newPassword:'New password (12+ chars, with a capital & a number):',newEmail:'New email:',reauthNeeded:'Please log out and back in, then try again',saved:'Saved!',shareBrag:'🔥 I have {pts} points and a {streak}-day streak on FlashArena! Join me:',shareJoin:'🔥 Join me on FlashArena — complete real-life missions and earn rewards:',
+  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',forgotPw:'Forgot password?',resetSent:'Password reset email sent',verifyEmailSent:'Verification email sent — check your inbox',blockTitle:'Block user',blockConfirm:'Are you sure you want to block',blockReport:'Block & Report',blockOnly:'Just block',blockedDone:'blocked',unblockedDone:'Unblocked',blockedUsers:'Blocked users',noBlocked:"You haven't blocked anyone",unblock:'Unblock',freezeUsed:'Streak freeze used — your {n}-day streak is safe!',changeUsername:'Change username',changePassword:'Change password',changeEmail:'Change email',newUsername:'New username:',newPassword:'New password (12+ chars, with a capital & a number):',newEmail:'New email:',reauthNeeded:'Please log out and back in, then try again',saved:'Saved!',shareBrag:'🔥 I have {pts} points and a {streak}-day streak on FlashArena! Join me:',shareJoin:'🔥 Join me on FlashArena — complete real-life missions and earn rewards:',onb1Title:'Real-life missions',onb1Text:'Every day you get fun missions to complete in the real world.',onb2Title:'Upload your proof',onb2Text:'Snap a photo or video doing the mission to earn points.',onb3Title:'Climb the ranks',onb3Text:'Earn points, keep your streak, and rise on the leaderboard.',onbNext:'Next →',onbStart:"Let's go!",onbSkip:'Skip',
   adComeBack:'Come back tomorrow',adDone:'Done',adLeft:'left today',adAllDone:'All ads watched today',ptsTo:'pts to',maxRank:'Max rank reached!',
   lbPoints:'Points',lbMissions:'Missions',lbStreak:'Streak',season:'Season',seasonEnds:'Season ends in',daysShort:'d',
   notifTitle:'Notifications',notifEmpty:'No notifications yet',notifLiked:'liked your video',notifFollowed:'started following you',notifCommented:'commented on your video',notifReplied:'replied to your comment',notifReferral:'joined with your invite — +200!',justNow:'now',minShort:'m',hrShort:'h',dayShort2:'d',
@@ -1241,7 +1253,7 @@ const T={
   likedPosts:'Liked',savedPosts:'Saved',myVideos:'My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
   exportData:'Export My Data (GDPR)',deleteAccountBtn:'Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
-  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',forgotPw:'שכחת סיסמה?',resetSent:'נשלח אימייל לאיפוס הסיסמה',verifyEmailSent:'נשלח אימייל אימות — בדוק את התיבה',blockTitle:'חסימת משתמש',blockConfirm:'האם אתה בטוח שברצונך לחסום את',blockReport:'חסום ודווח',blockOnly:'חסום בלבד',blockedDone:'נחסם',unblockedDone:'החסימה הוסרה',blockedUsers:'משתמשים חסומים',noBlocked:'לא חסמת אף אחד',unblock:'הסר חסימה',freezeUsed:'הקפאת רצף נוצלה — רצף {n} הימים שלך נשמר!',changeUsername:'שינוי שם משתמש',changePassword:'שינוי סיסמה',changeEmail:'שינוי אימייל',newUsername:'שם משתמש חדש:',newPassword:'סיסמה חדשה (12+ תווים, אות גדולה ומספר):',newEmail:'אימייל חדש:',reauthNeeded:'התנתק והתחבר מחדש, ואז נסה שוב',saved:'נשמר!',shareBrag:'🔥 יש לי {pts} נקודות ורצף של {streak} ימים ב-FlashArena! בוא/י אליי:',shareJoin:'🔥 בוא/י ל-FlashArena — משימות אמיתיות ופרסים אמיתיים:',
+  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',forgotPw:'שכחת סיסמה?',resetSent:'נשלח אימייל לאיפוס הסיסמה',verifyEmailSent:'נשלח אימייל אימות — בדוק את התיבה',blockTitle:'חסימת משתמש',blockConfirm:'האם אתה בטוח שברצונך לחסום את',blockReport:'חסום ודווח',blockOnly:'חסום בלבד',blockedDone:'נחסם',unblockedDone:'החסימה הוסרה',blockedUsers:'משתמשים חסומים',noBlocked:'לא חסמת אף אחד',unblock:'הסר חסימה',freezeUsed:'הקפאת רצף נוצלה — רצף {n} הימים שלך נשמר!',changeUsername:'שינוי שם משתמש',changePassword:'שינוי סיסמה',changeEmail:'שינוי אימייל',newUsername:'שם משתמש חדש:',newPassword:'סיסמה חדשה (12+ תווים, אות גדולה ומספר):',newEmail:'אימייל חדש:',reauthNeeded:'התנתק והתחבר מחדש, ואז נסה שוב',saved:'נשמר!',shareBrag:'🔥 יש לי {pts} נקודות ורצף של {streak} ימים ב-FlashArena! בוא/י אליי:',shareJoin:'🔥 בוא/י ל-FlashArena — משימות אמיתיות ופרסים אמיתיים:',onb1Title:'משימות מהחיים',onb1Text:'כל יום מחכות לך משימות כיפיות לבצע בעולם האמיתי.',onb2Title:'העלה הוכחה',onb2Text:'צלם תמונה או סרטון תוך כדי המשימה כדי לזכות בנקודות.',onb3Title:'טפס בדירוג',onb3Text:'צבור נקודות, שמור על הרצף, ועלה בלוח המובילים.',onbNext:'הבא →',onbStart:'יאללה!',onbSkip:'דלג',
   adComeBack:'חזור מחר',adDone:'הושלם',adLeft:'נותרו היום',adAllDone:'צפית בכל הפרסומות היום',ptsTo:'נק׳ עד',maxRank:'הגעת לדרגה הגבוהה ביותר!',
   lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
   notifTitle:'התראות',notifEmpty:'אין התראות עדיין',notifLiked:'אהב את הסרטון שלך',notifFollowed:'התחיל לעקוב אחריך',notifCommented:'הגיב על הסרטון שלך',notifReplied:'הגיב לתגובה שלך',notifReferral:'הצטרף דרך ההזמנה שלך — +200!',justNow:'עכשיו',minShort:'ד׳',hrShort:'ש׳',dayShort2:'ימ׳',
@@ -1772,6 +1784,7 @@ function finishLoad(){
   try{startNightBatchVerifySchedule();}catch(e){console.error('[finishLoad] batch verify',e);}
   setTimeout(function(){try{animateStreakCountUp(streak);}catch(e){};},400);
   if(_freezeJustUsed){ _freezeJustUsed=false; setTimeout(function(){ toast('🧊 '+t('freezeUsed').replace('{n}',streak)); },1200); }
+  try{ maybeShowOnboarding(); }catch(e){}
 }
 
 function loadUserData(user){
@@ -4484,6 +4497,26 @@ function openNotifications(){
   }).catch(function(){ list.innerHTML='<div class="empty-sheet">'+t('notifEmpty')+'</div>'; });
 }
 function closeNotifications(){ document.getElementById('notif-overlay')?.classList.remove('show'); }
+
+// ══════════ ONBOARDING (first-time tutorial) ══════════
+var ONB=[{icon:'🎯',t:'onb1Title',d:'onb1Text'},{icon:'📸',t:'onb2Title',d:'onb2Text'},{icon:'🏆',t:'onb3Title',d:'onb3Text'}];
+var _onbStep=0;
+function maybeShowOnboarding(){
+  try{ if(localStorage.getItem('fa_onboarded')) return; }catch(e){}
+  _onbStep=0; renderOnb();
+  var o=document.getElementById('onboarding-overlay'); if(o) o.classList.add('show');
+}
+function renderOnb(){
+  var s=ONB[_onbStep]; if(!s) return;
+  var g=function(id){return document.getElementById(id);};
+  if(g('onb-emoji')) g('onb-emoji').textContent=s.icon;
+  if(g('onb-title')) g('onb-title').textContent=t(s.t);
+  if(g('onb-text')) g('onb-text').textContent=t(s.d);
+  if(g('onb-dots')) g('onb-dots').innerHTML=ONB.map(function(_,i){return '<span class="onb-dot'+(i===_onbStep?' on':'')+'"></span>';}).join('');
+  if(g('onb-btn')) g('onb-btn').textContent=(_onbStep<ONB.length-1)?t('onbNext'):t('onbStart');
+}
+function onbNext(){ if(_onbStep<ONB.length-1){_onbStep++;renderOnb();} else finishOnboarding(); }
+function finishOnboarding(){ try{localStorage.setItem('fa_onboarded','1');}catch(e){} var o=document.getElementById('onboarding-overlay'); if(o) o.classList.remove('show'); }
 function watchNotifUnread(){
   if(!db||!userUID) return;
   db.ref('notifications/'+userUID).orderByChild('read').equalTo(false).on('value',function(snap){
@@ -5860,6 +5893,17 @@ window.addEventListener('beforeunload',function(){
       <button class="share-opt" onclick="shareVia('native')"><span class="share-ic">•••</span><span data-i="shareMore">More</span></button>
     </div>
     <button class="modal-cancel" onclick="document.getElementById('share-modal').classList.remove('show')" data-i="close">Close</button>
+  </div>
+</div>
+
+<div class="onb-overlay" id="onboarding-overlay">
+  <div class="onb-card">
+    <button class="onb-skip" onclick="finishOnboarding()" data-i="onbSkip">Skip</button>
+    <div class="onb-emoji" id="onb-emoji">🎯</div>
+    <div class="onb-title" id="onb-title"></div>
+    <div class="onb-text" id="onb-text"></div>
+    <div class="onb-dots" id="onb-dots"></div>
+    <button class="onb-btn" id="onb-btn" onclick="onbNext()">Next</button>
   </div>
 </div>
 
