@@ -456,7 +456,7 @@ svg.ic-lg{width:19px;height:19px}
 .settings-panel{background:var(--bg2);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;max-width:430px;max-height:85vh;display:flex;flex-direction:column;animation:up .28s cubic-bezier(.4,0,.2,1);box-shadow:0 -12px 48px rgba(0,0,0,.32);overflow:hidden}
 .settings-handle{width:36px;height:4px;background:var(--muted);opacity:.25;border-radius:2px;margin:12px auto 4px;flex-shrink:0}
 .settings-head-title{font-family:var(--font);font-size:17px;font-weight:700;text-align:center;padding:4px 16px 12px;flex-shrink:0}
-.settings-scroll{flex:1;overflow-y:auto;padding:8px 0 max(22px,env(safe-area-inset-bottom))}
+.settings-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:8px 0 max(22px,env(safe-area-inset-bottom))}
 .pf-bell-btn svg{width:21px;height:21px}
 .feed-pts-tag{font-size:13px;color:var(--gold);font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6);margin-bottom:3px}
 .feed-ts{font-size:11px;color:rgba(255,255,255,.42)}
@@ -1620,10 +1620,14 @@ function applyLoadedData(data, user){
 function openSettings(){
   var o=document.getElementById('settings-overlay');
   if(o){ o.classList.add('show'); try{applyTranslations();}catch(e){} try{syncPushToggle();}catch(e){} }
+  // Lock background scroll while the sheet is open
+  var sc=document.querySelector('.screen.active');
+  if(sc){ sc.style.overflow='hidden'; window._settingsLockedScreen=sc; }
 }
 function closeSettings(){
   var o=document.getElementById('settings-overlay');
   if(o) o.classList.remove('show');
+  if(window._settingsLockedScreen){ window._settingsLockedScreen.style.overflow=''; window._settingsLockedScreen=null; }
 }
 
 // Profile content tabs (TikTok-style): My Videos / Liked / Saved
