@@ -18,6 +18,8 @@
         "premium": {".read": true, ".write": false, ".validate": "newData.isBoolean()"},
         "blocked": {".validate": "newData.isBoolean()"},
         "pushEnabled": {".validate": "newData.isBoolean()"},
+        "agreedToTerms": {".validate": "newData.isBoolean()"},
+        "consentAt": {".validate": "newData.isNumber()"},
         "email": {".write": "false"},
         "createdAt": {".write": "false"},
         "public": {".read": true},

@@ -95,12 +95,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .auth-btn{width:100%;background:var(--accent);color:#04140d;border:none;border-radius:var(--r);padding:15px;margin-top:4px;font-family:var(--font);font-size:15px;font-weight:700;letter-spacing:.2px;cursor:pointer;transition:background .15s ease,transform .15s ease;box-shadow:none}
 .auth-btn:hover{background:var(--accent2)}
 .auth-btn:active{transform:scale(.98)}
+.auth-consent{display:flex;align-items:flex-start;gap:9px;margin:6px 2px 4px;font-size:12px;color:var(--muted);line-height:1.45;cursor:pointer;text-align:start}
+.auth-consent input{width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--accent);cursor:pointer}
+.auth-consent a{color:var(--accent);font-weight:600;text-decoration:none}
+.auth-legal-note{margin-top:14px;font-size:11px;color:var(--muted);text-align:center;line-height:1.5}
+.auth-legal-note a{color:var(--accent);text-decoration:none;font-weight:600}
 .auth-or{display:flex;align-items:center;gap:10px;margin:20px 0;color:var(--muted);font-size:12px}
 .auth-or::before,.auth-or::after{content:'';flex:1;height:1px;background:var(--border)}
 .google-btn{width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:14px;font-weight:600;cursor:pointer;transition:border-color .2s,box-shadow .2s;color:var(--text);box-shadow:var(--sh0)}
 .google-btn:active{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
 .google-icon{width:20px;height:20px}
-.auth-error{font-size:12px;color:var(--accent);margin-top:5px;display:none;font-weight:500}
+.auth-error{font-size:12px;color:#e0697f;margin-top:5px;display:none;font-weight:500}
 
 /* ───── APP SHELL ───── */
 #p-app{background:var(--bg);padding:0;flex-direction:column;position:relative;overflow:hidden}
@@ -352,6 +357,11 @@ svg.ic-lg{width:19px;height:19px}
 .chevron{color:var(--muted);font-size:16px}
 .logout-btn{margin:14px 20px 0;width:calc(100% - 40px);background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:var(--r);padding:14px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:background .15s ease,transform .15s ease;box-shadow:none}
 .logout-btn:active{transform:scale(.98)}
+.logout-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;margin-inline-end:7px}
+.logout-btn.gdpr-danger{color:#e0697f;border-color:rgba(224,105,127,.32)}
+.gdpr-link{display:flex;align-items:center;justify-content:space-between;width:calc(100% - 40px);margin:0 20px 8px;padding:13px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:14px;font-weight:500;text-decoration:none}
+.gdpr-link:active{transform:scale(.98)}
+.gdpr-link svg{width:16px;height:16px;color:var(--muted);fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .logout-btn:active{transform:scale(.98);background:rgba(45,212,191,.12)}
 
 /* ── BOTTOM NAV ── */
@@ -673,6 +683,8 @@ svg.ic-lg{width:19px;height:19px}
       <input class="inp" id="reg-pass" type="password" placeholder="Min 6 characters" data-i="phPassword">
       <div class="auth-error" id="err-pass" data-i="errPass">Password must be at least 6 characters</div>
     </div>
+    <label class="auth-consent"><input type="checkbox" id="reg-consent"><span id="consent-text"></span></label>
+    <div class="auth-error" id="err-consent" data-i="errConsent" style="margin:-6px 0 8px">Please confirm you are 13+ and agree to the terms</div>
     <button class="auth-btn" onclick="doRegister()" data-i="createAccount">Create Account</button>
   </div>
 
@@ -694,6 +706,7 @@ svg.ic-lg{width:19px;height:19px}
     <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
     <span data-i="continueGoogle">Continue with Google</span>
   </div>
+  <div class="auth-legal-note" id="auth-legal-note"></div>
 </div>
 </div>
 
@@ -1150,9 +1163,9 @@ const T={
   achievements:'Achievements',achTapHint:"Tap one to see what's needed",achUnlockedYes:'Unlocked! ✓',achNeed:'Need',achUnit_missions:'more missions',achUnit_points:'more points',achUnit_followers:'more followers',achUnit_streak:'more days streak',achCat_missions:'Missions',achCat_points:'Points',achCat_followers:'Followers',achCat_streak:'Streak',showAll:'Show all',showLess:'Show less',achFirst:'First Mission',achDays:'Day Streak',
   howItWorks:'How it works',howItWorksText:"Upload a photo or video of you completing the mission — every genuine attempt counts.",
   followingLbl:'Following',followersLbl:'Followers',uploadVideo:'Upload Video',totalViews:'Total Views',totalLikes:'Total Likes',avgWatch:'Avg Watch',
-  forYou:'For You',followingTab:'Following',phUsername:'Choose a username',phEmail:'Your email address',phPassword:'Min 6 characters',followBtn:'Follow',followingBtn:'Following ✓',noFollowingPosts:'No posts from creators you follow',errName:'Please enter a username',errEmail:'Please enter a valid email',errPass:'Password must be at least 6 characters',statusVerified:'verified',statusPending:'pending',viewsShort:'views',analyzing:'Analyzing…',
+  forYou:'For You',followingTab:'Following',phUsername:'Choose a username',phEmail:'Your email address',phPassword:'12+ chars, with a capital letter & a number',followBtn:'Follow',followingBtn:'Following ✓',noFollowingPosts:'No posts from creators you follow',errName:'Please enter a username',errEmail:'Please enter a valid email',errPass:'Password must be 12+ chars with uppercase, lowercase, and a number',statusVerified:'verified',statusPending:'pending',viewsShort:'views',analyzing:'Analyzing…',consentPre:"I'm 13+ and I agree to the",termsLink:'Terms',consentAnd:'and',privacyLink:'Privacy Policy',errConsent:'Please confirm you are 13+ and agree to the terms',consentNote:'By continuing you confirm you are 13+ and agree to our Terms & Privacy Policy',errNameLen:'Username must be 3-30 characters',errNameChars:'Only letters, numbers, _ and - allowed',errNameTaken:'Username not available',errEmailUsed:'Email already in use',regSuccess:'Welcome to Flash Arena!',terms:'Terms of Service',privacyPolicy:'Privacy Policy',
   likedPosts:'Liked',savedPosts:'Saved',myVideos:'My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
-  exportData:'Export My Data (GDPR)',deleteAccountBtn:'🗑️ Delete My Account',dataPrivacy:'Data & Privacy'},
+  exportData:'Export My Data (GDPR)',deleteAccountBtn:'Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
   close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',
   adComeBack:'חזור מחר',adDone:'הושלם',adLeft:'נותרו היום',adAllDone:'צפית בכל הפרסומות היום',ptsTo:'נק׳ עד',maxRank:'הגעת לדרגה הגבוהה ביותר!',
@@ -1169,9 +1182,9 @@ const T={
   achievements:'הישגים',achTapHint:'לחץ על הישג לראות מה חסר',achUnlockedYes:'נפתח! ✓',achNeed:'חסרים עוד',achUnit_missions:'משימות',achUnit_points:'נקודות',achUnit_followers:'עוקבים',achUnit_streak:'ימי רצף',achCat_missions:'משימות',achCat_points:'נקודות',achCat_followers:'עוקבים',achCat_streak:'סטריק',showAll:'הצג הכל',showLess:'הצג פחות',achFirst:'משימה ראשונה',achDays:'ימי רצף',
   howItWorks:'איך זה עובד',howItWorksText:'העלה תמונה או סרטון שלך משלים את המשימה — כל ניסיון אמיתי נחשב.',
   followingLbl:'במעקב',followersLbl:'עוקבים',uploadVideo:'העלה סרטון',totalViews:'צפיות',totalLikes:'לייקים',avgWatch:'צפייה ממוצעת',
-  forYou:'בשבילך',followingTab:'במעקב',phUsername:'בחירת שם משתמש',phEmail:'כתובת האימייל שלך',phPassword:'לפחות 6 תווים',followBtn:'עקוב',followingBtn:'עוקב ✓',noFollowingPosts:'אין פוסטים מיוצרים שאתה עוקב אחריהם',errName:'נא להזין שם משתמש',errEmail:'נא להזין אימייל תקין',errPass:'הסיסמה חייבת להכיל לפחות 6 תווים',statusVerified:'מאומת',statusPending:'ממתין',viewsShort:'צפיות',analyzing:'מנתח…',
+  forYou:'בשבילך',followingTab:'במעקב',phUsername:'בחירת שם משתמש',phEmail:'כתובת האימייל שלך',phPassword:'12+ תווים, עם אות גדולה ומספר',followBtn:'עקוב',followingBtn:'עוקב ✓',noFollowingPosts:'אין פוסטים מיוצרים שאתה עוקב אחריהם',errName:'נא להזין שם משתמש',errEmail:'נא להזין אימייל תקין',errPass:'הסיסמה חייבת להכיל 12+ תווים עם אות גדולה, קטנה ומספר',statusVerified:'מאומת',statusPending:'ממתין',viewsShort:'צפיות',analyzing:'מנתח…',consentPre:'אני בן/בת 13 ומעלה ומסכים/ה ל',termsLink:'תנאי השימוש',consentAnd:'ול',privacyLink:'מדיניות הפרטיות',errConsent:'יש לאשר שאתה בן/בת 13+ ומסכים/ה לתנאים',consentNote:'בהמשך אתה מאשר/ת שאתה בן/בת 13+ ומסכים/ה לתנאי השימוש ולמדיניות הפרטיות',errNameLen:'שם המשתמש חייב להכיל 3-30 תווים',errNameChars:'מותרים רק אותיות, מספרים, _ ו-',errNameTaken:'שם המשתמש תפוס',errEmailUsed:'האימייל כבר בשימוש',regSuccess:'ברוך הבא ל-Flash Arena!',terms:'תנאי שימוש',privacyPolicy:'מדיניות פרטיות',
   likedPosts:'אהבתי',savedPosts:'שמורים',myVideos:'הסרטונים שלי',noPostsYet:'אין פוסטים עדיין',noPostsSub:'השלם משימה והעלה הוכחה — זה יופיע כאן!',noLikedYet:'אין פוסטים שאהבת',noLikedSub:'לך לפיד ולחץ ❤️ על פוסטים שאהבת',noSavedYet:'אין פוסטים שמורים',noSavedSub:'לחץ על הסימנייה כדי לשמור פוסטים',followToSee:'עקוב אחרי יוצרים כדי לראות את הפוסטים שלהם',
-  exportData:'ייצוא הנתונים שלי (GDPR)',deleteAccountBtn:'🗑️ מחק את החשבון שלי',dataPrivacy:'נתונים ופרטיות'},
+  exportData:'ייצוא הנתונים שלי (GDPR)',deleteAccountBtn:'מחק את החשבון שלי',dataPrivacy:'נתונים ופרטיות'},
 };
 ['ar','es','fr','pt','ru','de','it','tr','nl','pl','ko','ja','zh','hi','id','uk'].forEach(c=>{T[c]=T['en'];});
 
@@ -1292,6 +1305,11 @@ function applyTranslations(){
   document.getElementById('lt').textContent=t('langTitle');
   document.getElementById('ls').textContent=t('langSub');
   document.getElementById('lang-btn').textContent=t('continue');
+  // Consent + legal text (with inline links to Terms & Privacy)
+  var ct=document.getElementById('consent-text');
+  if(ct) ct.innerHTML=t('consentPre')+' <a href="/terms.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+t('termsLink')+'</a> '+t('consentAnd')+' <a href="/privacy.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+t('privacyLink')+'</a>';
+  var ln=document.getElementById('auth-legal-note');
+  if(ln) ln.innerHTML=t('consentNote').replace(t('termsLink'),'<a href="/terms.html" target="_blank" rel="noopener">'+t('termsLink')+'</a>').replace(t('privacyLink'),'<a href="/privacy.html" target="_blank" rel="noopener">'+t('privacyLink')+'</a>');
   if(userName){
     const g=id=>document.getElementById(id);
     const av=userName[0].toUpperCase();
@@ -1708,26 +1726,32 @@ function doRegister(){
 
   const errPass=document.getElementById('err-pass');
   if(!isStrong){
-    errPass.textContent='Password must be 12+ chars with uppercase, lowercase, and numbers';
+    errPass.textContent=t('errPass');
     errPass.style.display='block';
   } else {
     errPass.style.display='none';
   }
 
-  if(!name||!email.includes('@')||!isStrong) return;
-  if(!auth){toast('No connection. Try again.');return;}
+  // Age + terms consent (required for new accounts)
+  const consent=document.getElementById('reg-consent');
+  const consentOk=consent&&consent.checked;
+  const errConsent=document.getElementById('err-consent');
+  if(errConsent) errConsent.style.display=consentOk?'none':'block';
+
+  if(!name||!email.includes('@')||!isStrong||!consentOk) return;
+  if(!auth){toast(t('noConnection')||'No connection. Try again.');return;}
 
   setAuthLoading(true);
 
   // Validate username format and check availability
   if(!name || name.length < 3 || name.length > 30){
-    document.getElementById('err-name').textContent = 'Username must be 3-30 characters';
+    document.getElementById('err-name').textContent = t('errNameLen');
     document.getElementById('err-name').style.display = 'block';
     setAuthLoading(false);
     return;
   }
   if(!/^[a-zA-Z0-9_-]+$/.test(name)){
-    document.getElementById('err-name').textContent = 'Only letters, numbers, _ and - allowed';
+    document.getElementById('err-name').textContent = t('errNameChars');
     document.getElementById('err-name').style.display = 'block';
     setAuthLoading(false);
     return;
@@ -1737,7 +1761,7 @@ function doRegister(){
   const db = firebase.database();
   db.ref('users').orderByChild('username').equalTo(name).once('value', snapshot => {
     if(snapshot.exists()){
-      document.getElementById('err-name').textContent='Username not available';
+      document.getElementById('err-name').textContent=t('errNameTaken');
       document.getElementById('err-name').style.display='block';
       setAuthLoading(false);
       return;
@@ -1757,6 +1781,8 @@ function doRegister(){
           email: email,
           pts: 0,
           streak: 0,
+          agreedToTerms: true,
+          consentAt: firebase.database.ServerValue.TIMESTAMP,
           createdAt: firebase.database.ServerValue.TIMESTAMP
         });
       })
@@ -1765,7 +1791,7 @@ function doRegister(){
         applyTranslations();
         updateUI();
         updateAdBanner();
-        toast('✅ Account created! Welcome to Flash Arena!');
+        toast('✅ '+t('regSuccess'));
         showPage('p-app');
         loadLeaderboard();
         try{loadFeed();}catch(e){};
@@ -1774,7 +1800,7 @@ function doRegister(){
         setAuthLoading(false);
         const errEmail=document.getElementById('err-email');
         if(e.code==='auth/email-already-in-use'){
-          errEmail.textContent='Email already in use';
+          errEmail.textContent=t('errEmailUsed');
         } else {
           errEmail.textContent=e.message||'Registration failed';
         }
@@ -1944,8 +1970,10 @@ function addGDPRSettings(){
   gdprSection.style.cssText='margin-top:20px;padding-top:18px;border-top:1px solid var(--border)';
   gdprSection.innerHTML=`
     <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:0 20px 10px" data-i="dataPrivacy">Data & Privacy</div>
-    <button class="logout-btn" style="width:calc(100% - 40px);margin:0 20px 10px;background:rgba(59,158,255,.1);color:var(--blue);border:1px solid rgba(59,158,255,.25)" onclick="exportMyData()" data-i="exportData">Export My Data (GDPR)</button>
-    <button class="logout-btn" style="width:calc(100% - 40px);margin:0 20px;background:rgba(240,86,110,.1);color:#f0566e;border:1px solid rgba(240,86,110,.25)" onclick="deleteMyAccount()" data-i="deleteAccountBtn">🗑️ Delete My Account</button>
+    <a class="gdpr-link" href="/terms.html" target="_blank" rel="noopener"><span data-i="terms">Terms of Service</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+    <a class="gdpr-link" href="/privacy.html" target="_blank" rel="noopener"><span data-i="privacyPolicy">Privacy Policy</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+    <button class="logout-btn" onclick="exportMyData()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span data-i="exportData">Export My Data (GDPR)</span></button>
+    <button class="logout-btn gdpr-danger" onclick="deleteMyAccount()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg><span data-i="deleteAccountBtn">Delete My Account</span></button>
   `;
   settingsListEl.insertAdjacentElement('afterend',gdprSection);
   try{applyTranslations();}catch(e){} // section added after initial pass — translate now
