@@ -109,10 +109,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 
 /* ───── APP SHELL ───── */
 #p-app{background:var(--bg);padding:0;flex-direction:column;position:relative;overflow:hidden}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);flex-shrink:0;box-shadow:0 1px 0 var(--border),0 4px 20px rgba(0,0,0,.04);position:relative;z-index:10}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 15px 11px;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);flex-shrink:0;box-shadow:0 1px 0 var(--border),0 4px 20px rgba(0,0,0,.04);position:relative;z-index:10}
 .logo{font-family:var(--font);font-size:20px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .logo span{-webkit-text-fill-color:inherit}
-.topbar-right{display:flex;align-items:center;gap:8px}
+.topbar-right{display:flex;align-items:center;gap:7px}
 .streak-pill,.pts-pill{display:flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:5px 9px;font-size:12px;font-weight:600;color:var(--text);transition:transform .15s,box-shadow .15s}
 .streak-pill .num,.pts-pill .num{color:var(--text);font-weight:700}
 .pts-pill .star{color:var(--gold);font-size:13px;line-height:1}
@@ -138,10 +138,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .report-reasons{display:flex;flex-direction:column;gap:8px;margin:16px 0}
 .report-reason{text-align:start;padding:14px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s}
 .report-reason:active{transform:scale(.98)}
-.tb-bell{position:relative;background:var(--bg2);border:1px solid var(--border2);color:var(--text);cursor:pointer;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .12s,background .15s,border-color .15s}
+.tb-bell{position:relative;flex-shrink:0;background:var(--bg2);border:1px solid var(--border2);color:var(--text);cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .12s,background .15s,border-color .15s}
 .tb-bell:hover{background:var(--bg3);border-color:var(--accent)}
 .tb-bell:active{transform:scale(.9)}
-.tb-bell svg{width:19px;height:19px}
+.tb-bell svg{width:18px;height:18px;display:block}
 .msg-dot{position:absolute;top:-3px;inset-inline-end:-3px;width:13px;height:13px;border-radius:50%;background:#ff2d4f;border:2px solid #000;box-shadow:0 1px 5px rgba(255,45,79,.6);display:none;z-index:5}
 .notif-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer}
 .notif-row.unread{background:var(--accent-soft)}
@@ -526,6 +526,7 @@ svg.ic-lg{width:19px;height:19px}
 .fpp-username-new{font-family:var(--font);font-size:22px;font-weight:800;margin-bottom:8px;position:relative;z-index:1;letter-spacing:-.4px}
 .fpp-rank-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:5px 16px;border-radius:20px;background:var(--bg2);border:1.5px solid var(--border2);color:var(--text);position:relative;z-index:1;box-shadow:var(--sh0)}
 .fpp-bio{position:relative;z-index:1;margin-top:10px;max-width:300px;font-size:13px;line-height:1.45;color:var(--muted);text-align:center}
+.fpp-you-badge{font-size:12px;color:var(--accent);font-weight:700;background:var(--accent-soft);border:1px solid rgba(45,212,191,.25);border-radius:10px;padding:2px 8px;vertical-align:middle;margin-inline-start:4px}
 .fpp-ach-count{font-size:12px;color:var(--muted);font-weight:600}
 .fpp-ach-strip{display:flex;flex-wrap:wrap;gap:8px;padding:4px 18px 6px}
 .fpp-ach-badge{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg2);border:1px solid var(--border)}
@@ -1179,7 +1180,7 @@ const T={
   achievements:'Achievements',achTapHint:"Tap one to see what's needed",achUnlockedYes:'Unlocked! ✓',achNeed:'Need',achUnit_missions:'more missions',achUnit_points:'more points',achUnit_followers:'more followers',achUnit_streak:'more days streak',achCat_missions:'Missions',achCat_points:'Points',achCat_followers:'Followers',achCat_streak:'Streak',showAll:'Show all',showLess:'Show less',achFirst:'First Mission',achDays:'Day Streak',
   howItWorks:'How it works',howItWorksText:"Upload a photo or video of you completing the mission — every genuine attempt counts.",
   followingLbl:'Following',followersLbl:'Followers',uploadVideo:'Upload Video',totalViews:'Total Views',totalLikes:'Total Likes',avgWatch:'Avg Watch',
-  forYou:'For You',followingTab:'Following',phUsername:'Choose a username',phEmail:'Your email address',phPassword:'12+ chars, with a capital letter & a number',followBtn:'Follow',followingBtn:'Following ✓',noFollowingPosts:'No posts from creators you follow',errName:'Please enter a username',errEmail:'Please enter a valid email',errPass:'Password must be 12+ chars with uppercase, lowercase, and a number',statusVerified:'verified',statusPending:'pending',viewsShort:'views',tabVideos:'Videos',analyzing:'Analyzing…',consentPre:"I'm 13+ and I agree to the",termsLink:'Terms',consentAnd:'and',privacyLink:'Privacy Policy',errConsent:'Please confirm you are 13+ and agree to the terms',consentNote:'By continuing you confirm you are 13+ and agree to our Terms & Privacy Policy',errNameLen:'Username must be 3-30 characters',errNameChars:'Only letters, numbers, _ and - allowed',errNameTaken:'Username not available',errEmailUsed:'Email already in use',regSuccess:'Welcome to Flash Arena!',terms:'Terms of Service',privacyPolicy:'Privacy Policy',
+  forYou:'For You',followingTab:'Following',phUsername:'Choose a username',phEmail:'Your email address',phPassword:'12+ chars, with a capital letter & a number',followBtn:'Follow',followingBtn:'Following ✓',noFollowingPosts:'No posts from creators you follow',errName:'Please enter a username',errEmail:'Please enter a valid email',errPass:'Password must be 12+ chars with uppercase, lowercase, and a number',statusVerified:'verified',statusPending:'pending',viewsShort:'views',tabVideos:'Videos',noPostsOther:'This user has no posts yet',analyzing:'Analyzing…',consentPre:"I'm 13+ and I agree to the",termsLink:'Terms',consentAnd:'and',privacyLink:'Privacy Policy',errConsent:'Please confirm you are 13+ and agree to the terms',consentNote:'By continuing you confirm you are 13+ and agree to our Terms & Privacy Policy',errNameLen:'Username must be 3-30 characters',errNameChars:'Only letters, numbers, _ and - allowed',errNameTaken:'Username not available',errEmailUsed:'Email already in use',regSuccess:'Welcome to Flash Arena!',terms:'Terms of Service',privacyPolicy:'Privacy Policy',
   likedPosts:'Liked',savedPosts:'Saved',myVideos:'My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
   exportData:'Export My Data (GDPR)',deleteAccountBtn:'Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
@@ -1198,7 +1199,7 @@ const T={
   achievements:'הישגים',achTapHint:'לחץ על הישג לראות מה חסר',achUnlockedYes:'נפתח! ✓',achNeed:'חסרים עוד',achUnit_missions:'משימות',achUnit_points:'נקודות',achUnit_followers:'עוקבים',achUnit_streak:'ימי רצף',achCat_missions:'משימות',achCat_points:'נקודות',achCat_followers:'עוקבים',achCat_streak:'סטריק',showAll:'הצג הכל',showLess:'הצג פחות',achFirst:'משימה ראשונה',achDays:'ימי רצף',
   howItWorks:'איך זה עובד',howItWorksText:'העלה תמונה או סרטון שלך משלים את המשימה — כל ניסיון אמיתי נחשב.',
   followingLbl:'במעקב',followersLbl:'עוקבים',uploadVideo:'העלה סרטון',totalViews:'צפיות',totalLikes:'לייקים',avgWatch:'צפייה ממוצעת',
-  forYou:'בשבילך',followingTab:'במעקב',phUsername:'בחירת שם משתמש',phEmail:'כתובת האימייל שלך',phPassword:'12+ תווים, עם אות גדולה ומספר',followBtn:'עקוב',followingBtn:'עוקב ✓',noFollowingPosts:'אין פוסטים מיוצרים שאתה עוקב אחריהם',errName:'נא להזין שם משתמש',errEmail:'נא להזין אימייל תקין',errPass:'הסיסמה חייבת להכיל 12+ תווים עם אות גדולה, קטנה ומספר',statusVerified:'מאומת',statusPending:'ממתין',viewsShort:'צפיות',tabVideos:'סרטונים',analyzing:'מנתח…',consentPre:'אני בן/בת 13 ומעלה ומסכים/ה ל',termsLink:'תנאי השימוש',consentAnd:'ול',privacyLink:'מדיניות הפרטיות',errConsent:'יש לאשר שאתה בן/בת 13+ ומסכים/ה לתנאים',consentNote:'בהמשך אתה מאשר/ת שאתה בן/בת 13+ ומסכים/ה לתנאי השימוש ולמדיניות הפרטיות',errNameLen:'שם המשתמש חייב להכיל 3-30 תווים',errNameChars:'מותרים רק אותיות, מספרים, _ ו-',errNameTaken:'שם המשתמש תפוס',errEmailUsed:'האימייל כבר בשימוש',regSuccess:'ברוך הבא ל-Flash Arena!',terms:'תנאי שימוש',privacyPolicy:'מדיניות פרטיות',
+  forYou:'בשבילך',followingTab:'במעקב',phUsername:'בחירת שם משתמש',phEmail:'כתובת האימייל שלך',phPassword:'12+ תווים, עם אות גדולה ומספר',followBtn:'עקוב',followingBtn:'עוקב ✓',noFollowingPosts:'אין פוסטים מיוצרים שאתה עוקב אחריהם',errName:'נא להזין שם משתמש',errEmail:'נא להזין אימייל תקין',errPass:'הסיסמה חייבת להכיל 12+ תווים עם אות גדולה, קטנה ומספר',statusVerified:'מאומת',statusPending:'ממתין',viewsShort:'צפיות',tabVideos:'סרטונים',noPostsOther:'למשתמש הזה אין עדיין פוסטים',analyzing:'מנתח…',consentPre:'אני בן/בת 13 ומעלה ומסכים/ה ל',termsLink:'תנאי השימוש',consentAnd:'ול',privacyLink:'מדיניות הפרטיות',errConsent:'יש לאשר שאתה בן/בת 13+ ומסכים/ה לתנאים',consentNote:'בהמשך אתה מאשר/ת שאתה בן/בת 13+ ומסכים/ה לתנאי השימוש ולמדיניות הפרטיות',errNameLen:'שם המשתמש חייב להכיל 3-30 תווים',errNameChars:'מותרים רק אותיות, מספרים, _ ו-',errNameTaken:'שם המשתמש תפוס',errEmailUsed:'האימייל כבר בשימוש',regSuccess:'ברוך הבא ל-Flash Arena!',terms:'תנאי שימוש',privacyPolicy:'מדיניות פרטיות',
   likedPosts:'אהבתי',savedPosts:'שמורים',myVideos:'הסרטונים שלי',noPostsYet:'אין פוסטים עדיין',noPostsSub:'השלם משימה והעלה הוכחה — זה יופיע כאן!',noLikedYet:'אין פוסטים שאהבת',noLikedSub:'לך לפיד ולחץ ❤️ על פוסטים שאהבת',noSavedYet:'אין פוסטים שמורים',noSavedSub:'לחץ על הסימנייה כדי לשמור פוסטים',followToSee:'עקוב אחרי יוצרים כדי לראות את הפוסטים שלהם',
   exportData:'ייצוא הנתונים שלי (GDPR)',deleteAccountBtn:'מחק את החשבון שלי',dataPrivacy:'נתונים ופרטיות'},
 };
@@ -2101,6 +2102,8 @@ function feedOpenProfile(uid,username,init){
   fppPosts=[];
   var neutral=(getComputedStyle(document.documentElement).getPropertyValue('--bg3').trim())||'#1f2429';
   var isMe=(uid===userUID);
+  // Can't report yourself — hide the report button on your own profile.
+  var _rb=document.querySelector('#fpp-overlay .fpp-report-btn'); if(_rb) _rb.style.display=isMe?'none':'';
   // reset bio + achievements between opens
   var _b=document.getElementById('fpp-bio'); if(_b){_b.style.display='none';_b.textContent='';}
   var _as=document.getElementById('fpp-ach-strip'); if(_as) _as.innerHTML='';
@@ -2127,7 +2130,8 @@ function feedOpenProfile(uid,username,init){
       if(photoURL){av.style.backgroundImage='url('+photoURL+')';av.style.backgroundSize='cover';av.style.backgroundPosition='center';av.textContent='';}
       else {av.style.backgroundImage='';av.textContent=init;av.style.background='linear-gradient(135deg,var(--accent),var(--accent2))';av.style.color='#04140d';}
     }
-    document.getElementById('fpp-uname-new').textContent='@'+username;
+    var unameEl=document.getElementById('fpp-uname-new');
+    unameEl.innerHTML='@'+escHtml(username)+(isMe?' <span class="fpp-you-badge">'+t('you')+'</span>':'');
   }
   // Render another user's achievements from their public stats (no private reads).
   function renderFppAch(missions,points,followers,streak){
@@ -2152,7 +2156,7 @@ function feedOpenProfile(uid,username,init){
   }
   function renderGrid(){
     if(!fppPosts.length){
-      document.getElementById('fpp-grid').innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6">'+t('noPostsYet')+' 🎯</div>';
+      document.getElementById('fpp-grid').innerHTML='<div class="liked-empty"><div class="liked-empty-icon">🎬</div><div class="liked-empty-title">'+t('noPostsYet')+'</div><div class="liked-empty-sub">'+(isMe?t('noPostsSub'):t('noPostsOther'))+'</div></div>';
       return;
     }
     document.getElementById('fpp-grid').innerHTML=fppPosts.map(function(p,i){
@@ -5395,6 +5399,11 @@ async function loadMyVideos(){
 
     const cnt=document.getElementById('my-videos-header-count');
     if(cnt){cnt.style.display=videos.length>0?'inline-block':'none';cnt.textContent=videos.length;}
+
+    if(videos.length===0){
+      grid.innerHTML='<div class="liked-empty"><div class="liked-empty-icon">🎬</div><div class="liked-empty-title">'+t('noPostsYet')+'</div><div class="liked-empty-sub">'+t('noPostsSub')+'</div></div>';
+      return;
+    }
 
     grid.innerHTML=videos.map(v=>{
       const label=v.post.missionTitle||v.post.caption||'Untitled';

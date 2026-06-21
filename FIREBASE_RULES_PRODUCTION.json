@@ -136,15 +136,19 @@
     "follows": {
       "$uid": {
         ".read": true,
-        ".write": false,
-        ".indexOn": ["timestamp"]
+        ".write": "$uid === auth.uid",
+        ".indexOn": ["timestamp"],
+        "$target": { ".validate": "newData.val() === true || newData.val() === null || newData.hasChildren()" }
       }
     },
 
     "followers": {
       "$uid": {
         ".read": true,
-        ".write": false
+        "$follower": {
+          ".write": "$follower === auth.uid",
+          ".validate": "newData.val() === true || newData.val() === null || newData.hasChildren()"
+        }
       }
     },
 
