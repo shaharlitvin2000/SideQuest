@@ -43,7 +43,27 @@ button:focus-visible,input:focus-visible,a:focus-visible,.setting-row:focus-visi
   --t-title:25px;--t-h:15px;--t-body:14px;--t-cap:12px;
 }
 html,body{height:100%;overflow:hidden}
-body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:430px;margin:0 auto;display:flex;flex-direction:column;height:100%;position:relative;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-synthesis:none;letter-spacing:.1px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;height:100vh;height:100dvh;position:relative;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-synthesis:none;letter-spacing:.1px}
+/* ───── RESPONSIVE: adapt to screen size for comfort ───── */
+@media (max-width:380px){
+  .topbar{padding:11px 12px 9px;gap:6px}
+  .topbar-right{gap:6px}
+  .streak-pill,.pts-pill,.rank-pill{font-size:11px;padding:4px 8px}
+  .tb-bell{width:34px;height:34px}
+  .tb-bell svg{width:17px;height:17px}
+  .logo{font-size:18px}
+  .hero-title{font-size:22px}
+  .stat-n{font-size:18px}
+  .my-follow-num{font-size:16px}
+  .pf-mini-btn{font-size:10px;padding:8px 3px}
+  .daily-cta,.auth-btn,.modal-cta{font-size:13px}
+}
+@media (max-width:340px){
+  .topbar-right{gap:4px}
+  .streak-pill [data-i="days"]{display:none}
+  .hero-title{font-size:20px}
+  .stat-l,.my-follow-lbl{font-size:10px}
+}
 
 
 /* ───── LOADING ───── */
@@ -74,7 +94,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .lang-info{}
 .lang-name{font-size:13px;font-weight:600;line-height:1.2}
 .lang-native{font-size:11px;color:var(--muted);margin-top:2px}
-.lang-btn{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:calc(100% - 48px);max-width:382px;margin:0;background:var(--accent);color:#04140d;border:none;border-radius:var(--rl) var(--rl) 0 0;padding:18px;font-family:var(--font);font-size:15px;font-weight:700;letter-spacing:.2px;cursor:pointer;z-index:50;box-shadow:0 -4px 24px rgba(0,0,0,.3)}
+.lang-btn{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:calc(100% - 48px);max-width:432px;margin:0;background:var(--accent);color:#04140d;border:none;border-radius:var(--rl) var(--rl) 0 0;padding:18px;font-family:var(--font);font-size:15px;font-weight:700;letter-spacing:.2px;cursor:pointer;z-index:50;box-shadow:0 -4px 24px rgba(0,0,0,.3)}
 
 /* ───── AUTH ───── */
 #p-auth{background:var(--bg);padding:0}
@@ -199,7 +219,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);max-width:43
 .chat-row-last{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chat-row-time{font-size:11px;color:var(--muted)}
 .chat-unread{background:var(--accent);color:#fff;font-size:11px;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 5px}
-.chat-overlay{position:fixed;top:0;bottom:0;left:0;right:0;height:100%;height:100dvh;background:var(--bg);z-index:400;display:none;flex-direction:column;max-width:430px;margin:0 auto}
+.chat-overlay{position:fixed;top:0;bottom:0;left:0;right:0;height:100%;height:100dvh;background:var(--bg);z-index:400;display:none;flex-direction:column;max-width:480px;margin:0 auto}
 .chat-overlay.show{display:flex}
 .chat-window{display:flex;flex-direction:column;height:100%;width:100%;min-height:0}
 .chat-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg2)}
@@ -382,7 +402,7 @@ svg.ic-lg{width:19px;height:19px}
 /* ── MODAL ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
 .overlay.show{display:flex}
-.modal{background:var(--bg2);border-radius:var(--rxl) var(--rxl) 0 0;padding:22px;width:100%;max-width:430px;animation:up .25s cubic-bezier(.4,0,.2,1);max-height:90vh;overflow-y:auto;box-shadow:0 -12px 48px rgba(0,0,0,.14)}
+.modal{background:var(--bg2);border-radius:var(--rxl) var(--rxl) 0 0;padding:22px;width:100%;max-width:480px;animation:up .25s cubic-bezier(.4,0,.2,1);max-height:90vh;overflow-y:auto;box-shadow:0 -12px 48px rgba(0,0,0,.14)}
 @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:36px;height:4px;background:var(--muted);opacity:.2;border-radius:2px;margin:0 auto 20px}
 .modal-badge-d{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 11px;border-radius:20px;display:inline-block;margin-bottom:9px}
@@ -453,7 +473,7 @@ svg.ic-lg{width:19px;height:19px}
 .pf-bell-btn:active,.pf-edit-btn:active,.pf-settings-btn:active{transform:scale(.88)}
 .settings-overlay{position:fixed;inset:0;z-index:350;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .settings-overlay.show{display:flex}
-.settings-panel{background:var(--bg2);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;max-width:430px;max-height:85vh;display:flex;flex-direction:column;animation:up .28s cubic-bezier(.4,0,.2,1);box-shadow:0 -12px 48px rgba(0,0,0,.32);overflow:hidden}
+.settings-panel{background:var(--bg2);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;animation:up .28s cubic-bezier(.4,0,.2,1);box-shadow:0 -12px 48px rgba(0,0,0,.32);overflow:hidden}
 .settings-handle{width:36px;height:4px;background:var(--muted);opacity:.25;border-radius:2px;margin:12px auto 4px;flex-shrink:0}
 .settings-head-title{font-family:var(--font);font-size:17px;font-weight:700;text-align:center;padding:4px 16px 12px;flex-shrink:0}
 .settings-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:8px 0 max(22px,env(safe-area-inset-bottom))}
@@ -500,7 +520,7 @@ svg.ic-lg{width:19px;height:19px}
 /* ── FEED USER PROFILE ── */
 .fpp-overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);z-index:300;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px)}
 .fpp-overlay.show{display:flex}
-.fpp-page{background:var(--bg);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;max-width:430px;height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:up .28s cubic-bezier(.4,0,.2,1);box-shadow:0 -12px 48px rgba(0,0,0,.2);position:relative}
+.fpp-page{background:var(--bg);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;max-width:480px;height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:up .28s cubic-bezier(.4,0,.2,1);box-shadow:0 -12px 48px rgba(0,0,0,.2);position:relative}
 /* legacy fpp elements — unused but kept for no-op */
 .fpp-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;background:var(--bg);-webkit-overflow-scrolling:touch;align-content:start}
 .fpp-thumb{background:#1a1a2e;aspect-ratio:1;overflow:hidden;cursor:pointer;position:relative;touch-action:manipulation;transition:opacity .12s}
@@ -616,7 +636,7 @@ svg.ic-lg{width:19px;height:19px}
 /* ── COMMENTS ── */
 .comment-overlay{display:none;position:fixed;inset:0;z-index:500;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(6px)}
 .comment-overlay.show{display:flex}
-.comment-sheet{background:var(--bg2);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;max-width:430px;height:72vh;display:flex;flex-direction:column;animation:up .25s cubic-bezier(.4,0,.2,1);box-shadow:0 -12px 48px rgba(0,0,0,.18)}
+.comment-sheet{background:var(--bg2);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;max-width:480px;height:72vh;display:flex;flex-direction:column;animation:up .25s cubic-bezier(.4,0,.2,1);box-shadow:0 -12px 48px rgba(0,0,0,.18)}
 .comment-handle{width:36px;height:4px;background:var(--muted);opacity:.25;border-radius:2px;margin:14px auto 0;flex-shrink:0}
 .comment-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
 .comment-title{font-family:var(--font);font-size:16px;font-weight:800}
@@ -652,7 +672,7 @@ svg.ic-lg{width:19px;height:19px}
 /* ───── FOLLOW SHEET ───── */
 .follow-sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:flex-end;justify-content:center}
 .follow-sheet-overlay.show{display:flex}
-.follow-sheet{background:var(--bg);border-radius:22px 22px 0 0;width:100%;max-width:430px;max-height:72vh;display:flex;flex-direction:column;animation:up .22s ease;padding-bottom:env(safe-area-inset-bottom,16px)}
+.follow-sheet{background:var(--bg);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:72vh;display:flex;flex-direction:column;animation:up .22s ease;padding-bottom:env(safe-area-inset-bottom,16px)}
 .follow-sheet-handle{width:32px;height:3px;background:var(--muted);opacity:.28;border-radius:2px;margin:14px auto 0}
 .follow-sheet-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
 .follow-sheet-title{font-family:var(--font);font-size:16px;font-weight:800}
@@ -1488,7 +1508,7 @@ function setupAuthListener(){
 
 function showEmailVerificationPrompt(user){
   const notice=document.createElement('div');
-  notice.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;border-top:2px solid #ff9500;padding:20px;z-index:500;max-width:430px;margin:0 auto;box-shadow:0 -4px 20px rgba(0,0,0,0.3)';
+  notice.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;border-top:2px solid #ff9500;padding:20px;z-index:500;max-width:480px;margin:0 auto;box-shadow:0 -4px 20px rgba(0,0,0,0.3)';
   notice.innerHTML=`
     <div style="color:#e0e0e0;font-size:13px;line-height:1.5;margin-bottom:15px">
       📧 <strong>Verify Your Email:</strong> You need to verify your email to complete missions. Check your inbox for a verification link.
@@ -2004,7 +2024,7 @@ function showGDPRNotice(){
 
   const notice=document.createElement('div');
   notice.id='gdpr-banner';
-  notice.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;border-top:2px solid var(--accent);padding:20px;z-index:500;max-width:430px;margin:0 auto;box-shadow:0 -4px 20px rgba(0,0,0,0.3)';
+  notice.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;border-top:2px solid var(--accent);padding:20px;z-index:500;max-width:480px;margin:0 auto;box-shadow:0 -4px 20px rgba(0,0,0,0.3)';
   notice.innerHTML=`
     <div style="color:#e0e0e0;font-size:13px;line-height:1.5;margin-bottom:15px">
       📋 <strong>Privacy Notice:</strong> We use cookies and tracking to improve your experience. By using Flash Arena, you agree to our <a href="#" style="color:#00d4ff">Privacy Policy</a> and <a href="#" style="color:#00d4ff">Terms of Service</a>.
