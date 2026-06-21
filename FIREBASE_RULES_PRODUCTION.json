@@ -35,6 +35,7 @@
 
         "avatarURL": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 600"},
         "avatarColor": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 9"},
+        "bio": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 300"},
         "title": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 30"},
         "link": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 200"},
         "age": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isNumber() && newData.val() >= 13 && newData.val() <= 120"},

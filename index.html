@@ -414,6 +414,13 @@ svg.ic-lg{width:19px;height:19px}
 .modal-cta:active{transform:scale(.98)}
 .modal-cta:active{opacity:.85;transform:scale(.98)}
 .modal-cancel{width:100%;margin-top:10px;background:transparent;color:var(--muted);border:none;border-radius:var(--r);padding:13px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer}
+/* Report dialog — centered, above everything (sits over the profile popup too) */
+#report-modal{z-index:1000;align-items:center;padding:24px;background:rgba(0,0,0,.72)}
+#report-modal .modal{border-radius:var(--rxl);max-width:360px;animation:pop .22s cubic-bezier(.34,1.3,.5,1);border:1px solid var(--border2);box-shadow:0 24px 70px rgba(0,0,0,.55)}
+#report-modal .modal-handle{display:none}
+#report-modal .modal-title{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+#report-modal .modal-desc{text-align:center}
+@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
 .modal-cancel:active{background:var(--bg3)}
 /* ── AI VERIFY ── */
 .verify-box{border-radius:var(--r);padding:14px 15px;margin-bottom:16px;font-size:13px;line-height:1.6;font-weight:500;display:none;word-break:break-word}
@@ -532,6 +539,12 @@ svg.ic-lg{width:19px;height:19px}
 .fpp-posts-sec-txt{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 .fpp-posts-sec-line{flex:1;height:1px;background:var(--border)}
 /* ───── LIKED POSTS ───── */
+.pf-tabs{display:flex;gap:2px;padding:6px 12px 0;border-top:1px solid var(--border);margin-top:6px;position:sticky;top:0;background:var(--bg);z-index:4}
+.pf-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--font);font-size:12px;font-weight:600;padding:11px 4px;cursor:pointer;transition:color .15s,border-color .15s}
+.pf-tab svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.pf-tab.active{color:var(--text);border-bottom-color:var(--accent)}
+.pf-tab-count{font-size:11px;font-weight:700;color:var(--muted)}
+.pf-pane{min-height:120px}
 .liked-header{display:flex;align-items:center;gap:10px;padding:20px 18px 14px}
 .liked-header-left{display:flex;align-items:center;gap:8px}
 .liked-header-icon{font-size:17px}
@@ -893,33 +906,23 @@ svg.ic-lg{width:19px;height:19px}
         <div class="stat"><div class="stat-n" style="color:var(--accent)">0</div><div class="stat-l" data-i="totalLikes">Total Likes</div></div>
         <div class="stat"><div class="stat-n" style="color:var(--green)">0%</div><div class="stat-l" data-i="avgWatch">Avg Watch</div></div>
       </div>
-      <div class="liked-header">
-        <div class="liked-header-left">
-          <span class="liked-header-icon"><svg class="ic" viewBox="0 0 24 24" style="color:#f0566e"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></span>
-          <span class="liked-header-text" data-i="likedPosts">Liked Posts</span>
-        </div>
-        <span class="liked-header-line"></span>
-        <span class="liked-header-count" id="liked-header-count" style="display:none">0</span>
+      <div class="pf-tabs">
+        <button class="pf-tab active" data-tab="myvideos" onclick="switchPfTab('myvideos')">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+          <span data-i="tabVideos">Videos</span><span class="pf-tab-count" id="my-videos-header-count" style="display:none">0</span>
+        </button>
+        <button class="pf-tab" data-tab="liked" onclick="switchPfTab('liked')">
+          <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          <span data-i="likedPosts">Liked</span><span class="pf-tab-count" id="liked-header-count" style="display:none">0</span>
+        </button>
+        <button class="pf-tab" data-tab="saved" onclick="switchPfTab('saved')">
+          <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <span data-i="savedPosts">Saved</span><span class="pf-tab-count" id="saved-header-count" style="display:none">0</span>
+        </button>
       </div>
-      <div id="liked-grid" class="liked-grid"></div>
-      <div class="liked-header">
-        <div class="liked-header-left">
-          <span class="liked-header-icon"><svg class="ic" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
-          <span class="liked-header-text" data-i="savedPosts">Saved Posts</span>
-        </div>
-        <span class="liked-header-line"></span>
-        <span class="liked-header-count" id="saved-header-count" style="display:none">0</span>
-      </div>
-      <div id="saved-grid" class="liked-grid"></div>
-      <div class="my-videos-header">
-        <div class="my-videos-header-left">
-          <span class="my-videos-header-icon"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg></span>
-          <span class="my-videos-header-text" data-i="myVideos">My Videos</span>
-        </div>
-        <span class="my-videos-header-line"></span>
-        <span class="my-videos-header-count" id="my-videos-header-count" style="display:none">0</span>
-      </div>
-      <div id="my-videos-grid" class="my-videos-grid"></div>
+      <div id="my-videos-grid" class="my-videos-grid pf-pane"></div>
+      <div id="liked-grid" class="liked-grid pf-pane" style="display:none"></div>
+      <div id="saved-grid" class="liked-grid pf-pane" style="display:none"></div>
       <div class="settings-list">
         <div class="setting-row" onclick="showPage('p-lang')">
           <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><div class="setting-label" data-i="language">Language</div></div>
@@ -1171,7 +1174,7 @@ const T={
   achievements:'Achievements',achTapHint:"Tap one to see what's needed",achUnlockedYes:'Unlocked! ✓',achNeed:'Need',achUnit_missions:'more missions',achUnit_points:'more points',achUnit_followers:'more followers',achUnit_streak:'more days streak',achCat_missions:'Missions',achCat_points:'Points',achCat_followers:'Followers',achCat_streak:'Streak',showAll:'Show all',showLess:'Show less',achFirst:'First Mission',achDays:'Day Streak',
   howItWorks:'How it works',howItWorksText:"Upload a photo or video of you completing the mission — every genuine attempt counts.",
   followingLbl:'Following',followersLbl:'Followers',uploadVideo:'Upload Video',totalViews:'Total Views',totalLikes:'Total Likes',avgWatch:'Avg Watch',
-  forYou:'For You',followingTab:'Following',phUsername:'Choose a username',phEmail:'Your email address',phPassword:'12+ chars, with a capital letter & a number',followBtn:'Follow',followingBtn:'Following ✓',noFollowingPosts:'No posts from creators you follow',errName:'Please enter a username',errEmail:'Please enter a valid email',errPass:'Password must be 12+ chars with uppercase, lowercase, and a number',statusVerified:'verified',statusPending:'pending',viewsShort:'views',analyzing:'Analyzing…',consentPre:"I'm 13+ and I agree to the",termsLink:'Terms',consentAnd:'and',privacyLink:'Privacy Policy',errConsent:'Please confirm you are 13+ and agree to the terms',consentNote:'By continuing you confirm you are 13+ and agree to our Terms & Privacy Policy',errNameLen:'Username must be 3-30 characters',errNameChars:'Only letters, numbers, _ and - allowed',errNameTaken:'Username not available',errEmailUsed:'Email already in use',regSuccess:'Welcome to Flash Arena!',terms:'Terms of Service',privacyPolicy:'Privacy Policy',
+  forYou:'For You',followingTab:'Following',phUsername:'Choose a username',phEmail:'Your email address',phPassword:'12+ chars, with a capital letter & a number',followBtn:'Follow',followingBtn:'Following ✓',noFollowingPosts:'No posts from creators you follow',errName:'Please enter a username',errEmail:'Please enter a valid email',errPass:'Password must be 12+ chars with uppercase, lowercase, and a number',statusVerified:'verified',statusPending:'pending',viewsShort:'views',tabVideos:'Videos',analyzing:'Analyzing…',consentPre:"I'm 13+ and I agree to the",termsLink:'Terms',consentAnd:'and',privacyLink:'Privacy Policy',errConsent:'Please confirm you are 13+ and agree to the terms',consentNote:'By continuing you confirm you are 13+ and agree to our Terms & Privacy Policy',errNameLen:'Username must be 3-30 characters',errNameChars:'Only letters, numbers, _ and - allowed',errNameTaken:'Username not available',errEmailUsed:'Email already in use',regSuccess:'Welcome to Flash Arena!',terms:'Terms of Service',privacyPolicy:'Privacy Policy',
   likedPosts:'Liked',savedPosts:'Saved',myVideos:'My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
   exportData:'Export My Data (GDPR)',deleteAccountBtn:'Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
@@ -1190,7 +1193,7 @@ const T={
   achievements:'הישגים',achTapHint:'לחץ על הישג לראות מה חסר',achUnlockedYes:'נפתח! ✓',achNeed:'חסרים עוד',achUnit_missions:'משימות',achUnit_points:'נקודות',achUnit_followers:'עוקבים',achUnit_streak:'ימי רצף',achCat_missions:'משימות',achCat_points:'נקודות',achCat_followers:'עוקבים',achCat_streak:'סטריק',showAll:'הצג הכל',showLess:'הצג פחות',achFirst:'משימה ראשונה',achDays:'ימי רצף',
   howItWorks:'איך זה עובד',howItWorksText:'העלה תמונה או סרטון שלך משלים את המשימה — כל ניסיון אמיתי נחשב.',
   followingLbl:'במעקב',followersLbl:'עוקבים',uploadVideo:'העלה סרטון',totalViews:'צפיות',totalLikes:'לייקים',avgWatch:'צפייה ממוצעת',
-  forYou:'בשבילך',followingTab:'במעקב',phUsername:'בחירת שם משתמש',phEmail:'כתובת האימייל שלך',phPassword:'12+ תווים, עם אות גדולה ומספר',followBtn:'עקוב',followingBtn:'עוקב ✓',noFollowingPosts:'אין פוסטים מיוצרים שאתה עוקב אחריהם',errName:'נא להזין שם משתמש',errEmail:'נא להזין אימייל תקין',errPass:'הסיסמה חייבת להכיל 12+ תווים עם אות גדולה, קטנה ומספר',statusVerified:'מאומת',statusPending:'ממתין',viewsShort:'צפיות',analyzing:'מנתח…',consentPre:'אני בן/בת 13 ומעלה ומסכים/ה ל',termsLink:'תנאי השימוש',consentAnd:'ול',privacyLink:'מדיניות הפרטיות',errConsent:'יש לאשר שאתה בן/בת 13+ ומסכים/ה לתנאים',consentNote:'בהמשך אתה מאשר/ת שאתה בן/בת 13+ ומסכים/ה לתנאי השימוש ולמדיניות הפרטיות',errNameLen:'שם המשתמש חייב להכיל 3-30 תווים',errNameChars:'מותרים רק אותיות, מספרים, _ ו-',errNameTaken:'שם המשתמש תפוס',errEmailUsed:'האימייל כבר בשימוש',regSuccess:'ברוך הבא ל-Flash Arena!',terms:'תנאי שימוש',privacyPolicy:'מדיניות פרטיות',
+  forYou:'בשבילך',followingTab:'במעקב',phUsername:'בחירת שם משתמש',phEmail:'כתובת האימייל שלך',phPassword:'12+ תווים, עם אות גדולה ומספר',followBtn:'עקוב',followingBtn:'עוקב ✓',noFollowingPosts:'אין פוסטים מיוצרים שאתה עוקב אחריהם',errName:'נא להזין שם משתמש',errEmail:'נא להזין אימייל תקין',errPass:'הסיסמה חייבת להכיל 12+ תווים עם אות גדולה, קטנה ומספר',statusVerified:'מאומת',statusPending:'ממתין',viewsShort:'צפיות',tabVideos:'סרטונים',analyzing:'מנתח…',consentPre:'אני בן/בת 13 ומעלה ומסכים/ה ל',termsLink:'תנאי השימוש',consentAnd:'ול',privacyLink:'מדיניות הפרטיות',errConsent:'יש לאשר שאתה בן/בת 13+ ומסכים/ה לתנאים',consentNote:'בהמשך אתה מאשר/ת שאתה בן/בת 13+ ומסכים/ה לתנאי השימוש ולמדיניות הפרטיות',errNameLen:'שם המשתמש חייב להכיל 3-30 תווים',errNameChars:'מותרים רק אותיות, מספרים, _ ו-',errNameTaken:'שם המשתמש תפוס',errEmailUsed:'האימייל כבר בשימוש',regSuccess:'ברוך הבא ל-Flash Arena!',terms:'תנאי שימוש',privacyPolicy:'מדיניות פרטיות',
   likedPosts:'אהבתי',savedPosts:'שמורים',myVideos:'הסרטונים שלי',noPostsYet:'אין פוסטים עדיין',noPostsSub:'השלם משימה והעלה הוכחה — זה יופיע כאן!',noLikedYet:'אין פוסטים שאהבת',noLikedSub:'לך לפיד ולחץ ❤️ על פוסטים שאהבת',noSavedYet:'אין פוסטים שמורים',noSavedSub:'לחץ על הסימנייה כדי לשמור פוסטים',followToSee:'עקוב אחרי יוצרים כדי לראות את הפוסטים שלהם',
   exportData:'ייצוא הנתונים שלי (GDPR)',deleteAccountBtn:'מחק את החשבון שלי',dataPrivacy:'נתונים ופרטיות'},
 };
@@ -1585,6 +1588,19 @@ function applyLoadedData(data, user){
     // support both new string format (cm) and old formats for backward compat
     completedMissions=parseMissions(data.cm!==undefined?data.cm:data.completedMissions);
   }
+}
+
+// Profile content tabs (TikTok-style): My Videos / Liked / Saved
+function switchPfTab(tab){
+  ['myvideos','liked','saved'].forEach(function(tb){
+    var btn=document.querySelector('.pf-tab[data-tab="'+tb+'"]');
+    if(btn) btn.classList.toggle('active',tb===tab);
+  });
+  var map={myvideos:'my-videos-grid',liked:'liked-grid',saved:'saved-grid'};
+  Object.keys(map).forEach(function(k){
+    var el=document.getElementById(map[k]);
+    if(el) el.style.display=(k===tab)?'':'none';
+  });
 }
 
 // ══════════ PUSH NOTIFICATIONS TOGGLE ══════════
@@ -2164,14 +2180,30 @@ function feedOpenProfile(uid,username,init){
   }
 
   Promise.all([
-    db.ref('users/'+uid).once('value').catch(function(){return null;}),
+    db.ref('leaderboard/'+uid).once('value').catch(function(){return null;}),
     db.ref('feed').orderByChild('uid').equalTo(uid).once('value').catch(function(){return null;}),
     db.ref('followers/'+uid).once('value').catch(function(){return null;}),
     db.ref('follows/'+uid).once('value').catch(function(){return null;}),
-    (!isMe&&userUID)?db.ref('follows/'+userUID+'/'+uid).once('value').catch(function(){return null;}):Promise.resolve(null)
+    (!isMe&&userUID)?db.ref('follows/'+userUID+'/'+uid).once('value').catch(function(){return null;}):Promise.resolve(null),
+    db.ref('users/'+uid+'/bio').once('value').catch(function(){return null;}),
+    db.ref('users/'+uid+'/avatarURL').once('value').catch(function(){return null;}),
+    db.ref('users/'+uid+'/avatarColor').once('value').catch(function(){return null;})
   ]).then(function(results){
-    var userSnap=results[0],feedSnap=results[1],followersSnap=results[2],followingSnap=results[3],myFollowSnap=results[4];
-    var userData=userSnap?userSnap.val():null;
+    var lbSnap=results[0],feedSnap=results[1],followersSnap=results[2],followingSnap=results[3],myFollowSnap=results[4];
+    var lbData=lbSnap?lbSnap.val():null;
+    var bioVal=results[5]?results[5].val():null;
+    var avURLVal=results[6]?results[6].val():null;
+    var avColorVal=results[7]?results[7].val():null;
+    // Build a public profile view: my own profile uses live local data; others use
+    // the public leaderboard entry + individually-readable bio/avatar fields.
+    var userData={
+      pts: isMe?pts:(lbData?(lbData.pts||0):0),
+      streak: isMe?streak:(lbData?(lbData.streak||0):0),
+      totalMissionsDone: isMe?totalMissionsDone:(lbData?(lbData.missions||0):0),
+      avatarURL: isMe?myAvatarURL:avURLVal,
+      avatarColor: isMe?myAvatarColor:avColorVal,
+      bio: isMe?myBio:bioVal
+    };
     fppPosts=[];
     if(feedSnap) feedSnap.forEach(function(c){var v=c.val();fppPosts.push({id:c.key,...v});});
     fppPosts.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});
@@ -5596,7 +5628,7 @@ window.addEventListener('beforeunload',function(){
 <div class="overlay" id="report-modal" onclick="if(event.target===this)this.classList.remove('show')">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title" data-i="reportTitle">⚑ Report</div>
+    <div class="modal-title"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#e0697f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> <span data-i="reportTitle">Report</span></div>
     <div class="modal-desc"><span data-i="reportSub">Why are you reporting</span> <strong id="report-target">@user</strong>?</div>
     <div class="report-reasons">
       <button class="report-reason" onclick="submitReport('spam')">🚫 Spam</button>
