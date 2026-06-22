@@ -46,7 +46,7 @@ html,body{height:100%;overflow:hidden}
 body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;height:100vh;height:100dvh;position:relative;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-synthesis:none;letter-spacing:.1px}
 /* ───── RESPONSIVE: adapt to screen size for comfort ───── */
 @media (max-width:380px){
-  .topbar{padding:11px 12px 9px;gap:6px}
+  .topbar{padding:calc(11px + env(safe-area-inset-top)) 12px 9px;gap:6px}
   .topbar-right{gap:6px}
   .streak-pill,.pts-pill,.rank-pill{font-size:11px;padding:4px 8px}
   .tb-bell{width:34px;height:34px}
@@ -97,7 +97,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;m
 
 /* ───── AUTH ───── */
 #p-auth{background:var(--bg);padding:0}
-.auth-inner{padding:36px 24px 48px;display:flex;flex-direction:column;min-height:100vh}
+.auth-inner{padding:calc(36px + env(safe-area-inset-top)) 24px 48px;display:flex;flex-direction:column;min-height:100vh}
 .auth-back{font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:22px;display:inline-flex;align-items:center;gap:5px}
 .auth-logo{font-family:var(--font);font-size:24px;font-weight:800;margin-bottom:4px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .auth-logo span{-webkit-text-fill-color:inherit}
@@ -129,7 +129,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;m
 
 /* ───── APP SHELL ───── */
 #p-app{background:var(--bg);padding:0;flex-direction:column;position:relative;overflow:hidden}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 15px 11px;background:rgba(0,0,0,.85);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);flex-shrink:0;box-shadow:0 1px 0 var(--border),0 4px 20px rgba(0,0,0,.04);position:relative;z-index:10}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(13px + env(safe-area-inset-top)) 15px 11px;background:rgba(0,0,0,.85);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);flex-shrink:0;box-shadow:0 1px 0 var(--border),0 4px 20px rgba(0,0,0,.04);position:relative;z-index:10}
 .logo{font-family:var(--font);font-size:20px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .logo span{-webkit-text-fill-color:inherit}
 .topbar-right{display:flex;align-items:center;gap:7px}
@@ -497,6 +497,7 @@ svg.ic-lg{width:19px;height:19px}
 
 /* ── FEED ── */
 #s-feed{padding-bottom:0;overflow:hidden;flex-direction:column}
+#s-feed.active{display:flex}
 .feed-wrap{flex:1;overflow:hidden;position:relative;min-height:0;background:#000;cursor:grab;touch-action:none}
 .feed-wrap:active{cursor:grabbing}
 .feed-post{width:100%;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;flex-shrink:0}
