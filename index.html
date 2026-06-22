@@ -222,6 +222,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;m
 .pf-title-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid rgba(45,212,191,.25);border-radius:14px;padding:3px 10px;margin-top:0;margin-bottom:2px;cursor:pointer}
 .pf-title-chip.empty{color:var(--muted);background:var(--bg3);border-color:var(--border)}
 .pf-bio{font-size:13px;font-weight:400;margin-top:8px;max-width:300px;line-height:1.45;cursor:pointer;color:var(--muted);text-align:center}
+.pf-link,.fpp-link{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:13px;font-weight:600;color:var(--accent);text-decoration:none;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;z-index:1}
+.pf-link svg,.fpp-link svg{width:14px;height:14px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pf-link:active,.fpp-link:active{opacity:.7}
 .pf-bio.empty{color:var(--muted);font-weight:600}
 .ep-avatar-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin:8px 0 18px}
 .ep-avatar{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:34px;font-weight:800;color:#fff;cursor:pointer;overflow:hidden}
@@ -933,6 +936,7 @@ svg.ic-lg{width:19px;height:19px}
         <div class="pf-level" id="pf-level">🔥 Daredevil</div>
         <div class="pf-title-chip empty" id="pf-title" onclick="openTitles()"></div>
         <div class="pf-bio empty" id="pf-bio" onclick="openEditProfile()">+ Add a bio</div>
+        <a class="pf-link" id="pf-link" target="_blank" rel="noopener" style="display:none"></a>
         <div class="my-follow-row">
           <div class="my-follow-stat" onclick="showFollowSheet('following',null)">
             <span class="my-follow-num" id="my-following-cnt">—</span>
@@ -1101,6 +1105,7 @@ svg.ic-lg{width:19px;height:19px}
             <div class="fpp-username-new" id="fpp-uname-new"></div>
             <div class="fpp-rank-badge" id="fpp-rank-badge"></div>
             <div class="fpp-bio" id="fpp-bio" style="display:none"></div>
+            <a class="fpp-link" id="fpp-link" target="_blank" rel="noopener" style="display:none"></a>
             <div class="fpp-follow-area" id="fpp-follow-area">
               <div class="fpp-followers-row" id="fpp-followers-row">
                 <div class="fpp-flw-clickable" id="fpp-flw-btn-followers">
@@ -2243,6 +2248,7 @@ function feedOpenProfile(uid,username,init){
   var _bb=document.getElementById('fpp-block-btn'); if(_bb){ _bb.style.display=isMe?'none':'flex'; try{updateFppBlockBtn();}catch(e){} }
   // reset bio + achievements between opens
   var _b=document.getElementById('fpp-bio'); if(_b){_b.style.display='none';_b.textContent='';}
+  var _lk0=document.getElementById('fpp-link'); if(_lk0){_lk0.style.display='none';_lk0.innerHTML='';}
   var _as=document.getElementById('fpp-ach-strip'); if(_as) _as.innerHTML='';
   var _ac=document.getElementById('fpp-ach-count'); if(_ac) _ac.textContent='';
 
@@ -2334,13 +2340,15 @@ function feedOpenProfile(uid,username,init){
     (!isMe&&userUID)?db.ref('follows/'+userUID+'/'+uid).once('value').catch(function(){return null;}):Promise.resolve(null),
     db.ref('users/'+uid+'/bio').once('value').catch(function(){return null;}),
     db.ref('users/'+uid+'/avatarURL').once('value').catch(function(){return null;}),
-    db.ref('users/'+uid+'/avatarColor').once('value').catch(function(){return null;})
+    db.ref('users/'+uid+'/avatarColor').once('value').catch(function(){return null;}),
+    db.ref('users/'+uid+'/link').once('value').catch(function(){return null;})
   ]).then(function(results){
     var lbSnap=results[0],feedSnap=results[1],followersSnap=results[2],followingSnap=results[3],myFollowSnap=results[4];
     var lbData=lbSnap?lbSnap.val():null;
     var bioVal=results[5]?results[5].val():null;
     var avURLVal=results[6]?results[6].val():null;
     var avColorVal=results[7]?results[7].val():null;
+    var linkVal=isMe?myLink:(results[8]?results[8].val():null);
     // Build a public profile view: my own profile uses live local data; others use
     // the public leaderboard entry + individually-readable bio/avatar fields.
     var userData={
@@ -2358,6 +2366,8 @@ function feedOpenProfile(uid,username,init){
     // bio
     var bioEl=document.getElementById('fpp-bio');
     if(bioEl){var bio=(userData&&userData.bio)?String(userData.bio):'';if(bio){bioEl.textContent=bio;bioEl.style.display='block';}else{bioEl.style.display='none';}}
+    var lkEl=document.getElementById('fpp-link');
+    if(lkEl){ if(linkVal){ var dsp=String(linkVal).replace(/^https?:\/\//,'').replace(/\/$/,''); var href=/^https?:\/\//i.test(linkVal)?linkVal:('https://'+linkVal); lkEl.href=href; lkEl.innerHTML='<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'+escHtml(dsp); lkEl.style.display='inline-flex'; } else { lkEl.style.display='none'; } }
     var userPts=userData?(userData.pts||0):0;
     var ri=getRank(userPts);
     document.getElementById('fpp-rank-badge').textContent=RANKS[ri].name;
@@ -4878,6 +4888,8 @@ function renderProfileExtras(){
   if(bioEl){ bioEl.textContent=myBio||t('addBio'); bioEl.classList.toggle('empty',!myBio); }
   const av=document.getElementById('pf-av');
   if(av){ if(myAvatarURL){av.style.backgroundImage='url('+myAvatarURL+')';av.style.backgroundSize='cover';av.style.backgroundPosition='center';av.textContent='';} else {av.style.backgroundImage='';av.textContent=(userName||'?')[0].toUpperCase();} }
+  const lk=document.getElementById('pf-link');
+  if(lk){ if(myLink){ var disp=myLink.replace(/^https?:\/\//,'').replace(/\/$/,''); lk.href=myLink; lk.innerHTML='<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'+escHtml(disp); lk.style.display='inline-flex'; } else { lk.style.display='none'; } }
   renderMyTitle();
 }
 function openEditProfile(){
