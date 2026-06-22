@@ -159,7 +159,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;m
 .fpp-block-btn svg{width:17px;height:17px}
 .fpp-block-btn.active{color:#e0697f;border-color:rgba(224,105,127,.5)}
 .fpp-block-btn:active{transform:scale(.86)}
-#block-sheet,#blocked-overlay,#admin-overlay,#privacy-modal{z-index:1000}
+#block-sheet,#blocked-overlay,#admin-overlay,#privacy-modal,#account-modal{z-index:1000}
 .pv-row{display:flex;align-items:center;gap:12px;padding:14px 2px;border-bottom:1px solid var(--border)}
 .pv-info{flex:1;min-width:0}
 .pv-name{font-size:14px;font-weight:600;color:var(--text)}
@@ -1272,7 +1272,7 @@ const LANGS=[
 
 const T={
   en:{langTitle:'Choose your language',langSub:'You can change this later in settings',continue:'Continue →',register:'Sign Up',login:'Log In',back:'Back',createAccountTitle:'Create account',loginTitle:'Welcome back',authSub:'Start completing missions and climbing the ranks',username:'Username',email:'Email',password:'Password',createAccount:'Create Account',logIn:'Log In',or:'or',continueGoogle:'Continue with Google',days:'days',heroTitle:"Ready for today's missions?",remaining:'missions remaining today',dailyProgress:'Daily progress',adMain:'Watch a short ad',adSub:'+50 bonus points · watch up to 10x/day',watch:'Watch',todaysMissions:"Today's missions",social:'Social',dare:'Dare',explore:'Explore',easy:'Easy',medium:'Medium',hard:'Hard',done:'✓ Done',start:'Start →',m0title:'Ask a stranger one question',m0desc:"Approach someone you don't know and ask them one genuine question.",m1title:'Stand completely still for 60 seconds',m1desc:'Pick a public spot and freeze like a statue for a full minute.',m2title:"Find a place you've never been to",m2desc:"Walk to a street or spot you've never noticed before.",leaderboard:'Leaderboard',lbSub:'This week · resets Friday',friends:'Friends',country:'Country',global:'Global',dayStreak:'day streak',weeklyPoints:'Weekly points',missionsDone:'Missions done',friendRank:'Friend rank',rankProgress:'Rank progress',ptsToLegend:'116 pts to Legend',language:'Language',notifications:'Notifications',privacy:'Privacy',goPremium:'Go Premium',free:'Free',on:'On',logout:'Log Out',missions:'Missions',ranks:'Ranks',feed:'Scroll',profile:'Profile',points:'Points',difficulty:'Difficulty',estTime:'Est. time',tips:'Tips',uploadProof:'Upload your proof',photoOrVideo:'Photo or short video',markComplete:'Mark as completed ✓',cancel:'Cancel',greeting:'Hey',
-  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',forgotPw:'Forgot password?',resetSent:'Password reset email sent',verifyEmailSent:'Verification email sent — check your inbox',blockTitle:'Block user',blockConfirm:'Are you sure you want to block',blockReport:'Block & Report',blockOnly:'Just block',blockedDone:'blocked',unblockedDone:'Unblocked',blockedUsers:'Blocked users',noBlocked:"You haven't blocked anyone",unblock:'Unblock',freezeUsed:'Streak freeze used — your {n}-day streak is safe!',changeUsername:'Change username',changePassword:'Change password',changeEmail:'Change email',newUsername:'New username:',newPassword:'New password (12+ chars, with a capital & a number):',newEmail:'New email:',reauthNeeded:'Please log out and back in, then try again',saved:'Saved!',shareBrag:'🔥 I have {pts} points and a {streak}-day streak on FlashArena! Join me:',shareJoin:'🔥 Join me on FlashArena — complete real-life missions and earn rewards:',onb1Title:'Real-life missions',onb1Text:'Every day you get fun missions to complete in the real world.',onb2Title:'Upload your proof',onb2Text:'Snap a photo or video doing the mission to earn points.',onb3Title:'Climb the ranks',onb3Text:'Earn points, keep your streak, and rise on the leaderboard.',onbNext:'Next →',onbStart:"Let's go!",onbSkip:'Skip',trending:'Trending',recentSearches:'Recent searches',clearAll:'Clear all',edit:'Edit',delete:'Delete',edited:'edited',editComment:'Edit your comment:',deleteCommentConfirm:'Delete this comment?',reportPostLabel:'this post',pvPrivate:'Private profile',pvPrivateD:'Only your name shows; posts & stats hidden',pvHideLb:'Hide from leaderboard',pvHideLbD:'You wont appear in the rankings',pvDm:'Messages from followers only',pvDmD:'Only people you follow can message you',privateProfileTitle:'Private profile',privateProfileSub:'This user keeps their profile private',dmRestricted:'This user only accepts messages from people they follow',moderation:'Moderation',noReports:'No reports 🎉',markReviewed:'Resolve',viewProfile:'View',reportedLabel:'Reported user:',
+  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',forgotPw:'Forgot password?',resetSent:'Password reset email sent',verifyEmailSent:'Verification email sent — check your inbox',blockTitle:'Block user',blockConfirm:'Are you sure you want to block',blockReport:'Block & Report',blockOnly:'Just block',blockedDone:'blocked',unblockedDone:'Unblocked',blockedUsers:'Blocked users',noBlocked:"You haven't blocked anyone",unblock:'Unblock',freezeUsed:'Streak freeze used — your {n}-day streak is safe!',changeUsername:'Change username',changePassword:'Change password',changeEmail:'Change email',newUsername:'New username:',newPassword:'New password (12+ chars, with a capital & a number):',newEmail:'New email:',reauthNeeded:'Please log out and back in, then try again',saved:'Saved!',shareBrag:'🔥 I have {pts} points and a {streak}-day streak on FlashArena! Join me:',shareJoin:'🔥 Join me on FlashArena — complete real-life missions and earn rewards:',onb1Title:'Real-life missions',onb1Text:'Every day you get fun missions to complete in the real world.',onb2Title:'Upload your proof',onb2Text:'Snap a photo or video doing the mission to earn points.',onb3Title:'Climb the ranks',onb3Text:'Earn points, keep your streak, and rise on the leaderboard.',onbNext:'Next →',onbStart:"Let's go!",onbSkip:'Skip',trending:'Trending',recentSearches:'Recent searches',clearAll:'Clear all',edit:'Edit',delete:'Delete',edited:'edited',editComment:'Edit your comment:',deleteCommentConfirm:'Delete this comment?',reportPostLabel:'this post',currentPassword:'Current password',wrongPassword:'Wrong current password',pvPrivate:'Private profile',pvPrivateD:'Only your name shows; posts & stats hidden',pvHideLb:'Hide from leaderboard',pvHideLbD:'You wont appear in the rankings',pvDm:'Messages from followers only',pvDmD:'Only people you follow can message you',privateProfileTitle:'Private profile',privateProfileSub:'This user keeps their profile private',dmRestricted:'This user only accepts messages from people they follow',moderation:'Moderation',noReports:'No reports 🎉',markReviewed:'Resolve',viewProfile:'View',reportedLabel:'Reported user:',
   adComeBack:'Come back tomorrow',adDone:'Done',adLeft:'left today',adAllDone:'All ads watched today',ptsTo:'pts to',maxRank:'Max rank reached!',
   lbPoints:'Points',lbMissions:'Missions',lbStreak:'Streak',season:'Season',seasonEnds:'Season ends in',daysShort:'d',
   notifTitle:'Notifications',notifEmpty:'No notifications yet',notifLiked:'liked your video',notifFollowed:'started following you',notifCommented:'commented on your video',notifReplied:'replied to your comment',notifReferral:'joined with your invite — +200!',justNow:'now',minShort:'m',hrShort:'h',dayShort2:'d',
@@ -1291,7 +1291,7 @@ const T={
   likedPosts:'Liked',savedPosts:'Saved',myVideos:'My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
   exportData:'Export My Data (GDPR)',deleteAccountBtn:'Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
-  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',forgotPw:'שכחת סיסמה?',resetSent:'נשלח אימייל לאיפוס הסיסמה',verifyEmailSent:'נשלח אימייל אימות — בדוק את התיבה',blockTitle:'חסימת משתמש',blockConfirm:'האם אתה בטוח שברצונך לחסום את',blockReport:'חסום ודווח',blockOnly:'חסום בלבד',blockedDone:'נחסם',unblockedDone:'החסימה הוסרה',blockedUsers:'משתמשים חסומים',noBlocked:'לא חסמת אף אחד',unblock:'הסר חסימה',freezeUsed:'הקפאת רצף נוצלה — רצף {n} הימים שלך נשמר!',changeUsername:'שינוי שם משתמש',changePassword:'שינוי סיסמה',changeEmail:'שינוי אימייל',newUsername:'שם משתמש חדש:',newPassword:'סיסמה חדשה (12+ תווים, אות גדולה ומספר):',newEmail:'אימייל חדש:',reauthNeeded:'התנתק והתחבר מחדש, ואז נסה שוב',saved:'נשמר!',shareBrag:'🔥 יש לי {pts} נקודות ורצף של {streak} ימים ב-FlashArena! בוא/י אליי:',shareJoin:'🔥 בוא/י ל-FlashArena — משימות אמיתיות ופרסים אמיתיים:',onb1Title:'משימות מהחיים',onb1Text:'כל יום מחכות לך משימות כיפיות לבצע בעולם האמיתי.',onb2Title:'העלה הוכחה',onb2Text:'צלם תמונה או סרטון תוך כדי המשימה כדי לזכות בנקודות.',onb3Title:'טפס בדירוג',onb3Text:'צבור נקודות, שמור על הרצף, ועלה בלוח המובילים.',onbNext:'הבא →',onbStart:'יאללה!',onbSkip:'דלג',trending:'טרנדים',recentSearches:'חיפושים אחרונים',clearAll:'נקה הכל',edit:'עריכה',delete:'מחיקה',edited:'נערך',editComment:'עריכת התגובה:',deleteCommentConfirm:'למחוק את התגובה?',reportPostLabel:'הפוסט הזה',pvPrivate:'פרופיל פרטי',pvPrivateD:'רק השם שלך מוצג; פוסטים וסטטיסטיקות מוסתרים',pvHideLb:'הסתר מלוח המובילים',pvHideLbD:'לא תופיע בדירוג',pvDm:'הודעות מנעקבים בלבד',pvDmD:'רק אנשים שאתה עוקב אחריהם יכולים לשלוח לך הודעה',privateProfileTitle:'פרופיל פרטי',privateProfileSub:'המשתמש הזה שומר על פרופיל פרטי',dmRestricted:'המשתמש מקבל הודעות רק מאנשים שהוא עוקב אחריהם',moderation:'ניהול דיווחים',noReports:'אין דיווחים 🎉',markReviewed:'טופל',viewProfile:'צפה',reportedLabel:'משתמש שדווח:',
+  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',forgotPw:'שכחת סיסמה?',resetSent:'נשלח אימייל לאיפוס הסיסמה',verifyEmailSent:'נשלח אימייל אימות — בדוק את התיבה',blockTitle:'חסימת משתמש',blockConfirm:'האם אתה בטוח שברצונך לחסום את',blockReport:'חסום ודווח',blockOnly:'חסום בלבד',blockedDone:'נחסם',unblockedDone:'החסימה הוסרה',blockedUsers:'משתמשים חסומים',noBlocked:'לא חסמת אף אחד',unblock:'הסר חסימה',freezeUsed:'הקפאת רצף נוצלה — רצף {n} הימים שלך נשמר!',changeUsername:'שינוי שם משתמש',changePassword:'שינוי סיסמה',changeEmail:'שינוי אימייל',newUsername:'שם משתמש חדש:',newPassword:'סיסמה חדשה (12+ תווים, אות גדולה ומספר):',newEmail:'אימייל חדש:',reauthNeeded:'התנתק והתחבר מחדש, ואז נסה שוב',saved:'נשמר!',shareBrag:'🔥 יש לי {pts} נקודות ורצף של {streak} ימים ב-FlashArena! בוא/י אליי:',shareJoin:'🔥 בוא/י ל-FlashArena — משימות אמיתיות ופרסים אמיתיים:',onb1Title:'משימות מהחיים',onb1Text:'כל יום מחכות לך משימות כיפיות לבצע בעולם האמיתי.',onb2Title:'העלה הוכחה',onb2Text:'צלם תמונה או סרטון תוך כדי המשימה כדי לזכות בנקודות.',onb3Title:'טפס בדירוג',onb3Text:'צבור נקודות, שמור על הרצף, ועלה בלוח המובילים.',onbNext:'הבא →',onbStart:'יאללה!',onbSkip:'דלג',trending:'טרנדים',recentSearches:'חיפושים אחרונים',clearAll:'נקה הכל',edit:'עריכה',delete:'מחיקה',edited:'נערך',editComment:'עריכת התגובה:',deleteCommentConfirm:'למחוק את התגובה?',reportPostLabel:'הפוסט הזה',currentPassword:'סיסמה נוכחית',wrongPassword:'הסיסמה הנוכחית שגויה',pvPrivate:'פרופיל פרטי',pvPrivateD:'רק השם שלך מוצג; פוסטים וסטטיסטיקות מוסתרים',pvHideLb:'הסתר מלוח המובילים',pvHideLbD:'לא תופיע בדירוג',pvDm:'הודעות מנעקבים בלבד',pvDmD:'רק אנשים שאתה עוקב אחריהם יכולים לשלוח לך הודעה',privateProfileTitle:'פרופיל פרטי',privateProfileSub:'המשתמש הזה שומר על פרופיל פרטי',dmRestricted:'המשתמש מקבל הודעות רק מאנשים שהוא עוקב אחריהם',moderation:'ניהול דיווחים',noReports:'אין דיווחים 🎉',markReviewed:'טופל',viewProfile:'צפה',reportedLabel:'משתמש שדווח:',
   adComeBack:'חזור מחר',adDone:'הושלם',adLeft:'נותרו היום',adAllDone:'צפית בכל הפרסומות היום',ptsTo:'נק׳ עד',maxRank:'הגעת לדרגה הגבוהה ביותר!',
   lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
   notifTitle:'התראות',notifEmpty:'אין התראות עדיין',notifLiked:'אהב את הסרטון שלך',notifFollowed:'התחיל לעקוב אחריך',notifCommented:'הגיב על הסרטון שלך',notifReplied:'הגיב לתגובה שלך',notifReferral:'הצטרף דרך ההזמנה שלך — +200!',justNow:'עכשיו',minShort:'ד׳',hrShort:'ש׳',dayShort2:'ימ׳',
@@ -1953,39 +1953,71 @@ function doForgotPassword(){
 }
 
 // ══════════ ACCOUNT SETTINGS (change username / password / email) ══════════
-function changeUsername(){
-  if(!userUID||!db){toast(t('noConnection'));return;}
-  var nn=prompt(t('newUsername'),userName); if(nn===null) return; nn=nn.trim();
-  if(nn.length<3||nn.length>30){toast('⚠️ '+t('errNameLen'));return;}
-  if(!/^[a-zA-Z0-9_-]+$/.test(nn)){toast('⚠️ '+t('errNameChars'));return;}
-  if(nn===userName) return;
-  function apply(){
-    userName=nn;
-    db.ref('users/'+userUID+'/username').set(nn).catch(function(){});
-    db.ref('leaderboard/'+userUID+'/username').set(nn).catch(function(){});
-    if(auth&&auth.currentUser) auth.currentUser.updateProfile({displayName:nn}).catch(function(){});
-    try{saveUserData();applyTranslations();updateUI();renderProfileExtras();}catch(e){}
-    toast('✅ '+t('saved'));
+// Account changes via a proper modal (with re-authentication for email/password).
+var _acctType=null;
+function changeUsername(){ openAccountEdit('username'); }
+function changePassword(){ openAccountEdit('password'); }
+function changeEmail(){ openAccountEdit('email'); }
+function _vEsc(s){ return String(s||'').replace(/"/g,'&quot;'); }
+function openAccountEdit(type){
+  if(!auth||!auth.currentUser){ toast(t('noConnection')); return; }
+  _acctType=type;
+  var cur=auth.currentUser;
+  document.getElementById('account-modal-title').textContent = type==='username'?t('changeUsername'):type==='password'?t('changePassword'):t('changeEmail');
+  var html='';
+  if(type==='username'){
+    html='<input class="inp" id="acct-1" type="text" placeholder="'+_vEsc(t('newUsername'))+'" value="'+_vEsc(userName||'')+'">';
+  } else if(type==='password'){
+    html='<input class="inp" id="acct-cur" type="password" placeholder="'+_vEsc(t('currentPassword'))+'">'
+        +'<input class="inp" id="acct-1" type="password" placeholder="'+_vEsc(t('newPassword'))+'" style="margin-top:10px">';
+  } else {
+    html='<input class="inp" id="acct-cur" type="password" placeholder="'+_vEsc(t('currentPassword'))+'">'
+        +'<input class="inp" id="acct-1" type="email" placeholder="'+_vEsc(t('newEmail'))+'" value="'+_vEsc((cur&&cur.email)||'')+'" style="margin-top:10px">';
   }
-  db.ref('users').orderByChild('username').equalTo(nn).once('value')
-    .then(function(s){ if(s.exists()){toast('⚠️ '+t('errNameTaken'));} else apply(); })
-    .catch(function(){ apply(); }); // if the availability check is blocked, proceed anyway
+  document.getElementById('account-fields').innerHTML=html;
+  var er=document.getElementById('account-err'); if(er) er.style.display='none';
+  var sv=document.getElementById('account-save'); sv.textContent=t('save'); sv.disabled=false;
+  document.getElementById('account-modal').classList.add('show');
 }
-function changePassword(){
-  if(!auth||!auth.currentUser){toast(t('noConnection'));return;}
-  var np=prompt(t('newPassword')); if(np===null) return;
-  if(np.length<12||!/[A-Z]/.test(np)||!/[a-z]/.test(np)||!/[0-9]/.test(np)){toast('⚠️ '+t('errPass'));return;}
-  auth.currentUser.updatePassword(np)
-    .then(function(){toast('✅ '+t('saved'));})
-    .catch(function(e){ toast('⚠️ '+(e&&e.code==='auth/requires-recent-login'?t('reauthNeeded'):((e&&e.message)||''))); });
-}
-function changeEmail(){
-  if(!auth||!auth.currentUser){toast(t('noConnection'));return;}
-  var ne=prompt(t('newEmail'),auth.currentUser.email||''); if(ne===null) return; ne=ne.trim();
-  if(!ne.includes('@')){toast('⚠️ '+t('errEmail'));return;}
-  auth.currentUser.updateEmail(ne)
-    .then(function(){ try{auth.currentUser.sendEmailVerification();}catch(e){} toast('✅ '+t('saved')); })
-    .catch(function(e){ toast('⚠️ '+(e&&e.code==='auth/requires-recent-login'?t('reauthNeeded'):((e&&e.message)||''))); });
+function closeAccountModal(){ document.getElementById('account-modal').classList.remove('show'); }
+function _acctErr(msg){ var er=document.getElementById('account-err'); if(er){er.textContent=msg;er.style.display='block';} var sv=document.getElementById('account-save'); if(sv) sv.disabled=false; }
+function submitAccountEdit(){
+  var type=_acctType; if(!type||!auth||!auth.currentUser){ _acctErr(t('noConnection')); return; }
+  var cur=auth.currentUser;
+  var val=((document.getElementById('acct-1')||{}).value||'').trim();
+  if(type==='username'){
+    if(val.length<3||val.length>30){ _acctErr(t('errNameLen')); return; }
+    if(!/^[a-zA-Z0-9_-]+$/.test(val)){ _acctErr(t('errNameChars')); return; }
+    if(val===userName){ closeAccountModal(); return; }
+    var apply=function(){
+      userName=val;
+      if(db&&userUID){ db.ref('users/'+userUID+'/username').set(val).catch(function(){}); db.ref('leaderboard/'+userUID+'/username').set(val).catch(function(){}); }
+      cur.updateProfile({displayName:val}).catch(function(){});
+      try{saveUserData();applyTranslations();updateUI();renderProfileExtras();}catch(e){}
+      toast('✅ '+t('saved')); closeAccountModal();
+    };
+    if(db) db.ref('users').orderByChild('username').equalTo(val).once('value').then(function(s){ if(s.exists()) _acctErr(t('errNameTaken')); else apply(); }).catch(function(){ apply(); });
+    else apply();
+    return;
+  }
+  var curPass=((document.getElementById('acct-cur')||{}).value||'');
+  if(!curPass){ _acctErr(t('currentPassword')); return; }
+  if(type==='password' && (val.length<12||!/[A-Z]/.test(val)||!/[a-z]/.test(val)||!/[0-9]/.test(val))){ _acctErr(t('errPass')); return; }
+  if(type==='email' && !val.includes('@')){ _acctErr(t('errEmail')); return; }
+  var sv=document.getElementById('account-save'); if(sv) sv.disabled=true;
+  var cred=firebase.auth.EmailAuthProvider.credential(cur.email||'', curPass);
+  cur.reauthenticateWithCredential(cred).then(function(){
+    if(type==='password'){
+      return cur.updatePassword(val).then(function(){ toast('✅ '+t('saved')); closeAccountModal(); });
+    } else {
+      return cur.updateEmail(val).then(function(){ try{cur.sendEmailVerification();}catch(e){} toast('✅ '+t('saved')); closeAccountModal(); });
+    }
+  }).catch(function(e){
+    var code=(e&&e.code)||'';
+    if(code==='auth/wrong-password'||code==='auth/invalid-credential'||code==='auth/invalid-login-credentials') _acctErr(t('wrongPassword'));
+    else if(code==='auth/email-already-in-use') _acctErr(t('errEmailUsed'));
+    else _acctErr((e&&e.message)||'Error');
+  });
 }
 function doLogin(){
   const email=document.getElementById('log-email').value.trim();
@@ -6030,6 +6062,17 @@ window.addEventListener('beforeunload',function(){
     <div class="onb-text" id="onb-text"></div>
     <div class="onb-dots" id="onb-dots"></div>
     <button class="onb-btn" id="onb-btn" onclick="onbNext()">Next</button>
+  </div>
+</div>
+
+<div class="overlay" id="account-modal" onclick="if(event.target===this)closeAccountModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="account-modal-title"></div>
+    <div id="account-fields"></div>
+    <div class="auth-error" id="account-err" style="display:none;margin:10px 2px 0"></div>
+    <button class="auth-btn" id="account-save" onclick="submitAccountEdit()" style="margin-top:14px">Save</button>
+    <button class="modal-cancel" onclick="closeAccountModal()" data-i="cancel">Cancel</button>
   </div>
 </div>
 
