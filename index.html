@@ -4958,12 +4958,12 @@ async function sendChatImage(inp){
   try{
     var ext=(file.type.split('/')[1]||'jpg').replace('jpeg','jpg');
     var ref=storage.ref('chatimages/'+userUID+'_'+Date.now()+'.'+ext);
-    await ref.put(file); var url=await ref.getDownloadURL();
+    var url=await putWithTimeout(ref,file,25000);
     var now=firebase.database.ServerValue.TIMESTAMP;
     db.ref('chats/'+_chatId+'/messages').push({from:userUID,img:url,at:now}).catch(function(e){console.error('[Chat img]',e);toast('⚠️ '+t('chatSendFail'));});
     db.ref('chatMeta/'+userUID+'/'+_chatId).update({peerUid:_chatPeerUid,peerName:_chatPeerName||'Player',lastText:'📷',lastAt:now,unread:0}).catch(function(){});
     db.ref('chatMeta/'+_chatPeerUid+'/'+_chatId).update({peerUid:userUID,peerName:userName||'Player',lastText:'📷',lastAt:now,unread:firebase.database.ServerValue.increment(1)}).catch(function(){});
-  }catch(e){ console.error('[Chat img]',e); var code=(e&&e.code)||''; toast('⚠️ '+(code==='storage/unauthorized'?(curLang==='he'?'אין הרשאה':'Not allowed'):t('chatSendFail'))); }
+  }catch(e){ console.error('[Chat img]',e); var code=(e&&e.code)||''; toast('⚠️ '+((code==='timeout'||code==='storage/retry-limit-exceeded')?(curLang==='he'?'ההעלאה נתקעה — צריך להפעיל Firebase Storage':'Upload stuck — enable Firebase Storage'):(code==='storage/unauthorized'?(curLang==='he'?'אין הרשאה':'Not allowed'):t('chatSendFail')))); }
 }
 function sendChatMessage(){
   var inp=document.getElementById('chat-input'); var text=(inp?inp.value:'').trim();
@@ -5050,6 +5050,16 @@ function openEditProfile(){
   if(prev){ if(myAvatarURL){prev.style.backgroundImage='url('+myAvatarURL+')';prev.style.backgroundSize='cover';prev.style.backgroundPosition='center';prev.textContent='';} else {prev.style.backgroundImage='';prev.textContent=(userName||'?')[0].toUpperCase();} }
   m.classList.add('show');
 }
+// Upload with a timeout so it never hangs forever (e.g. if Storage isn't enabled).
+function putWithTimeout(ref,file,ms){
+  return new Promise(function(resolve,reject){
+    var done=false;
+    var timer=setTimeout(function(){ if(!done){done=true;reject({code:'timeout'});} },ms||25000);
+    ref.put(file).then(function(snap){return snap.ref.getDownloadURL();})
+      .then(function(url){ if(!done){done=true;clearTimeout(timer);resolve(url);} })
+      .catch(function(e){ if(!done){done=true;clearTimeout(timer);reject(e);} });
+  });
+}
 async function uploadAvatar(inp){
   const file=inp.files&&inp.files[0];
   console.log('[Avatar] selected:', file && file.name, file && file.type, file && file.size, 'storage?', !!storage, 'uid?', !!userUID);
@@ -5062,7 +5072,7 @@ async function uploadAvatar(inp){
   try{
     const ext=(file.type.split('/')[1]||'jpg').replace('jpeg','jpg');
     const ref=storage.ref('avatars/'+userUID+'_'+Date.now()+'.'+ext);
-    await ref.put(file); const url=await ref.getDownloadURL();
+    const url=await putWithTimeout(ref,file,25000);
     myAvatarURL=url;
     const prev=document.getElementById('ep-avatar');
     if(prev){prev.style.backgroundImage='url('+url+')';prev.style.backgroundSize='cover';prev.style.backgroundPosition='center';prev.textContent='';}
@@ -5078,7 +5088,7 @@ async function uploadAvatar(inp){
     const code=(e&&e.code)||'';
     let msg=curLang==='he'?'לא ניתן להעלות תמונה':'Could not upload photo';
     if(code==='storage/unauthorized') msg=curLang==='he'?'אין הרשאה להעלות (בדוק כללי אחסון)':'Upload not allowed (check Storage rules)';
-    else if(code==='storage/retry-limit-exceeded'||code==='storage/canceled') msg=curLang==='he'?'ההעלאה נכשלה — נסה שוב':'Upload failed — try again';
+    else if(code==='timeout'||code==='storage/retry-limit-exceeded'||code==='storage/canceled') msg=curLang==='he'?'ההעלאה נתקעה — צריך להפעיל Firebase Storage':'Upload stuck — Firebase Storage isn\'t enabled yet';
     else if(code) msg+=' ('+code+')';
     toast('⚠️ '+msg);
   }
