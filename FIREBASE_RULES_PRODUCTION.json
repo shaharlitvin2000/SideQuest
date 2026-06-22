@@ -83,17 +83,21 @@
 
     "comments": {
       ".read": "auth !== null",
-      ".write": false,
       ".indexOn": ["postId", "timestamp", "createdAt", "at", "replyCount"],
 
       "$postId": {
         "$commentId": {
-          ".validate": "newData.hasChildren(['uid','text','createdAt'])",
-          "uid": {".validate": "newData.isString()"},
+          ".write": "auth !== null && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && data.child('uid').val() === auth.uid))",
+          ".validate": "!newData.exists() || newData.hasChildren(['uid','text','at'])",
+          "uid": {".validate": "newData.val() === auth.uid"},
+          "username": {".validate": "newData.isString() && newData.val().length <= 30"},
           "text": {".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500"},
+          "at": {".validate": "newData.isNumber()"},
           "createdAt": {".validate": "newData.isNumber()"},
+          "edited": {".validate": "newData.isBoolean()"},
           "replyCount": {".validate": "newData.isNumber() && newData.val() >= 0"},
-          "likeCount": {".validate": "newData.isNumber() && newData.val() >= 0"}
+          "likeCount": {".validate": "newData.isNumber() && newData.val() >= 0"},
+          "$other": {".validate": false}
         }
       }
     },
