@@ -204,6 +204,13 @@
       }
     },
 
+    "userStorage": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+
     "reports": {
       ".read": "auth !== null && auth.token.email === 'shahar070510@gmail.com'",
       ".write": "auth !== null",
