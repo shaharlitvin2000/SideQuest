@@ -1,58 +1,38 @@
-# Flash Arena — Launch Checklist
+# Flash Arena — Blaze Upgrade Checklist (do these in order)
 
-Status legend: ✅ done · ⏳ needs you · 🔒 needs Blaze plan
+The app runs fine on the free Spark plan today, EXCEPT uploads (Storage was never
+enabled). Upgrading to Blaze unlocks Storage + push + secure server logic.
+Tell Claude "I upgraded to Blaze" and it will walk you through + do the code work.
 
-## 1. Upgrade to Blaze 🔒
-Firebase Console → Usage and billing → Modify plan → Blaze (pay-as-you-go).
-Set a budget alert (e.g. $10/mo) so there are no surprises.
+## 1. Upgrade to Blaze
+Console → ⚙️ Usage and billing → Modify plan → **Blaze**.
+Then set a **Budget alert** ($1–5). Blaze has a free tier — small usage stays $0.
 
-## 2. Deploy Cloud Functions ⏳ (after Blaze)
-```
-firebase deploy --only functions
-```
-This activates: notification creation + push, secure points/redeem,
-referral awards, scheduled jobs (season rollover, nightly verify, trending).
+## 2. Enable Storage  → fixes profile photos, chat images, mission/video uploads
+Console → Storage → **Get Started** → Next → pick a location (eur3) → Done.
+Then: `firebase deploy --only storage`
+(rules already written in STORAGE_RULES_PRODUCTION.txt)
 
-## 3. Web Push key (VAPID) ⏳
-Console → Project settings → Cloud Messaging → Web Push certificates →
-copy the "Key pair" and paste it into index.html:
-```
-const VAPID_KEY='...';     // currently empty
-```
-Then redeploy hosting. Without it, push won't register on devices.
+## 3. Web Push key (VAPID)  → push notifications to the phone
+Console → Project settings → Cloud Messaging → Web Push certificates → copy "Key pair".
+Paste it into index.html:  `const VAPID_KEY='...'`  (currently empty)
+Then: `firebase deploy --only hosting`
 
-## 4. Re-secure the database rules ⏳ (after functions are live)
-Today rules are relaxed so the client can write its own points/leaderboard
-(needed for the free plan). This lets users cheat. Once functions are live:
-- switch firebase.json `database.rules` to `FIREBASE_RULES_SECURE.json`
-  (server writes points; client can't), then `firebase deploy --only database`.
-- Re-test: complete a mission, claim daily reward, leaderboard updates.
+## 4. Deploy Cloud Functions  → secure points, push, referrals, scheduled jobs
+`firebase deploy --only functions`
 
-## 5. Storage CORS (optional) ⏳
-Only needed for the avatar-ring dominant-color on OLD photos. New uploads
-already store the color locally. To enable for everyone:
-```
-gsutil cors set cors.json gs://flasharena-f35b1.firebasestorage.app
-```
-(Run from Google Cloud Shell if gsutil isn't installed locally.)
+## 5. ⚠️ Avoid double notifications (Claude will handle)
+In-app notifications are created CLIENT-SIDE right now. If the functions also create
+them, users get duplicates. Pick ONE source (remove the client calls OR the function).
 
-## 6. Content moderation ⏳
-- Client-side hate/profanity filter is active on posts & comments. ✅
-- Stand up the admin review flow (admin-dashboard.html) and set ADMIN_EMAILS
-  env on functions to review the `reports` queue.
+## 6. ⚠️ Re-secure the rules — NOT a simple file swap (Claude will rewrite)
+The old FIREBASE_RULES_SECURE.json would break the many client-side social features
+(leaderboard, follows, notifications, comments, chat, blocking, privacy). Claude must
+write a NEW rules version that locks down only points/anti-cheat (server writes points)
+while keeping the social features working.
 
-## 7. Legal & compliance ✅/⏳
-- Terms & Privacy pages exist and are now linked (signup + settings). ✅
-- Age 13+ and terms consent required at signup; recorded on the account. ✅
-- Review the Terms/Privacy text with the actual data you collect. ⏳
-- Decide how real rewards are funded & fulfilled. ⏳
+## 7. Test
+Upload a photo, send a chat image, complete a mission (points), get a push, referral.
 
-## 8. Play Store (only if shipping as an app) ⏳
-- Wrap the PWA as a TWA (Bubblewrap) → signed AAB.
-- Listing assets exist: feature-graphic.png, PLAY_STORE_LISTING.md.
-- Fill Data Safety form + content rating + privacy policy URL.
-
-## Already done ✅
-Design system, full Hebrew localization, PWA (install + offline),
-auth, feed/leaderboard/chat/profile/achievements, notifications mute toggle,
-GDPR export + delete, content filter, hosting deployed.
+---
+Make sure you're upgrading project **flasharena-f35b1** — NOT pixelbam (a separate project).
