@@ -228,8 +228,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;m
 .share-opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;font-family:var(--font);font-size:11px;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s}
 .share-opt:active{transform:scale(.95)}
 .share-ic{font-size:24px;line-height:1}
-.pf-title-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid rgba(45,212,191,.25);border-radius:14px;padding:3px 10px;margin-top:0;margin-bottom:2px;cursor:pointer}
-.pf-title-chip.empty{color:var(--muted);background:var(--bg3);border-color:var(--border)}
 .pf-bio{font-size:13px;font-weight:400;margin-top:8px;max-width:300px;line-height:1.45;cursor:pointer;color:var(--muted);text-align:center}
 .pf-link,.fpp-link{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:13px;font-weight:600;color:var(--accent);text-decoration:none;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;z-index:1}
 .pf-link svg,.fpp-link svg{width:14px;height:14px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -238,13 +236,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;m
 .ep-avatar-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin:8px 0 18px}
 .ep-avatar{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:34px;font-weight:800;color:#fff;cursor:pointer;overflow:hidden}
 .ep-avatar-btn{background:none;border:none;color:var(--accent);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer}
-.titles-list{display:flex;flex-direction:column;gap:8px;margin:16px 0;max-height:50vh;overflow-y:auto}
-.title-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:all .15s}
-.title-row.locked{opacity:.5;cursor:default}
-.title-row.equipped{border-color:var(--accent);background:var(--accent-soft)}
-.title-emoji{font-size:22px;line-height:1}
-.title-name{flex:1;font-size:14px;font-weight:700;color:var(--text)}
-.title-state{font-size:12px;font-weight:800;color:var(--accent)}
 .feed-search-btn{margin-inline-start:auto;background:none;border:none;color:#fff;cursor:pointer;padding:6px;display:flex;align-items:center}
 .feed-search-btn svg{width:22px;height:22px}
 .search-header{display:flex;align-items:center;gap:10px;padding:8px 16px 12px}
@@ -953,7 +944,6 @@ svg.ic-lg{width:19px;height:19px}
         <input type="file" id="pf-avatar-file" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
         <div class="pf-name" id="pf-name">Player</div>
         <div class="pf-level" id="pf-level">🔥 Daredevil</div>
-        <div class="pf-title-chip empty" id="pf-title" onclick="openTitles()"></div>
         <div class="pf-bio empty" id="pf-bio" onclick="openEditProfile()">+ Add a bio</div>
         <a class="pf-link" id="pf-link" target="_blank" rel="noopener" style="display:none"></a>
         <div class="my-follow-row">
@@ -1653,7 +1643,7 @@ function applyLoadedData(data, user){
   myLastDailyClaim=data.lastDailyClaim||'';
   myDailyStreak=data.dailyClaimStreak||0;
   myFreezes=(data.streakFreezes!==undefined)?data.streakFreezes:1;
-  myBio=data.bio||''; myAvatarURL=data.avatarURL||''; myAvatarColor=data.avatarColor||''; myLink=data.link||''; myAge=data.age||''; myCountryName=data.profileCountry||''; myTitle=data.title||'';
+  myBio=data.bio||''; myAvatarURL=data.avatarURL||''; myAvatarColor=data.avatarColor||''; myLink=data.link||''; myAge=data.age||''; myCountryName=data.profileCountry||'';
   curLang=(data.lang&&T[data.lang])?data.lang:'en'; selLang=curLang;
   myPushEnabled = data.pushEnabled !== false; // default ON unless explicitly disabled
   syncPushToggle();
@@ -4970,7 +4960,6 @@ function renderProfileExtras(){
   if(av){ if(myAvatarURL){av.style.backgroundImage='url('+myAvatarURL+')';av.style.backgroundSize='cover';av.style.backgroundPosition='center';av.textContent='';} else {av.style.backgroundImage='';av.textContent=(userName||'?')[0].toUpperCase();} }
   const lk=document.getElementById('pf-link');
   if(lk){ if(myLink){ var disp=myLink.replace(/^https?:\/\//,'').replace(/\/$/,''); lk.href=myLink; lk.innerHTML='<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'+escHtml(disp); lk.style.display='inline-flex'; } else { lk.style.display='none'; } }
-  renderMyTitle();
 }
 function openEditProfile(){
   const m=document.getElementById('edit-profile-modal'); if(!m) return;
@@ -5031,44 +5020,6 @@ function saveProfile(){
   renderProfileExtras();
   document.getElementById('edit-profile-modal').classList.remove('show');
   toast('✅ '+t('profileSaved'));
-}
-
-// ══════════ TITLES ══════════
-const TITLES=[
-  {id:'newcomer',emoji:'🌱',name:'Newcomer',check:()=>true},
-  {id:'explorer',emoji:'🧭',name:'Explorer',check:s=>s.missions>=5},
-  {id:'daredevil',emoji:'🔥',name:'Daredevil',check:s=>s.missions>=25},
-  {id:'legend',emoji:'💀',name:'Legend',check:s=>s.missions>=100},
-  {id:'highroller',emoji:'💰',name:'High Roller',check:s=>s.pts>=5000},
-  {id:'whale',emoji:'💎',name:'Whale',check:s=>s.pts>=20000},
-  {id:'unstoppable',emoji:'⚡',name:'Unstoppable',check:s=>s.streak>=7},
-  {id:'ironwill',emoji:'🛡️',name:'Iron Will',check:s=>s.streak>=30}
-];
-let myTitle='';
-function titleStats(){ return {missions:totalMissionsDone||0,pts:pts||0,streak:streak||0}; }
-function getTitleById(id){ return TITLES.find(x=>x.id===id); }
-function renderMyTitle(){
-  const el=document.getElementById('pf-title'); if(!el) return;
-  const tt=getTitleById(myTitle);
-  if(tt){ el.textContent=tt.emoji+' '+tt.name; el.classList.remove('empty'); }
-  else { el.textContent='🏷️ '+t('chooseTitle'); el.classList.add('empty'); }
-}
-function openTitles(){
-  const list=document.getElementById('titles-list'); if(!list) return;
-  const s=titleStats();
-  list.innerHTML=TITLES.map(function(tt){
-    const unlocked=tt.check(s), equipped=myTitle===tt.id;
-    return '<div class="title-row'+(unlocked?'':' locked')+(equipped?' equipped':'')+'"'+(unlocked?(' onclick="equipTitle(\''+tt.id+'\')"'):'')+'>'
-      +'<span class="title-emoji">'+tt.emoji+'</span><span class="title-name">'+tt.name+'</span>'
-      +'<span class="title-state">'+(equipped?'✓':(unlocked?t('titleEquip'):'🔒'))+'</span></div>';
-  }).join('');
-  document.getElementById('titles-modal').classList.add('show');
-}
-function equipTitle(id){
-  const tt=getTitleById(id); if(!tt||!tt.check(titleStats())) return;
-  myTitle=(myTitle===id)?'':id;
-  if(db&&userUID) db.ref('users/'+userUID+'/title').set(myTitle).catch(function(){});
-  renderMyTitle(); openTitles(); toast('✨ '+t('titleSet'));
 }
 
 // ══════════ FOLLOW SYSTEM ══════════
@@ -5995,15 +5946,6 @@ window.addEventListener('beforeunload',function(){
   </div>
 </div>
 
-<div class="overlay" id="titles-modal" onclick="if(event.target===this)this.classList.remove('show')">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" data-i="titlesTitle">🏷️ Titles</div>
-    <div class="modal-desc" data-i="titlesSub">Unlock titles and show one on your profile</div>
-    <div class="titles-list" id="titles-list"></div>
-    <button class="modal-cancel" onclick="document.getElementById('titles-modal').classList.remove('show')" data-i="close">Close</button>
-  </div>
-</div>
 
 <div class="overlay" id="daily-modal" onclick="if(event.target===this)this.classList.remove('show')">
   <div class="modal" style="text-align:center">
