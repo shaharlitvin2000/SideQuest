@@ -2088,7 +2088,7 @@ function deleteMyAccount(){
   ]).then(()=>{
     auth.currentUser.delete().then(()=>{
       toast('✅ Account deleted');
-      auth.signOut().then(()=>showPage('p-lang'));
+      auth.signOut().then(()=>bootToAuth());
     });
   }).catch(err=>{
     console.error('[Delete]',err);
