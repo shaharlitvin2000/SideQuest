@@ -266,9 +266,10 @@
           ".indexOn": ["at"],
           "$msgId": {
             ".write": "auth !== null && $chatId.contains(auth.uid) && !data.exists()",
-            ".validate": "newData.hasChildren(['from','text','at'])",
+            ".validate": "newData.hasChildren(['from','at']) && (newData.hasChild('text') || newData.hasChild('img'))",
             "from": {".validate": "newData.val() === auth.uid"},
-            "text": {".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500"},
+            "text": {".validate": "newData.isString() && newData.val().length <= 500"},
+            "img": {".validate": "newData.isString() && newData.val().length < 600"},
             "at": {".validate": "newData.isNumber()"},
             "$other": {".validate": false}
           }
