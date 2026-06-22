@@ -67,17 +67,17 @@
 
     "feed": {
       ".read": "auth !== null",
-      ".write": false,
       ".indexOn": ["uid", "timestamp", "pts", "createdAt", "status"],
 
       "$postId": {
-        ".validate": "newData.hasChildren(['uid','timestamp','status'])",
-        "uid": {".validate": "newData.isString()"},
+        ".write": "auth !== null && ( (!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && data.child('uid').val() === auth.uid) )",
+        ".validate": "!newData.exists() || newData.hasChildren(['uid','timestamp'])",
+        "uid": {".validate": "newData.val() === auth.uid || newData.val() === data.child('uid').val()"},
         "timestamp": {".validate": "newData.isNumber()"},
         "status": {".validate": "newData.val() === 'verified' || newData.val() === 'pending' || newData.val() === 'rejected'"},
         "pts": {".validate": "newData.isNumber() && newData.val() >= 0"},
-        "likes": {".validate": "newData.isNumber() && newData.val() >= 0"},
-        "views": {".validate": "newData.isNumber() && newData.val() >= 0"}
+        "likes": {".write": "auth !== null", ".validate": "newData.isNumber() && newData.val() >= 0"},
+        "views": {".write": "auth !== null", ".validate": "newData.isNumber() && newData.val() >= 0"}
       }
     },
 
@@ -107,7 +107,7 @@
         "$commentId": {
           "$uid": {
             ".read": "auth !== null",
-            ".write": false,
+            ".write": "$uid === auth.uid",
             ".validate": "newData.val() === true || newData.val() === null"
           }
         }
@@ -117,7 +117,7 @@
     "userLikes": {
       "$uid": {
         ".read": "$uid === auth.uid",
-        ".write": false,
+        ".write": "$uid === auth.uid",
 
         "$postId": {
           ".validate": "newData.val() === true || newData.val() === null"
