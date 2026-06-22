@@ -1400,7 +1400,7 @@ setTimeout(()=>{
   if(el && el.classList.contains('active')){
     console.warn('[LOADING] force-hiding after 6s timeout');
     hideLoading();
-    showPage('p-lang');
+    try{ bootToAuth(); }catch(e){ showPage('p-auth'); }
   }
 },6000);
 
@@ -1510,21 +1510,19 @@ function tryInitFirebase(attempts){
   } catch(e){
     console.error('[Firebase] init failed:',e);
     hideLoading();
-    try{
-      const savedLang = localStorage.getItem('selectedLang');
-      if(savedLang){
-        curLang = (savedLang&&T[savedLang])?savedLang:'en';
-        const langObj = LANGS.find(l => l.code === curLang) || LANGS[0];
-        document.documentElement.dir = langObj.dir;
-        applyTranslations();
-        showPage('p-auth');
-      } else {
-        showPage('p-lang');
-      }
-    }catch(e){
-      showPage('p-lang');
-    }
+    try{ bootToAuth(); }catch(e){ showPage('p-auth'); }
   }
+}
+
+// Boot straight to the auth screen (no startup language picker). Default English;
+// language is changed only from Settings.
+function bootToAuth(){
+  try{ var sv=localStorage.getItem('selectedLang'); curLang=(sv&&T[sv])?sv:'en'; }catch(e){ curLang='en'; }
+  selLang=curLang;
+  var lo=LANGS.find(function(l){return l.code===curLang;})||LANGS[0];
+  document.documentElement.dir=lo.dir;
+  try{applyTranslations();}catch(e){}
+  showPage('p-auth');
 }
 
 function setupAuthListener(){
@@ -1534,35 +1532,18 @@ function setupAuthListener(){
     if(user){
       userUID=user.uid;
       loadUserData(user);
-      startSessionTimeout();  // Start idle timeout
-      // Check if email is verified
-      if(!user.emailVerified){
-        setTimeout(()=>{
-          showEmailVerificationPrompt(user);
-        }, 1000);
-      }
+      startSessionTimeout();
+      // (Email-verification nag removed — the verification email is still sent at sign-up;
+      //  enforcement can be added when on Blaze.)
     } else {
       hideLoading();
-      // Check if language already selected
-      let savedLang = null;
-      try{
-        savedLang = localStorage.getItem('selectedLang');
-      }catch(e){}
-      if(savedLang){
-        curLang = (savedLang&&T[savedLang])?savedLang:'en';
-        const langObj = LANGS.find(l => l.code === curLang) || LANGS[0];
-        document.documentElement.dir = langObj.dir;
-        applyTranslations();
-        showPage('p-auth');
-      } else {
-        showPage('p-lang');
-      }
+      bootToAuth();
       stopSessionTimeout();  // Clear timeout
     }
   }, err=>{
     console.error('[Auth] error:', err);
     hideLoading();
-    showPage('p-lang');
+    bootToAuth();
   });
 }
 
@@ -1586,27 +1567,8 @@ let sessionTimeoutTimer=null;
 const SESSION_TIMEOUT_MS=30*60*1000; // 30 minutes
 
 function startSessionTimeout(){
-  stopSessionTimeout(); // Clear any existing timer
-
-  function resetTimer(){
-    if(sessionTimeoutTimer) clearTimeout(sessionTimeoutTimer);
-    sessionTimeoutTimer=setTimeout(()=>{
-      if(auth&&auth.currentUser){
-        console.log('[Auth] Session timeout - logging out');
-        auth.signOut().then(()=>{
-          toast('⏱️ Session expired. Please log in again.');
-          showPage('p-lang');
-        });
-      }
-    }, SESSION_TIMEOUT_MS);
-  }
-
-  // Reset timer on user activity
-  document.addEventListener('click', resetTimer);
-  document.addEventListener('keydown', resetTimer);
-  document.addEventListener('touchstart', resetTimer);
-
-  resetTimer(); // Start initial timer
+  // Auto-logout disabled — keep users signed in like normal apps (Firebase persists the session).
+  stopSessionTimeout();
 }
 
 function stopSessionTimeout(){
@@ -2026,11 +1988,12 @@ function doGoogle(){
 }
 
 function doLogout(){
-  if(!auth){showPage('p-lang');return;}
+  if(!auth){bootToAuth();return;}
   auth.signOut().then(()=>{
     userName='';userUID='';pts=0;completed=0;adsWatched=0;completedMissions=[];
     selLang=curLang;
-    showPage('p-lang');
+    try{closeSettings();}catch(e){}
+    bootToAuth();
   });
 }
 
