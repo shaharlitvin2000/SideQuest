@@ -1377,6 +1377,16 @@ let streak=0, totalMissionsDone=0;
 let myPushEnabled=true;
 let firebaseReady=false;
 let _likedSet=new Set();
+let _savedSet=new Set();
+// Load which posts I liked / saved from the DB so the heart & bookmark state persists across reloads.
+function loadMyLikes(){
+  if(!db||!userUID) return;
+  db.ref('userLikes/'+userUID).once('value').then(function(s){ _likedSet=new Set(); s.forEach(function(c){ if(c.val()) _likedSet.add(c.key); }); try{refreshFeedSlotLikeState&&refreshFeedSlotLikeState();}catch(e){} }).catch(function(){});
+}
+function loadMySaves(){
+  if(!db||!userUID){ try{_savedSet=new Set(JSON.parse(localStorage.getItem('feedSaved')||'[]'));}catch(e){} return; }
+  db.ref('userSaves/'+userUID).once('value').then(function(s){ _savedSet=new Set(); s.forEach(function(c){ if(c.val()) _savedSet.add(c.key); }); try{localStorage.setItem('feedSaved',JSON.stringify([..._savedSet]));}catch(e){} }).catch(function(){ try{_savedSet=new Set(JSON.parse(localStorage.getItem('feedSaved')||'[]'));}catch(e){} });
+}
 const PRELOAD_MAX=50;
 
 // ══════════ PAGE SYSTEM ══════════
@@ -1780,6 +1790,8 @@ function finishLoad(){
   try{loadFeed();}catch(e){console.error('[finishLoad] feed',e);}
   try{loadMyFollowing();}catch(e){console.error('[finishLoad] following',e);}
   try{loadMyBlocked();}catch(e){}
+  try{loadMyLikes();}catch(e){}
+  try{loadMySaves();}catch(e){}
   try{watchNotifUnread();}catch(e){}
   try{updateDailyDot();}catch(e){}
   try{maybeClaimReferral();}catch(e){}
@@ -2887,14 +2899,15 @@ function feedSetLiked(postId,liked){
   else _likedSet.delete(postId);
 }
 
-// Bookmark system
-function feedGetSavedSet(){
-  try{return new Set(JSON.parse(localStorage.getItem('feedSaved')||'[]'));}
-  catch(e){return new Set();}
-}
+// Bookmark system (synced to the DB so saves follow you across devices)
+function feedGetSavedSet(){ return _savedSet; }
 function feedSetSaved(postId,saved){
-  try{var s=feedGetSavedSet();if(saved)s.add(postId);else s.delete(postId);localStorage.setItem('feedSaved',JSON.stringify([...s]));}
-  catch(e){}
+  if(saved) _savedSet.add(postId); else _savedSet.delete(postId);
+  try{localStorage.setItem('feedSaved',JSON.stringify([..._savedSet]));}catch(e){}
+  if(db&&userUID){
+    if(saved) db.ref('userSaves/'+userUID+'/'+postId).set({timestamp:Date.now()}).catch(function(){});
+    else db.ref('userSaves/'+userUID+'/'+postId).remove().catch(function(){});
+  }
 }
 
 function loadSavedPosts(){
@@ -2967,6 +2980,7 @@ function feedLikePost(postId,btn){
         if(post){
           post.likes=Math.max(0,(post.likes||1)-1);
           if(countEl) countEl.textContent=formatFeedCount(post.likes);
+          db.ref('feed/'+postId+'/likes').transaction(function(c){return Math.max(0,(c||0)-1);}).catch(function(){});
         }
       })
       .catch(err=>{
@@ -2983,6 +2997,7 @@ function feedLikePost(postId,btn){
         if(post){
           post.likes=(post.likes||0)+1;
           if(countEl) countEl.textContent=formatFeedCount(post.likes);
+          db.ref('feed/'+postId+'/likes').transaction(function(c){return (c||0)+1;}).catch(function(){});
           try{ if(post.uid) pushNotification(post.uid,'like',{postId:postId}); }catch(e){}
         }
       })

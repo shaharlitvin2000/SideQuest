@@ -128,7 +128,7 @@
     "userSaves": {
       "$uid": {
         ".read": "$uid === auth.uid",
-        ".write": false,
+        ".write": "$uid === auth.uid",
 
         "$postId": {
           ".validate": "newData.hasChildren(['timestamp']) || newData.val() === null",
