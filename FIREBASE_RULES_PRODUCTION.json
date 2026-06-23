@@ -239,6 +239,7 @@
         "missions": {".validate": "newData.isNumber() && newData.val() >= 0"},
         "streak": {".validate": "newData.isNumber() && newData.val() >= 0"},
         "seasonPts": {".validate": "newData.isNumber() && newData.val() >= 0"},
+        "country": {".validate": "newData.isString() && newData.val().length <= 60"},
         "$other": {".validate": false}
       }
     },
