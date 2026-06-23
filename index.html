@@ -1484,6 +1484,9 @@ function confirmLang(){
   document.documentElement.dir=langObj.dir;
   document.getElementById('cur-lang-val').textContent=langObj.native;
   applyTranslations();
+  try{renderAchievements();}catch(e){}
+  try{if(window._lbList)renderLb();}catch(e){}
+  try{if(typeof updateUI==='function')updateUI();}catch(e){}
   if(userUID){if(db) saveUserData(); showPage('p-app'); return;}
   showPage('p-auth');
 }
