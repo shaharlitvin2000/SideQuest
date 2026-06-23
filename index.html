@@ -805,8 +805,8 @@ svg.ic-lg{width:19px;height:19px}
     </div>
     <div class="input-group">
       <div class="input-label" data-i="password">Password</div>
-      <input class="inp" id="log-pass" type="password" placeholder="Your password">
-      <div class="auth-error" id="err-login">Wrong email or password</div>
+      <input class="inp" id="log-pass" type="password" placeholder="Your password" data-i="phLoginPass">
+      <div class="auth-error" id="err-login" data-i="errLogin">Wrong email or password</div>
     </div>
     <div class="forgot-pw" onclick="doForgotPassword()" data-i="forgotPw">Forgot password?</div>
     <button class="auth-btn" onclick="doLogin()" data-i="logIn">Log In</button>
@@ -1079,7 +1079,7 @@ svg.ic-lg{width:19px;height:19px}
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="setting-label" data-i="moderation">Moderation</div></div>
             <div class="chevron">›</div>
           </div>
-          <div class="setting-row" onclick="toast('Coming soon!')">
+          <div class="setting-row" onclick="toast(t('comingSoon'))">
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="setting-label" data-i="goPremium">Go Premium</div></div>
             <div style="display:flex;align-items:center;gap:6px"><div class="setting-value" style="color:var(--gold)" data-i="free">Free</div><div class="chevron">›</div></div>
           </div>
@@ -1272,7 +1272,7 @@ const LANGS=[
 
 const T={
   en:{langTitle:'Choose your language',langSub:'You can change this later in settings',continue:'Continue →',register:'Sign Up',login:'Log In',back:'Back',createAccountTitle:'Create account',loginTitle:'Welcome back',authSub:'Start completing missions and climbing the ranks',username:'Username',email:'Email',password:'Password',createAccount:'Create Account',logIn:'Log In',or:'or',continueGoogle:'Continue with Google',days:'days',heroTitle:"Ready for today's missions?",remaining:'missions remaining today',dailyProgress:'Daily progress',adMain:'Watch a short ad',adSub:'+50 bonus points · watch up to 10x/day',watch:'Watch',todaysMissions:"Today's missions",social:'Social',dare:'Dare',explore:'Explore',easy:'Easy',medium:'Medium',hard:'Hard',done:'✓ Done',start:'Start →',m0title:'Ask a stranger one question',m0desc:"Approach someone you don't know and ask them one genuine question.",m1title:'Stand completely still for 60 seconds',m1desc:'Pick a public spot and freeze like a statue for a full minute.',m2title:"Find a place you've never been to",m2desc:"Walk to a street or spot you've never noticed before.",leaderboard:'Leaderboard',lbSub:'This week · resets Friday',friends:'Friends',country:'Country',global:'Global',dayStreak:'day streak',weeklyPoints:'Weekly points',missionsDone:'Missions done',friendRank:'Friend rank',rankProgress:'Rank progress',ptsToLegend:'116 pts to Legend',language:'Language',notifications:'Notifications',privacy:'Privacy',goPremium:'Go Premium',free:'Free',on:'On',logout:'Log Out',missions:'Missions',ranks:'Ranks',feed:'Scroll',profile:'Profile',points:'Points',difficulty:'Difficulty',estTime:'Est. time',tips:'Tips',uploadProof:'Upload your proof',photoOrVideo:'Photo or short video',markComplete:'Mark as completed ✓',cancel:'Cancel',greeting:'Hey',
-  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',forgotPw:'Forgot password?',resetSent:'Password reset email sent',verifyEmailSent:'Verification email sent — check your inbox',blockTitle:'Block user',blockConfirm:'Are you sure you want to block',blockReport:'Block & Report',blockOnly:'Just block',blockedDone:'blocked',unblockedDone:'Unblocked',blockedUsers:'Blocked users',noBlocked:"You haven't blocked anyone",unblock:'Unblock',freezeUsed:'Streak freeze used — your {n}-day streak is safe!',changeUsername:'Change username',changePassword:'Change password',changeEmail:'Change email',newUsername:'New username:',newPassword:'New password (12+ chars, with a capital & a number):',newEmail:'New email:',reauthNeeded:'Please log out and back in, then try again',saved:'Saved!',shareBrag:'🔥 I have {pts} points and a {streak}-day streak on FlashArena! Join me:',shareJoin:'🔥 Join me on FlashArena — complete real-life missions and earn rewards:',onb1Title:'Real-life missions',onb1Text:'Every day you get fun missions to complete in the real world.',onb2Title:'Upload your proof',onb2Text:'Snap a photo or video doing the mission to earn points.',onb3Title:'Climb the ranks',onb3Text:'Earn points, keep your streak, and rise on the leaderboard.',onbNext:'Next →',onbStart:"Let's go!",onbSkip:'Skip',trending:'Trending',recentSearches:'Recent searches',clearAll:'Clear all',edit:'Edit',delete:'Delete',edited:'edited',editComment:'Edit your comment:',deleteCommentConfirm:'Delete this comment?',reportPostLabel:'this post',lbNoPlayers:'No players yet — be the first!',lbPickCountry:'Pick your country in your profile to see the country ranking',currentPassword:'Current password',wrongPassword:'Wrong current password',pvPrivate:'Private profile',pvPrivateD:'Only your name shows; posts & stats hidden',pvHideLb:'Hide from leaderboard',pvHideLbD:'You wont appear in the rankings',pvDm:'Messages from followers only',pvDmD:'Only people you follow can message you',privateProfileTitle:'Private profile',privateProfileSub:'This user keeps their profile private',dmRestricted:'This user only accepts messages from people they follow',moderation:'Moderation',noReports:'No reports 🎉',markReviewed:'Resolve',viewProfile:'View',reportedLabel:'Reported user:',
+  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',forgotPw:'Forgot password?',resetSent:'Password reset email sent',verifyEmailSent:'Verification email sent — check your inbox',blockTitle:'Block user',blockConfirm:'Are you sure you want to block',blockReport:'Block & Report',blockOnly:'Just block',blockedDone:'blocked',unblockedDone:'Unblocked',blockedUsers:'Blocked users',noBlocked:"You haven't blocked anyone",unblock:'Unblock',freezeUsed:'Streak freeze used — your {n}-day streak is safe!',changeUsername:'Change username',changePassword:'Change password',changeEmail:'Change email',newUsername:'New username:',newPassword:'New password (12+ chars, with a capital & a number):',newEmail:'New email:',reauthNeeded:'Please log out and back in, then try again',saved:'Saved!',shareBrag:'🔥 I have {pts} points and a {streak}-day streak on FlashArena! Join me:',shareJoin:'🔥 Join me on FlashArena — complete real-life missions and earn rewards:',onb1Title:'Real-life missions',onb1Text:'Every day you get fun missions to complete in the real world.',onb2Title:'Upload your proof',onb2Text:'Snap a photo or video doing the mission to earn points.',onb3Title:'Climb the ranks',onb3Text:'Earn points, keep your streak, and rise on the leaderboard.',onbNext:'Next →',onbStart:"Let's go!",onbSkip:'Skip',trending:'Trending',recentSearches:'Recent searches',clearAll:'Clear all',edit:'Edit',delete:'Delete',edited:'edited',editComment:'Edit your comment:',deleteCommentConfirm:'Delete this comment?',reportPostLabel:'this post',lbNoPlayers:'No players yet — be the first!',lbPickCountry:'Pick your country in your profile to see the country ranking',comingSoon:'Coming soon!',couldNotLoadFeed:'Could not load feed',phLoginPass:'Your password',phComment:'Add a comment…',phMessage:'Message…',couldNotLoadPosts:'Could not load posts',couldNotLoadRankings:'Could not load rankings',couldNotLoadComments:'Could not load comments',noCommentsYet:'No comments yet',beFirstComment:'Be the first to comment!',cookiesNote:'You can use the app without cookies, but some features may be limited',errNotLoggedIn:'Not logged in',exportingData:'Exporting your data…',dataExported:'Data exported! Check your downloads.',exportFailed:'Export failed',deletingAccount:'Deleting account…',accountDeleted:'Account deleted',deletionFailed:'Deletion failed',googleFailed:'Google sign-in failed',loginToLike:'Log in to like',errLike:'Error liking post',errUnlike:'Error unliking post',noPostShare:'No post to share',loginToFollow:'Log in to follow',alreadyFollowing:'Already following!',nowFollowing:'Following',uploadProofFirst:'Upload proof first!',storageUnavailable:'Storage not available',uploadingProof:'Uploading proof…',uploadingT:'Uploading',postedToFeed:'Posted to feed!',uploadFailedNoMedia:'Upload failed (post created without media)',adLimitReached:'Daily limit reached (10/10)',missionsReset:'Missions reset!',feedCleared:'Feed cleared!',rewardsNeedServer:'Rewards need the server (Blaze)',removedFromSaves:'Removed from saves',savedShort:'Saved',saveLabel:'Save',shareLabel:'Share',couldNotLoad:'Could not load profile',deleteVideoConfirm:'Delete this video?',errLogin:'Wrong email or password',delAcc1:'Are you SURE? This will permanently delete your account and all data. This CANNOT be undone.',delAcc2:'Really delete everything? Tap OK one more time to confirm.',delFeedConfirm:'Delete all feed posts? This cannot be undone.',currentPassword:'Current password',wrongPassword:'Wrong current password',pvPrivate:'Private profile',pvPrivateD:'Only your name shows; posts & stats hidden',pvHideLb:'Hide from leaderboard',pvHideLbD:'You wont appear in the rankings',pvDm:'Messages from followers only',pvDmD:'Only people you follow can message you',privateProfileTitle:'Private profile',privateProfileSub:'This user keeps their profile private',dmRestricted:'This user only accepts messages from people they follow',moderation:'Moderation',noReports:'No reports 🎉',markReviewed:'Resolve',viewProfile:'View',reportedLabel:'Reported user:',
   adComeBack:'Come back tomorrow',adDone:'Done',adLeft:'left today',adAllDone:'All ads watched today',ptsTo:'pts to',maxRank:'Max rank reached!',
   lbPoints:'Points',lbMissions:'Missions',lbStreak:'Streak',season:'Season',seasonEnds:'Season ends in',daysShort:'d',
   notifTitle:'Notifications',notifEmpty:'No notifications yet',notifLiked:'liked your video',notifFollowed:'started following you',notifCommented:'commented on your video',notifReplied:'replied to your comment',notifReferral:'joined with your invite — +200!',justNow:'now',minShort:'m',hrShort:'h',dayShort2:'d',
@@ -1291,7 +1291,7 @@ const T={
   likedPosts:'Liked',savedPosts:'Saved',myVideos:'My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
   exportData:'Export My Data (GDPR)',deleteAccountBtn:'Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
-  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',forgotPw:'שכחת סיסמה?',resetSent:'נשלח אימייל לאיפוס הסיסמה',verifyEmailSent:'נשלח אימייל אימות — בדוק את התיבה',blockTitle:'חסימת משתמש',blockConfirm:'האם אתה בטוח שברצונך לחסום את',blockReport:'חסום ודווח',blockOnly:'חסום בלבד',blockedDone:'נחסם',unblockedDone:'החסימה הוסרה',blockedUsers:'משתמשים חסומים',noBlocked:'לא חסמת אף אחד',unblock:'הסר חסימה',freezeUsed:'הקפאת רצף נוצלה — רצף {n} הימים שלך נשמר!',changeUsername:'שינוי שם משתמש',changePassword:'שינוי סיסמה',changeEmail:'שינוי אימייל',newUsername:'שם משתמש חדש:',newPassword:'סיסמה חדשה (12+ תווים, אות גדולה ומספר):',newEmail:'אימייל חדש:',reauthNeeded:'התנתק והתחבר מחדש, ואז נסה שוב',saved:'נשמר!',shareBrag:'🔥 יש לי {pts} נקודות ורצף של {streak} ימים ב-FlashArena! בוא/י אליי:',shareJoin:'🔥 בוא/י ל-FlashArena — משימות אמיתיות ופרסים אמיתיים:',onb1Title:'משימות מהחיים',onb1Text:'כל יום מחכות לך משימות כיפיות לבצע בעולם האמיתי.',onb2Title:'העלה הוכחה',onb2Text:'צלם תמונה או סרטון תוך כדי המשימה כדי לזכות בנקודות.',onb3Title:'טפס בדירוג',onb3Text:'צבור נקודות, שמור על הרצף, ועלה בלוח המובילים.',onbNext:'הבא →',onbStart:'יאללה!',onbSkip:'דלג',trending:'טרנדים',recentSearches:'חיפושים אחרונים',clearAll:'נקה הכל',edit:'עריכה',delete:'מחיקה',edited:'נערך',editComment:'עריכת התגובה:',deleteCommentConfirm:'למחוק את התגובה?',reportPostLabel:'הפוסט הזה',lbNoPlayers:'אין עדיין שחקנים — היה הראשון!',lbPickCountry:'בחר מדינה בפרופיל כדי לראות את דירוג המדינה',currentPassword:'סיסמה נוכחית',wrongPassword:'הסיסמה הנוכחית שגויה',pvPrivate:'פרופיל פרטי',pvPrivateD:'רק השם שלך מוצג; פוסטים וסטטיסטיקות מוסתרים',pvHideLb:'הסתר מלוח המובילים',pvHideLbD:'לא תופיע בדירוג',pvDm:'הודעות מנעקבים בלבד',pvDmD:'רק אנשים שאתה עוקב אחריהם יכולים לשלוח לך הודעה',privateProfileTitle:'פרופיל פרטי',privateProfileSub:'המשתמש הזה שומר על פרופיל פרטי',dmRestricted:'המשתמש מקבל הודעות רק מאנשים שהוא עוקב אחריהם',moderation:'ניהול דיווחים',noReports:'אין דיווחים 🎉',markReviewed:'טופל',viewProfile:'צפה',reportedLabel:'משתמש שדווח:',
+  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',forgotPw:'שכחת סיסמה?',resetSent:'נשלח אימייל לאיפוס הסיסמה',verifyEmailSent:'נשלח אימייל אימות — בדוק את התיבה',blockTitle:'חסימת משתמש',blockConfirm:'האם אתה בטוח שברצונך לחסום את',blockReport:'חסום ודווח',blockOnly:'חסום בלבד',blockedDone:'נחסם',unblockedDone:'החסימה הוסרה',blockedUsers:'משתמשים חסומים',noBlocked:'לא חסמת אף אחד',unblock:'הסר חסימה',freezeUsed:'הקפאת רצף נוצלה — רצף {n} הימים שלך נשמר!',changeUsername:'שינוי שם משתמש',changePassword:'שינוי סיסמה',changeEmail:'שינוי אימייל',newUsername:'שם משתמש חדש:',newPassword:'סיסמה חדשה (12+ תווים, אות גדולה ומספר):',newEmail:'אימייל חדש:',reauthNeeded:'התנתק והתחבר מחדש, ואז נסה שוב',saved:'נשמר!',shareBrag:'🔥 יש לי {pts} נקודות ורצף של {streak} ימים ב-FlashArena! בוא/י אליי:',shareJoin:'🔥 בוא/י ל-FlashArena — משימות אמיתיות ופרסים אמיתיים:',onb1Title:'משימות מהחיים',onb1Text:'כל יום מחכות לך משימות כיפיות לבצע בעולם האמיתי.',onb2Title:'העלה הוכחה',onb2Text:'צלם תמונה או סרטון תוך כדי המשימה כדי לזכות בנקודות.',onb3Title:'טפס בדירוג',onb3Text:'צבור נקודות, שמור על הרצף, ועלה בלוח המובילים.',onbNext:'הבא →',onbStart:'יאללה!',onbSkip:'דלג',trending:'טרנדים',recentSearches:'חיפושים אחרונים',clearAll:'נקה הכל',edit:'עריכה',delete:'מחיקה',edited:'נערך',editComment:'עריכת התגובה:',deleteCommentConfirm:'למחוק את התגובה?',reportPostLabel:'הפוסט הזה',lbNoPlayers:'אין עדיין שחקנים — היה הראשון!',lbPickCountry:'בחר מדינה בפרופיל כדי לראות את דירוג המדינה',comingSoon:'בקרוב!',couldNotLoadFeed:'לא ניתן לטעון את הפיד',phLoginPass:'הסיסמה שלך',phComment:'הוסף תגובה…',phMessage:'הודעה…',couldNotLoadPosts:'לא ניתן לטעון פוסטים',couldNotLoadRankings:'לא ניתן לטעון את הדירוג',couldNotLoadComments:'לא ניתן לטעון תגובות',noCommentsYet:'אין עדיין תגובות',beFirstComment:'היה הראשון להגיב!',cookiesNote:'אפשר להשתמש באפליקציה בלי עוגיות, אך חלק מהתכונות יוגבלו',errNotLoggedIn:'לא מחובר',exportingData:'מייצא את הנתונים שלך…',dataExported:'הנתונים יוצאו! בדוק בהורדות.',exportFailed:'הייצוא נכשל',deletingAccount:'מוחק חשבון…',accountDeleted:'החשבון נמחק',deletionFailed:'המחיקה נכשלה',googleFailed:'ההתחברות עם Google נכשלה',loginToLike:'התחבר כדי לעשות לייק',errLike:'שגיאה בלייק',errUnlike:'שגיאה בהסרת הלייק',noPostShare:'אין פוסט לשיתוף',loginToFollow:'התחבר כדי לעקוב',alreadyFollowing:'כבר עוקב!',nowFollowing:'עוקב אחרי',uploadProofFirst:'העלה הוכחה קודם!',storageUnavailable:'האחסון לא זמין',uploadingProof:'מעלה הוכחה…',uploadingT:'מעלה',postedToFeed:'פורסם לפיד!',uploadFailedNoMedia:'ההעלאה נכשלה (הפוסט נוצר בלי מדיה)',adLimitReached:'הגעת למגבלה היומית (10/10)',missionsReset:'המשימות אופסו!',feedCleared:'הפיד נוקה!',rewardsNeedServer:'הפרסים דורשים שרת (Blaze)',removedFromSaves:'הוסר מהשמורים',savedShort:'נשמר',saveLabel:'שמור',shareLabel:'שיתוף',couldNotLoad:'לא ניתן לטעון פרופיל',deleteVideoConfirm:'למחוק את הסרטון?',errLogin:'אימייל או סיסמה שגויים',delAcc1:'בטוח/ה? הפעולה תמחק לצמיתות את החשבון וכל הנתונים. אי אפשר לבטל.',delAcc2:'באמת למחוק הכל? לחץ/י אישור עוד פעם כדי לאשר.',delFeedConfirm:'למחוק את כל הפוסטים בפיד? אי אפשר לבטל.',currentPassword:'סיסמה נוכחית',wrongPassword:'הסיסמה הנוכחית שגויה',pvPrivate:'פרופיל פרטי',pvPrivateD:'רק השם שלך מוצג; פוסטים וסטטיסטיקות מוסתרים',pvHideLb:'הסתר מלוח המובילים',pvHideLbD:'לא תופיע בדירוג',pvDm:'הודעות מנעקבים בלבד',pvDmD:'רק אנשים שאתה עוקב אחריהם יכולים לשלוח לך הודעה',privateProfileTitle:'פרופיל פרטי',privateProfileSub:'המשתמש הזה שומר על פרופיל פרטי',dmRestricted:'המשתמש מקבל הודעות רק מאנשים שהוא עוקב אחריהם',moderation:'ניהול דיווחים',noReports:'אין דיווחים 🎉',markReviewed:'טופל',viewProfile:'צפה',reportedLabel:'משתמש שדווח:',
   adComeBack:'חזור מחר',adDone:'הושלם',adLeft:'נותרו היום',adAllDone:'צפית בכל הפרסומות היום',ptsTo:'נק׳ עד',maxRank:'הגעת לדרגה הגבוהה ביותר!',
   lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
   notifTitle:'התראות',notifEmpty:'אין התראות עדיין',notifLiked:'אהב את הסרטון שלך',notifFollowed:'התחיל לעקוב אחריך',notifCommented:'הגיב על הסרטון שלך',notifReplied:'הגיב לתגובה שלך',notifReferral:'הצטרף דרך ההזמנה שלך — +200!',justNow:'עכשיו',minShort:'ד׳',hrShort:'ש׳',dayShort2:'ימ׳',
@@ -2038,7 +2038,7 @@ function doLogin(){
   const email=document.getElementById('log-email').value.trim();
   const pass=document.getElementById('log-pass').value;
   if(!email||!pass){document.getElementById('err-login').style.display='block';return;}
-  if(!auth){toast('No connection. Try again.');return;}
+  if(!auth){toast(t('noConnection'));return;}
   setAuthLoading(true);
   auth.signInWithEmailAndPassword(email,pass)
     .then(cred=>{userUID=cred.user.uid;userName=cred.user.displayName||cred.user.email.split('@')[0]||'Player_'+userUID.slice(0,8);})
@@ -2046,12 +2046,12 @@ function doLogin(){
 }
 
 function doGoogle(){
-  if(!auth){toast('No connection. Try again.');return;}
+  if(!auth){toast(t('noConnection'));return;}
   setAuthLoading(true);
   const provider=new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider)
     .then(cred=>{userUID=cred.user.uid;userName=cred.user.displayName||cred.user.email.split('@')[0]||'Player_'+userUID.slice(0,8);})
-    .catch(e=>{setAuthLoading(false);toast('Google sign-in failed.');console.error('[Auth] google error:',e);});
+    .catch(e=>{setAuthLoading(false);toast('⚠️ '+t('googleFailed'));console.error('[Auth] google error:',e);});
 }
 
 function doLogout(){
@@ -2067,11 +2067,11 @@ function doLogout(){
 // ══════════ GDPR & DATA EXPORT ══════════
 function exportMyData(){
   if(!userUID||!db){
-    toast('❌ Not logged in');
+    toast('❌ '+t('errNotLoggedIn'));
     return;
   }
 
-  toast('📥 Exporting your data...');
+  toast('📥 '+t('exportingData'));
 
   Promise.all([
     db.ref('users/'+userUID).once('value'),
@@ -2119,28 +2119,28 @@ function exportMyData(){
     link.click();
     URL.revokeObjectURL(url);
 
-    toast('✅ Data exported! Check your downloads.');
+    toast('✅ '+t('dataExported'));
   }).catch(err=>{
     console.error('[Export]',err);
-    toast('❌ Export failed');
+    toast('❌ '+t('exportFailed'));
   });
 }
 
 function deleteMyAccount(){
-  if(!confirm('⚠️ Are you SURE? This will permanently delete your account and all data. This CANNOT be undone.')){
+  if(!confirm('⚠️ '+t('delAcc1'))){
     return;
   }
 
-  if(!confirm('Really delete everything? Click OK one more time to confirm.')){
+  if(!confirm(t('delAcc2'))){
     return;
   }
 
   if(!userUID||!db){
-    toast('❌ Not logged in');
+    toast('❌ '+t('errNotLoggedIn'));
     return;
   }
 
-  toast('🗑️ Deleting account...');
+  toast('🗑️ '+t('deletingAccount'));
 
   Promise.all([
     db.ref('users/'+userUID).remove(),
@@ -2154,12 +2154,12 @@ function deleteMyAccount(){
     db.ref('userLikes/'+userUID).remove()
   ]).then(()=>{
     auth.currentUser.delete().then(()=>{
-      toast('✅ Account deleted');
+      toast('✅ '+t('accountDeleted'));
       auth.signOut().then(()=>bootToAuth());
     });
   }).catch(err=>{
     console.error('[Delete]',err);
-    toast('❌ Deletion failed: '+err.message);
+    toast('❌ '+t('deletionFailed')+': '+err.message);
   });
 }
 
@@ -2178,7 +2178,7 @@ function showGDPRNotice(){
     </div>
     <div style="display:flex;gap:10px">
       <button onclick="try{localStorage.setItem('gdpr-accepted-v1','true');}catch(e){}document.getElementById('gdpr-banner').remove()" style="flex:1;background:#00d4ff;color:#000;border:none;padding:10px;border-radius:6px;font-weight:bold;cursor:pointer">Accept</button>
-      <button onclick="toast('You can use the app without cookies, but some features may be limited')" style="flex:1;background:#2d2d44;color:#8888a8;border:none;padding:10px;border-radius:6px;cursor:pointer">Decline</button>
+      <button onclick="toast(t('cookiesNote')||'')" style="flex:1;background:#2d2d44;color:#8888a8;border:none;padding:10px;border-radius:6px;cursor:pointer">Decline</button>
     </div>
   `;
   document.body.appendChild(notice);
@@ -2224,18 +2224,18 @@ function resetMissions(){
   });
   saveUserData();
   updateUI();
-  toast('✅ Missions reset!');
+  toast('✅ '+t('missionsReset'));
 }
 
 function clearFeedData(){
-  if(!db){toast('No connection');return;}
-  if(!confirm('Delete all feed posts? This cannot be undone.')) return;
+  if(!db){toast(t('noConnection'));return;}
+  if(!confirm(t('delFeedConfirm'))) return;
   db.ref('feed').remove().then(function(){
     feedAllPosts=[]; feedDisplayPosts=[]; feedShuffled=[]; feedIdx=-1; feedAnimating=false;
     clearTimeout(feedCheckTimer);
     const wrap=document.getElementById('feed-wrap-foryou');
     if(wrap) wrap.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">🎬</div><div class="feed-empty-text">'+t('noPostsYet')+'</div><div class="feed-empty-sub">'+t('noPostsSub')+'</div></div>';
-    toast('🗑️ Feed cleared!');
+    toast('🗑️ '+t('feedCleared'));
   }).catch(function(e){toast('Error: '+e.message);});
 }
 
@@ -2318,7 +2318,7 @@ function feedOpenProfile(uid,username,init){
   var followBtn=document.getElementById('fpp-follow-btn');
   if(followBtn){
     followBtn.onclick=function(){fppToggleFollow();};
-    followBtn.textContent='Follow';
+    followBtn.textContent=t('followBtn');
     followBtn.classList.remove('following');
     followBtn.style.display='none';
   }
@@ -2388,7 +2388,7 @@ function feedOpenProfile(uid,username,init){
     document.getElementById('fpp-s-posts').textContent='0';
     var fnEl=document.getElementById('fpp-followers-n'),fgEl=document.getElementById('fpp-following-n');
     if(fnEl) fnEl.textContent='0'; if(fgEl) fgEl.textContent='0';
-    document.getElementById('fpp-grid').innerHTML='<div style="padding:36px;text-align:center;color:var(--muted);font-size:13px">No connection</div>';
+    document.getElementById('fpp-grid').innerHTML='<div style="padding:36px;text-align:center;color:var(--muted);font-size:13px">'+t('noConnection')+'</div>';
     if(!isMe&&followBtn) followBtn.style.display='block';
     showContent();
     return;
@@ -2467,7 +2467,7 @@ function feedOpenProfile(uid,username,init){
   }).catch(function(){
     applyAvatar(null,null);
     document.getElementById('fpp-rank-badge').textContent='';
-    document.getElementById('fpp-grid').innerHTML='<div style="padding:36px;text-align:center;color:var(--muted)">Could not load profile</div>';
+    document.getElementById('fpp-grid').innerHTML='<div style="padding:36px;text-align:center;color:var(--muted)">'+t('couldNotLoad')+'</div>';
     showContent();
   });
 }
@@ -2609,14 +2609,14 @@ function loadLikedPosts(){
   }
   var fromCache=feedAllPosts.filter(function(p){return likedIds.has(p.id);});
   if(fromCache.length){renderLikedGrid(fromCache);return;}
-  if(!db){grid.innerHTML='<div class="liked-empty">No connection</div>';return;}
+  if(!db){grid.innerHTML='<div class="liked-empty">'+t('noConnection')+'</div>';return;}
   grid.innerHTML='<div class="liked-empty"><div class="fpp-spinner" style="margin:0 auto"></div></div>';
   db.ref('feed').orderByChild('timestamp').limitToLast(100).once('value').then(function(snap){
     var posts=[];
     snap.forEach(function(c){if(likedIds.has(c.key)) posts.push({id:c.key,...c.val()});});
     renderLikedGrid(posts);
   }).catch(function(){
-    grid.innerHTML='<div class="liked-empty">Could not load posts</div>';
+    grid.innerHTML='<div class="liked-empty">'+t('couldNotLoadPosts')+'</div>';
   });
 }
 
@@ -2759,7 +2759,7 @@ function loadFollowingFeed(){
         if(wrap) feedInitEvents(wrap);
       }
     }).catch(function(){
-      if(wrap) wrap.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">⚠️</div><div class="feed-empty-text">Could not load feed</div></div>';
+      if(wrap) wrap.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">⚠️</div><div class="feed-empty-text">'+t('couldNotLoadFeed')+'</div></div>';
     });
   },100);
 }
@@ -2834,7 +2834,7 @@ function loadFeed(isRefresh){
   var wrap=document.getElementById('feed-wrap-foryou');
   if(wrap) feedInitEvents(wrap);
   if(!db){
-    if(wrap) wrap.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">📡</div><div class="feed-empty-text">No connection</div></div>';
+    if(wrap) wrap.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">📡</div><div class="feed-empty-text">'+t('noConnection')+'</div></div>';
     return;
   }
 
@@ -2890,7 +2890,7 @@ function loadFeed(isRefresh){
   }).catch(function(e){
     console.error('[Feed]',e);
     var w=document.getElementById('feed-wrap-foryou');
-    if(w) w.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">⚠️</div><div class="feed-empty-text">Could not load feed</div></div>';
+    if(w) w.innerHTML='<div class="feed-empty"><div class="feed-empty-icon">⚠️</div><div class="feed-empty-text">'+t('couldNotLoadFeed')+'</div></div>';
   });
 }
 
@@ -2956,7 +2956,7 @@ function feedSavePost(postId,btn){
   feedSetSaved(postId,!isSaved);
   if(btn){
     btn.classList.toggle('saved');
-    toast((!isSaved?'📌 Saved':'❌ Removed from saves'));
+    toast((!isSaved?'📌 '+t('savedShort'):'❌ '+t('removedFromSaves')));
   }
   // Update saved posts display in profile if it's open
   try{loadSavedPosts();}catch(e){}
@@ -2967,7 +2967,7 @@ function formatFeedCount(n){
   return n>0?String(n):'0';
 }
 function feedLikePost(postId,btn){
-  if(!userUID){toast('👤 Log in to like');return;}
+  if(!userUID){toast('👤 '+t('loginToLike'));return;}
 
   var set=feedGetLikedSet();
   var wasLiked=set.has(postId);
@@ -2988,7 +2988,7 @@ function feedLikePost(postId,btn){
       })
       .catch(err=>{
         console.error('[Unlike]',err);
-        toast('❌ Error unliking post');
+        toast('❌ '+t('errUnlike'));
       });
   } else {
     db.ref(`userLikes/${userUID}/${postId}`).set(true)
@@ -3006,7 +3006,7 @@ function feedLikePost(postId,btn){
       })
       .catch(err=>{
         console.error('[Like]',err);
-        toast('❌ Error liking post');
+        toast('❌ '+t('errLike'));
       });
   }
 }
@@ -3030,12 +3030,12 @@ function feedGetCreatorBadge(uid){
 
 function feedSharePost(){
   var currPost=feedSeen[feedPos];
-  if(!currPost){toast('No post to share');return;}
+  if(!currPost){toast(t('noPostShare'));return;}
   openShareSheet(window.location.href.split('?')[0]+'?post='+currPost.id, '🔥 Check out this mission on FlashArena!');
 }
 function feedFollowUser(btn, targetUID, targetUsername) {
-  if (!userUID) { toast('Log in to follow'); return; }
-  if (_myFollowingSet.has(targetUID)) { toast('Already following!'); return; }
+  if (!userUID) { toast(t('loginToFollow')); return; }
+  if (_myFollowingSet.has(targetUID)) { toast('👥 '+t('alreadyFollowing')); return; }
   btn.textContent = '✓';
   btn.classList.add('following');
   followUser(targetUID, targetUsername);
@@ -3047,7 +3047,7 @@ function feedFollowUser(btn, targetUID, targetUsername) {
   if(feedMode==='following'){
     refreshFollowingFeed();
   }
-  toast('👥 Following @' + targetUsername + '!');
+  toast('👥 '+t('nowFollowing')+' @' + targetUsername + '!');
 }
 
 function feedUnfollowUser(targetUID){
@@ -3114,11 +3114,11 @@ function feedRenderPost(post,slot){
       +'</div>'
       +'<div class="feed-action">'
         +'<button class="feed-action-btn'+(isSaved?' saved':'')+'" id="feed-save-btn" onclick="feedSavePost(\''+postId+'\',this)">'+svgBookmark+'</button>'
-        +'<div class="feed-action-count">Save</div>'
+        +'<div class="feed-action-count">'+t('saveLabel')+'</div>'
       +'</div>'
       +'<div class="feed-action">'
         +'<button class="feed-action-btn" id="feed-share-btn">'+svgShare+'</button>'
-        +'<div class="feed-action-count">Share</div>'
+        +'<div class="feed-action-count">'+t('shareLabel')+'</div>'
       +'</div>'
       +((postUid&&postUid!==userUID)?(
         '<div class="feed-action">'
@@ -3918,7 +3918,7 @@ async function quickValidateFile(file){
 }
 
 async function complete(){
-  if(!proofUploaded){toast('📷 Upload proof first!');return;}
+  if(!proofUploaded){toast('📷 '+t('uploadProofFirst'));return;}
 
   const mIdx=curMission;
   const file=selectedFile;
@@ -4007,12 +4007,12 @@ async function complete(){
 
 async function uploadMissionFile(file, missionId, postId){
   if(!storage){
-    toast('⚠️ Storage not available');
+    toast('⚠️ '+t('storageUnavailable'));
     return;
   }
 
   try{
-    toast('⏳ Uploading proof...');
+    toast('⏳ '+t('uploadingProof'));
     const ref=storage.ref('missions/'+userUID+'_'+Date.now());
     const task=ref.put(file);
 
@@ -4020,7 +4020,7 @@ async function uploadMissionFile(file, missionId, postId){
       snap=>{
         const progress=Math.round((snap.bytesTransferred/snap.totalBytes)*100);
         if(progress>0 && progress<100){
-          toast('⏳ Uploading '+progress+'%...');
+          toast('⏳ '+t('uploadingT')+' '+progress+'%...');
         }
       }
     );
@@ -4035,10 +4035,10 @@ async function uploadMissionFile(file, missionId, postId){
       mediaType: file.type.startsWith('video')?'video':'image'
     });
 
-    toast('🎬 Posted to feed!');
+    toast('🎬 '+t('postedToFeed'));
   }catch(err){
     console.error('[Upload] error:', err);
-    toast('⚠️ Upload failed (post still created without media)');
+    toast('⚠️ '+t('uploadFailedNoMedia'));
   }
 }
 
@@ -4108,7 +4108,7 @@ function markCardDone(idx){
 function restoreCompletedCards(){completedMissions.forEach(idx=>markCardDone(idx));}
 
 function watchAd(){
-  if(adsWatched>=AD_LIMIT){toast('❌ Daily limit reached (10/10)');return;}
+  if(adsWatched>=AD_LIMIT){toast('❌ '+t('adLimitReached'));return;}
   adsWatched++; pts+=50;
   updateUI(); updateAdBanner(); saveUserData();
   toast('✅ +50 '+t('points')+'!');
@@ -4238,7 +4238,7 @@ function loadLeaderboard(){
     renderLb();
   }).catch(e=>{
     console.error('[LB] error:',e);
-    list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Could not load rankings</div>';
+    list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">'+t('couldNotLoadRankings')+'</div>';
   });
 }
 
@@ -4841,7 +4841,7 @@ async function redeemReward(id,btn){
     if(list) list.innerHTML='<div style="text-align:center;padding:16px"><div style="font-size:40px">🎉</div><div style="font-weight:800;margin:8px 0">'+r.name+'</div><div style="font-size:13px;color:var(--muted)">Code:</div><div style="font-family:monospace;font-size:18px;font-weight:800;background:var(--bg3);border:2px dashed var(--gold);border-radius:10px;padding:12px;margin-top:8px">'+(res.data.code||'—')+'</div></div>';
     try{launchConfetti();}catch(e){}
   }catch(err){
-    if(isFnUnavailable(err)) toast('⚠️ Rewards need the server (Blaze)');
+    if(isFnUnavailable(err)) toast('⚠️ '+t('rewardsNeedServer'));
     else toast('⚠️ '+(err.message||'Redemption failed'));
     if(btn){btn.disabled=false;btn.textContent=t('redeem');}
   }
@@ -5182,7 +5182,7 @@ function refreshFeedSlotFollowState() {
       var sp = document.createElement('span');
       sp.className = 'flw-badge';
       sp.style.cssText = 'font-size:11px;color:var(--accent2);font-weight:700;vertical-align:middle;margin-left:4px';
-      sp.textContent = '✓ Following';
+      sp.textContent = t('followingBtn');
       unameEl.appendChild(sp);
     } else if (!iFollow && badge) {
       badge.remove();
@@ -5203,7 +5203,7 @@ function followUser(targetUID, targetUsername) {
   db.ref().update(updates)
     .then(() => {
       _myFollowingSet.add(targetUID);
-      toast('👥 Following @' + targetUsername + '!');
+      toast('👥 '+t('nowFollowing')+' @' + targetUsername + '!');
       try{ pushNotification(targetUID,'follow'); }catch(e){}
       if (feedMode === 'following') refreshFollowingFeed();
       refreshFeedSlotFollowState();
@@ -5244,13 +5244,13 @@ function unfollowUser(targetUID) {
 function fppToggleFollow() {
   var btn = document.getElementById('fpp-follow-btn');
   if (!btn || !_fppCurrentUID) return;
-  if (!userUID) { toast('Log in to follow'); return; }
+  if (!userUID) { toast(t('loginToFollow')); return; }
   var isFollowing = btn.classList.contains('following');
   var fcEl = document.getElementById('fpp-followers-n');
   var myFollowingEl = document.getElementById('my-following-cnt');
   if (isFollowing) {
     unfollowUser(_fppCurrentUID);
-    btn.textContent = 'Follow';
+    btn.textContent = t('followBtn');
     btn.classList.remove('following');
     if (fcEl) fcEl.textContent = Math.max(0, (parseInt(fcEl.textContent) || 1) - 1);
     if (myFollowingEl && myFollowingEl.textContent !== '—') {
@@ -5261,7 +5261,7 @@ function fppToggleFollow() {
     toast('Unfollowed');
   } else {
     followUser(_fppCurrentUID, _fppCurrentUsername || '');
-    btn.textContent = 'Following ✓';
+    btn.textContent = t('followingBtn');
     btn.classList.add('following');
     if (fcEl) fcEl.textContent = (parseInt(fcEl.textContent) || 0) + 1;
     if (myFollowingEl && myFollowingEl.textContent !== '—') {
@@ -5324,10 +5324,10 @@ function showFollowSheet(type, uid) {
   if (!targetUID) return;
   var title = type === 'followers' ? 'Followers' : 'Following';
   document.getElementById('follow-sheet-title').textContent = title;
-  document.getElementById('follow-sheet-list').innerHTML = '<div class="follow-empty">Loading...</div>';
+  document.getElementById('follow-sheet-list').innerHTML = '<div class="follow-empty">'+t('loading')+'</div>';
   document.getElementById('follow-sheet-overlay').classList.add('show');
   if (!db) {
-    document.getElementById('follow-sheet-list').innerHTML = '<div class="follow-empty">No connection</div>';
+    document.getElementById('follow-sheet-list').innerHTML = '<div class="follow-empty">'+t('noConnection')+'</div>';
     return;
   }
   var ref = type === 'followers' ?
@@ -5364,7 +5364,7 @@ function showFollowSheet(type, uid) {
       });
     });
   }).catch(function() {
-    document.getElementById('follow-sheet-list').innerHTML = '<div class="follow-empty">Could not load</div>';
+    document.getElementById('follow-sheet-list').innerHTML = '<div class="follow-empty">'+t('couldNotLoad')+'</div>';
   });
 }
 
@@ -5383,7 +5383,7 @@ function openCommentSheet(postId, countEl){
     av.textContent=(userName||'?')[0].toUpperCase();
     av.style.background=getUserColor(userUID||userName||'u');
   }
-  document.getElementById('comment-list').innerHTML='<div class="comment-empty">Loading...</div>';
+  document.getElementById('comment-list').innerHTML='<div class="comment-empty">'+t('loading')+'</div>';
   document.getElementById('comment-overlay').classList.add('show');
   document.getElementById('comment-inp').value='';
   setTimeout(function(){document.getElementById('comment-inp').focus();},300);
@@ -5430,14 +5430,14 @@ function loadCommentsFull(postId){
     snap.forEach(function(c){list.push({id:c.key,...c.val()});});
     renderCommentList(list);
   }).catch(function(){
-    document.getElementById('comment-list').innerHTML='<div class="comment-empty">Could not load comments</div>';
+    document.getElementById('comment-list').innerHTML='<div class="comment-empty">'+t('couldNotLoadComments')+'</div>';
   });
 }
 
 function renderCommentList(list){
   var el=document.getElementById('comment-list');
   if(!list.length){
-    el.innerHTML='<div class="comment-empty">No comments yet<br><span style="font-size:12px;opacity:.6">Be the first to comment!</span></div>';
+    el.innerHTML='<div class="comment-empty">'+t('noCommentsYet')+'<br><span style="font-size:12px;opacity:.6">'+t('beFirstComment')+'</span></div>';
     return;
   }
   el.innerHTML=list.map(function(c){
@@ -5803,7 +5803,7 @@ async function submitUploadVideo(){
       var task=ref.put(file);
       task.on('state_changed',function(snap){
         var progress=Math.round((snap.bytesTransferred/snap.totalBytes)*100);
-        btn.textContent='Uploading '+progress+'%';
+        btn.textContent=t('uploadingT')+' '+progress+'%';
       });
       await task;
       console.log('[Upload] Video uploaded, getting URL...');
@@ -5811,14 +5811,14 @@ async function submitUploadVideo(){
       console.log('[Upload] Got URL: '+url);
     } else {
       type='image';
-      btn.textContent='Uploading...';
+      btn.textContent=t('uploadingProof');
       if(!storage){throw new Error('Storage not initialized');}
       console.log('[Upload] Starting image upload...');
       var ref=storage.ref('userimages/'+userUID+'_'+Date.now());
       var task=ref.put(file);
       task.on('state_changed',function(snap){
         var progress=Math.round((snap.bytesTransferred/snap.totalBytes)*100);
-        btn.textContent='Uploading '+progress+'%';
+        btn.textContent=t('uploadingT')+' '+progress+'%';
       });
       await task;
       console.log('[Upload] Image uploaded, getting URL...');
@@ -5894,7 +5894,7 @@ async function loadMyVideos(){
 }
 
 function deleteMyVideo(postId){
-  if(!confirm('Delete this video?')) return;
+  if(!confirm(t('deleteVideoConfirm'))) return;
   if(!db) return;
   db.ref('feed/'+postId).remove()
     .then(()=>{toast('🗑️ Video deleted');loadMyVideos();})
@@ -6031,10 +6031,10 @@ window.addEventListener('beforeunload',function(){
       <div class="comment-title">Comments</div>
       <button class="comment-close" onclick="document.getElementById('comment-overlay').classList.remove('show')">✕</button>
     </div>
-    <div class="comment-list" id="comment-list"><div class="comment-empty">Loading...</div></div>
+    <div class="comment-list" id="comment-list"><div class="comment-empty">'+t('loading')+'</div></div>
     <div class="comment-input-row">
       <div class="comment-my-av" id="comment-my-av" style="background:var(--accent)">?</div>
-      <input class="comment-inp" id="comment-inp" placeholder="Add a comment..." maxlength="300" autocomplete="off">
+      <input class="comment-inp" id="comment-inp" placeholder="Add a comment..." data-i="phComment" maxlength="300" autocomplete="off">
       <button class="comment-send" id="comment-send" onclick="submitComment()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
@@ -6251,7 +6251,7 @@ window.addEventListener('beforeunload',function(){
     <div class="chat-input-row">
       <button class="chat-img-btn" onclick="document.getElementById('chat-img-file').click()" aria-label="Send image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></button>
       <input type="file" id="chat-img-file" accept="image/*" style="display:none" onchange="sendChatImage(this)">
-      <input class="inp" id="chat-input" placeholder="Message..." maxlength="500" autocomplete="off" onkeydown="if(event.key==='Enter')sendChatMessage()">
+      <input class="inp" id="chat-input" placeholder="Message..." data-i="phMessage" maxlength="500" autocomplete="off" onkeydown="if(event.key==='Enter')sendChatMessage()">
       <button class="chat-send" onclick="sendChatMessage()">➤</button>
     </div>
   </div>
@@ -6275,7 +6275,7 @@ window.addEventListener('beforeunload',function(){
     <div class="follow-sheet-handle"></div>
     <div class="search-header">
       <button class="follow-sheet-close" onclick="closeSearch()">←</button>
-      <input class="inp" id="search-input" placeholder="Search people, videos, missions..." autocomplete="off" oninput="clearTimeout(_searchTimer);_searchTimer=setTimeout(runSearch,250)" onkeydown="if(event.key==='Enter'){saveCurrentSearch();}">
+      <input class="inp" id="search-input" placeholder="Search people, videos, missions..." data-i="searchHint" autocomplete="off" oninput="clearTimeout(_searchTimer);_searchTimer=setTimeout(runSearch,250)" onkeydown="if(event.key==='Enter'){saveCurrentSearch();}">
     </div>
     <div class="follow-sheet-list" id="search-results"><div class="empty-sheet">🔍</div></div>
   </div>
