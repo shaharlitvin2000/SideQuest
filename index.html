@@ -1414,6 +1414,12 @@ let auth=null, db=null, storage=null;
 let selectedFile=null;
 let curLang='en', selLang='en';
 let userName='', userUID='';
+// Always returns a real name (never empty / bare "Player") for anything we persist.
+function myName(){
+  if(userName && userName!=='Guest') return userName;
+  try{ var u=auth.currentUser; if(u){ return u.displayName||(u.email?u.email.split('@')[0]:'')||('Player_'+u.uid.slice(0,8)); } }catch(e){}
+  return userName||'Player';
+}
 let pts=0, completed=0, total=3, curMission=1;
 let adsWatched=0, completedMissions=[], proofUploaded=false;
 let streak=0, totalMissionsDone=0;
@@ -1608,6 +1614,11 @@ function setupAuthListener(){
     console.log('[Auth] state received, user:', user ? user.uid : 'none');
     if(user){
       userUID=user.uid;
+      // Provisional name immediately, so nothing is ever saved as "Player"
+      // during the async DB load. loadUserData() refines it from data.username.
+      if(!userName || userName==='Guest'){
+        userName=user.displayName||(user.email?user.email.split('@')[0]:'')||('Player_'+user.uid.slice(0,8));
+      }
       loadUserData(user);
       startSessionTimeout();
       // (Email-verification nag removed — the verification email is still sent at sign-up;
@@ -4746,7 +4757,7 @@ function submitReport(reason){
 // Create an in-app notification for another user (client-authoritative on Spark).
 function pushNotification(targetUid,type,extra){
   if(!db||!userUID||!targetUid||targetUid===userUID) return;
-  var n={type:type,byUid:userUID,byUsername:userName||'Player',read:false,createdAt:firebase.database.ServerValue.TIMESTAMP};
+  var n={type:type,byUid:userUID,byUsername:myName(),read:false,createdAt:firebase.database.ServerValue.TIMESTAMP};
   if(extra){ for(var k in extra) n[k]=extra[k]; }
   db.ref('notifications/'+targetUid).push(n).catch(function(){});
 }
@@ -5217,7 +5228,7 @@ async function sendChatImage(inp){
     var now=firebase.database.ServerValue.TIMESTAMP;
     db.ref('chats/'+_chatId+'/messages').push({from:userUID,img:url,at:now}).catch(function(e){console.error('[Chat img]',e);toast('⚠️ '+t('chatSendFail'));});
     db.ref('chatMeta/'+userUID+'/'+_chatId).update({peerUid:_chatPeerUid,peerName:_chatPeerName||'Player',lastText:'📷',lastAt:now,unread:0}).catch(function(){});
-    db.ref('chatMeta/'+_chatPeerUid+'/'+_chatId).update({peerUid:userUID,peerName:userName||'Player',lastText:'📷',lastAt:now,unread:firebase.database.ServerValue.increment(1)}).catch(function(){});
+    db.ref('chatMeta/'+_chatPeerUid+'/'+_chatId).update({peerUid:userUID,peerName:myName(),lastText:'📷',lastAt:now,unread:firebase.database.ServerValue.increment(1)}).catch(function(){});
   }catch(e){ console.error('[Chat img]',e); var code=(e&&e.code)||''; toast('⚠️ '+((code==='timeout'||code==='storage/retry-limit-exceeded')?(curLang==='he'?'ההעלאה נתקעה — צריך להפעיל Firebase Storage':'Upload stuck — enable Firebase Storage'):(code==='storage/unauthorized'?(curLang==='he'?'אין הרשאה':'Not allowed'):t('chatSendFail')))); }
 }
 function sendChatMessage(){
@@ -5233,7 +5244,7 @@ function sendChatMessage(){
   // Update both conversation previews. Use atomic increment for the peer's unread
   // (a transaction would need read access to the peer's chatMeta, which we don't have).
   db.ref('chatMeta/'+userUID+'/'+_chatId).update({peerUid:_chatPeerUid,peerName:_chatPeerName||'Player',lastText:preview,lastAt:now,unread:0}).catch(function(){});
-  db.ref('chatMeta/'+_chatPeerUid+'/'+_chatId).update({peerUid:userUID,peerName:userName||'Player',lastText:preview,lastAt:now,unread:firebase.database.ServerValue.increment(1)}).catch(function(){});
+  db.ref('chatMeta/'+_chatPeerUid+'/'+_chatId).update({peerUid:userUID,peerName:myName(),lastText:preview,lastAt:now,unread:firebase.database.ServerValue.increment(1)}).catch(function(){});
 }
 
 // ══════════ EDIT PROFILE (bio, avatar, link, age, country) ══════════
@@ -5697,7 +5708,7 @@ function submitComment(){
   const commentId = db.ref('comments').push().key;
   const commentData = {
     uid: userUID,
-    username: userName || 'User',
+    username: myName(),
     text: text,
     at: firebase.database.ServerValue.TIMESTAMP
   };
@@ -6063,7 +6074,7 @@ async function submitUploadVideo(){
     console.log('[Upload] Saving to database...');
     var post={
       uid:userUID,
-      username:userName,
+      username:myName(),
       caption:caption||'',
       mediaURL:url||null,
       mediaType:type||null,
