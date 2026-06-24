@@ -175,6 +175,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;m
 .admin-act.view{background:var(--bg3);color:var(--text)}
 .admin-act.done{background:var(--accent);color:#04140d}
 .admin-act:active{transform:scale(.96)}
+.admin-stats{margin:4px 0 10px}
+.admin-stat-grid{display:flex;gap:8px;margin-bottom:12px}
+.admin-stat{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 6px;text-align:center}
+.admin-stat-n{font-family:var(--font);font-size:20px;font-weight:700;color:var(--accent)}
+.admin-stat-l{font-size:10px;color:var(--muted);margin-top:3px}
+.admin-sub{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin:6px 2px 8px}
+.admin-pop-row{display:flex;align-items:center;justify-content:space-between;padding:7px 4px;font-size:13px;color:var(--text);border-bottom:1px solid var(--border)}
+.admin-pop-row b{color:var(--accent)}
 .onb-overlay{position:fixed;inset:0;z-index:1100;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:24px}
 .onb-overlay.show{display:flex}
 .onb-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rxl);max-width:360px;width:100%;padding:34px 24px 24px;text-align:center;position:relative;animation:pop .25s cubic-bezier(.34,1.3,.5,1)}
@@ -1055,6 +1063,10 @@ svg.ic-lg{width:19px;height:19px}
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div><div class="setting-label" data-i="notifications">Notifications</div></div>
             <input type="checkbox" id="push-toggle" class="toggle-input" onclick="event.stopPropagation();togglePush()">
           </div>
+          <div class="setting-row" onclick="toggleFx()">
+            <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></div><div class="setting-label" data-i="fxLabel">Sound &amp; vibration</div></div>
+            <input type="checkbox" id="fx-toggle" class="toggle-input" onclick="event.stopPropagation();toggleFx()">
+          </div>
           <div class="setting-row" onclick="closeSettings();openPrivacy()">
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="setting-label" data-i="privacy">Privacy</div></div>
             <div class="chevron">›</div>
@@ -1272,7 +1284,7 @@ const LANGS=[
 
 const T={
   en:{langTitle:'Choose your language',langSub:'You can change this later in settings',continue:'Continue →',register:'Sign Up',login:'Log In',back:'Back',createAccountTitle:'Create account',loginTitle:'Welcome back',authSub:'Start completing missions and climbing the ranks',username:'Username',email:'Email',password:'Password',createAccount:'Create Account',logIn:'Log In',or:'or',continueGoogle:'Continue with Google',days:'days',heroTitle:"Ready for today's missions?",remaining:'missions remaining today',dailyProgress:'Daily progress',adMain:'Watch a short ad',adSub:'+50 bonus points · watch up to 10x/day',watch:'Watch',todaysMissions:"Today's missions",social:'Social',dare:'Dare',explore:'Explore',easy:'Easy',medium:'Medium',hard:'Hard',done:'✓ Done',start:'Start →',m0title:'Ask a stranger one question',m0desc:"Approach someone you don't know and ask them one genuine question.",m1title:'Stand completely still for 60 seconds',m1desc:'Pick a public spot and freeze like a statue for a full minute.',m2title:"Find a place you've never been to",m2desc:"Walk to a street or spot you've never noticed before.",leaderboard:'Leaderboard',lbSub:'This week · resets Friday',friends:'Friends',country:'Country',global:'Global',dayStreak:'day streak',weeklyPoints:'Weekly points',missionsDone:'Missions done',friendRank:'Friend rank',rankProgress:'Rank progress',ptsToLegend:'116 pts to Legend',language:'Language',notifications:'Notifications',privacy:'Privacy',goPremium:'Go Premium',free:'Free',on:'On',logout:'Log Out',missions:'Missions',ranks:'Ranks',feed:'Scroll',profile:'Profile',points:'Points',difficulty:'Difficulty',estTime:'Est. time',tips:'Tips',uploadProof:'Upload your proof',photoOrVideo:'Photo or short video',markComplete:'Mark as completed ✓',cancel:'Cancel',greeting:'Hey',
-  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',forgotPw:'Forgot password?',resetSent:'Password reset email sent',verifyEmailSent:'Verification email sent — check your inbox',blockTitle:'Block user',blockConfirm:'Are you sure you want to block',blockReport:'Block & Report',blockOnly:'Just block',blockedDone:'blocked',unblockedDone:'Unblocked',blockedUsers:'Blocked users',noBlocked:"You haven't blocked anyone",unblock:'Unblock',freezeUsed:'Streak freeze used — your {n}-day streak is safe!',changeUsername:'Change username',changePassword:'Change password',changeEmail:'Change email',newUsername:'New username:',newPassword:'New password (12+ chars, with a capital & a number):',newEmail:'New email:',reauthNeeded:'Please log out and back in, then try again',saved:'Saved!',shareBrag:'🔥 I have {pts} points and a {streak}-day streak on FlashArena! Join me:',shareJoin:'🔥 Join me on FlashArena — complete real-life missions and earn rewards:',onb1Title:'Real-life missions',onb1Text:'Every day you get fun missions to complete in the real world.',onb2Title:'Upload your proof',onb2Text:'Snap a photo or video doing the mission to earn points.',onb3Title:'Climb the ranks',onb3Text:'Earn points, keep your streak, and rise on the leaderboard.',onbNext:'Next →',onbStart:"Let's go!",onbSkip:'Skip',trending:'Trending',recentSearches:'Recent searches',clearAll:'Clear all',edit:'Edit',delete:'Delete',edited:'edited',editComment:'Edit your comment:',deleteCommentConfirm:'Delete this comment?',reportPostLabel:'this post',lbNoPlayers:'No players yet — be the first!',lbPickCountry:'Pick your country in your profile to see the country ranking',comingSoon:'Coming soon!',couldNotLoadFeed:'Could not load feed',phLoginPass:'Your password',phComment:'Add a comment…',phMessage:'Message…',couldNotLoadPosts:'Could not load posts',couldNotLoadRankings:'Could not load rankings',couldNotLoadComments:'Could not load comments',noCommentsYet:'No comments yet',beFirstComment:'Be the first to comment!',cookiesNote:'You can use the app without cookies, but some features may be limited',errNotLoggedIn:'Not logged in',exportingData:'Exporting your data…',dataExported:'Data exported! Check your downloads.',exportFailed:'Export failed',deletingAccount:'Deleting account…',accountDeleted:'Account deleted',deletionFailed:'Deletion failed',googleFailed:'Google sign-in failed',loginToLike:'Log in to like',errLike:'Error liking post',errUnlike:'Error unliking post',noPostShare:'No post to share',loginToFollow:'Log in to follow',alreadyFollowing:'Already following!',nowFollowing:'Following',uploadProofFirst:'Upload proof first!',storageUnavailable:'Storage not available',uploadingProof:'Uploading proof…',uploadingT:'Uploading',postedToFeed:'Posted to feed!',uploadFailedNoMedia:'Upload failed (post created without media)',adLimitReached:'Daily limit reached (10/10)',missionsReset:'Missions reset!',feedCleared:'Feed cleared!',rewardsNeedServer:'Rewards need the server (Blaze)',removedFromSaves:'Removed from saves',savedShort:'Saved',saveLabel:'Save',shareLabel:'Share',couldNotLoad:'Could not load profile',deleteVideoConfirm:'Delete this video?',errLogin:'Wrong email or password',delAcc1:'Are you SURE? This will permanently delete your account and all data. This CANNOT be undone.',delAcc2:'Really delete everything? Tap OK one more time to confirm.',delFeedConfirm:'Delete all feed posts? This cannot be undone.',currentPassword:'Current password',wrongPassword:'Wrong current password',pvPrivate:'Private profile',pvPrivateD:'Only your name shows; posts & stats hidden',pvHideLb:'Hide from leaderboard',pvHideLbD:'You wont appear in the rankings',pvDm:'Messages from followers only',pvDmD:'Only people you follow can message you',privateProfileTitle:'Private profile',privateProfileSub:'This user keeps their profile private',dmRestricted:'This user only accepts messages from people they follow',moderation:'Moderation',noReports:'No reports 🎉',markReviewed:'Resolve',viewProfile:'View',reportedLabel:'Reported user:',
+  close:'Close',you:'(you)',ptsUnit:'pts',missionsLbl:'missions',allRanksTitle:'All Ranks',allRanksSub:'Earn points to climb the ranks',save:'Save',noConnection:'No connection. Try again.',forgotPw:'Forgot password?',resetSent:'Password reset email sent',verifyEmailSent:'Verification email sent — check your inbox',blockTitle:'Block user',blockConfirm:'Are you sure you want to block',blockReport:'Block & Report',blockOnly:'Just block',blockedDone:'blocked',unblockedDone:'Unblocked',blockedUsers:'Blocked users',noBlocked:"You haven't blocked anyone",unblock:'Unblock',freezeUsed:'Streak freeze used — your {n}-day streak is safe!',changeUsername:'Change username',changePassword:'Change password',changeEmail:'Change email',newUsername:'New username:',newPassword:'New password (12+ chars, with a capital & a number):',newEmail:'New email:',reauthNeeded:'Please log out and back in, then try again',saved:'Saved!',shareBrag:'🔥 I have {pts} points and a {streak}-day streak on FlashArena! Join me:',shareJoin:'🔥 Join me on FlashArena — complete real-life missions and earn rewards:',onb1Title:'Real-life missions',onb1Text:'Every day you get fun missions to complete in the real world.',onb2Title:'Upload your proof',onb2Text:'Snap a photo or video doing the mission to earn points.',onb3Title:'Climb the ranks',onb3Text:'Earn points, keep your streak, and rise on the leaderboard.',onbNext:'Next →',onbStart:"Let's go!",onbSkip:'Skip',trending:'Trending',recentSearches:'Recent searches',clearAll:'Clear all',edit:'Edit',delete:'Delete',edited:'edited',editComment:'Edit your comment:',deleteCommentConfirm:'Delete this comment?',reportPostLabel:'this post',lbNoPlayers:'No players yet — be the first!',lbPickCountry:'Pick your country in your profile to see the country ranking',comingSoon:'Coming soon!',couldNotLoadFeed:'Could not load feed',phLoginPass:'Your password',phComment:'Add a comment…',phMessage:'Message…',couldNotLoadPosts:'Could not load posts',couldNotLoadRankings:'Could not load rankings',couldNotLoadComments:'Could not load comments',noCommentsYet:'No comments yet',beFirstComment:'Be the first to comment!',cookiesNote:'You can use the app without cookies, but some features may be limited',errNotLoggedIn:'Not logged in',exportingData:'Exporting your data…',dataExported:'Data exported! Check your downloads.',exportFailed:'Export failed',deletingAccount:'Deleting account…',accountDeleted:'Account deleted',deletionFailed:'Deletion failed',googleFailed:'Google sign-in failed',loginToLike:'Log in to like',errLike:'Error liking post',errUnlike:'Error unliking post',noPostShare:'No post to share',loginToFollow:'Log in to follow',alreadyFollowing:'Already following!',nowFollowing:'Following',uploadProofFirst:'Upload proof first!',storageUnavailable:'Storage not available',uploadingProof:'Uploading proof…',uploadingT:'Uploading',postedToFeed:'Posted to feed!',uploadFailedNoMedia:'Upload failed (post created without media)',adLimitReached:'Daily limit reached (10/10)',missionsReset:'Missions reset!',feedCleared:'Feed cleared!',rewardsNeedServer:'Rewards need the server (Blaze)',removedFromSaves:'Removed from saves',savedShort:'Saved',saveLabel:'Save',shareLabel:'Share',couldNotLoad:'Could not load profile',deleteVideoConfirm:'Delete this video?',errLogin:'Wrong email or password',delAcc1:'Are you SURE? This will permanently delete your account and all data. This CANNOT be undone.',delAcc2:'Really delete everything? Tap OK one more time to confirm.',delFeedConfirm:'Delete all feed posts? This cannot be undone.',currentPassword:'Current password',wrongPassword:'Wrong current password',pvPrivate:'Private profile',pvPrivateD:'Only your name shows; posts & stats hidden',pvHideLb:'Hide from leaderboard',pvHideLbD:'You wont appear in the rankings',pvDm:'Messages from followers only',pvDmD:'Only people you follow can message you',privateProfileTitle:'Private profile',privateProfileSub:'This user keeps their profile private',dmRestricted:'This user only accepts messages from people they follow',moderation:'Moderation',fxLabel:'Sound & vibration',aReports:'Reports',aPlayers:'Players',aDauToday:'Active today',aDauYest:'Active yesterday',aMissionPop:'Mission popularity',noReports:'No reports 🎉',markReviewed:'Resolve',viewProfile:'View',reportedLabel:'Reported user:',
   adComeBack:'Come back tomorrow',adDone:'Done',adLeft:'left today',adAllDone:'All ads watched today',ptsTo:'pts to',maxRank:'Max rank reached!',
   lbPoints:'Points',lbMissions:'Missions',lbStreak:'Streak',season:'Season',seasonEnds:'Season ends in',daysShort:'d',
   notifTitle:'Notifications',notifEmpty:'No notifications yet',notifLiked:'liked your video',notifFollowed:'started following you',notifCommented:'commented on your video',notifReplied:'replied to your comment',notifReferral:'joined with your invite — +200!',justNow:'now',minShort:'m',hrShort:'h',dayShort2:'d',
@@ -1291,7 +1303,7 @@ const T={
   likedPosts:'Liked',savedPosts:'Saved',myVideos:'My Videos',noPostsYet:'No posts yet',noPostsSub:'Complete a mission and upload proof — it appears here!',noLikedYet:'No liked posts yet',noLikedSub:'Go to the Feed and ❤️ posts you love',noSavedYet:'No saved posts yet',noSavedSub:'Tap the bookmark on posts to save them',followToSee:'Follow creators to see their posts here',
   exportData:'Export My Data (GDPR)',deleteAccountBtn:'Delete My Account',dataPrivacy:'Data & Privacy'},
   he:{langTitle:'בחר שפה',langSub:'ניתן לשנות בהגדרות',continue:'המשך →',register:'הרשמה',login:'כניסה',back:'חזרה',createAccountTitle:'צור חשבון',loginTitle:'ברוך הבא',authSub:'התחל להשלים משימות',username:'שם משתמש',email:'אימייל',password:'סיסמה',createAccount:'צור חשבון',logIn:'כניסה',or:'או',continueGoogle:'המשך עם Google',days:'ימים',heroTitle:'מוכן למשימות היום?',remaining:'משימות נותרו היום',dailyProgress:'התקדמות יומית',adMain:'צפה בפרסומת קצרה',adSub:'+50 נקודות · עד 10 צפיות ביום',watch:'צפה',todaysMissions:'משימות היום',social:'חברתי',dare:'אתגר',explore:'חקירה',easy:'קל',medium:'בינוני',hard:'קשה',done:'✓ הושלם',start:'התחל →',m0title:'שאל זר שאלה אחת',m0desc:'גש למישהו שאינך מכיר ושאל אותו שאלה.',m1title:'עמוד ללא תנועה 60 שניות',m1desc:'בחר מקום ציבורי וקפא כמו פסל דקה שלמה.',m2title:'מצא מקום שמעולם לא היית בו',m2desc:'לך לרחוב או פינה שלא שמת לב אליהם.',leaderboard:'לוח מובילים',lbSub:'השבוע הנוכחי · מתאפס ביום שישי',friends:'חברים',country:'מדינה',global:'עולמי',dayStreak:'יום סטריק',weeklyPoints:'נקודות שבועיות',missionsDone:'משימות הושלמו',friendRank:'דירוג בין חברים',rankProgress:'התקדמות בדרגה',ptsToLegend:'116 נקודות ל-Legend',language:'שפה',notifications:'התראות',privacy:'פרטיות',goPremium:'פרמיום',free:'חינמי',on:'פועל',logout:'התנתק',missions:'משימות',ranks:'דירוגים',feed:'גלילה',profile:'פרופיל',points:'נקודות',difficulty:'קושי',estTime:'זמן משוער',tips:'טיפים',uploadProof:'העלה הוכחה',photoOrVideo:'תמונה או סרטון קצר',markComplete:'סיימתי ✓',cancel:'ביטול',greeting:'היי',
-  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',forgotPw:'שכחת סיסמה?',resetSent:'נשלח אימייל לאיפוס הסיסמה',verifyEmailSent:'נשלח אימייל אימות — בדוק את התיבה',blockTitle:'חסימת משתמש',blockConfirm:'האם אתה בטוח שברצונך לחסום את',blockReport:'חסום ודווח',blockOnly:'חסום בלבד',blockedDone:'נחסם',unblockedDone:'החסימה הוסרה',blockedUsers:'משתמשים חסומים',noBlocked:'לא חסמת אף אחד',unblock:'הסר חסימה',freezeUsed:'הקפאת רצף נוצלה — רצף {n} הימים שלך נשמר!',changeUsername:'שינוי שם משתמש',changePassword:'שינוי סיסמה',changeEmail:'שינוי אימייל',newUsername:'שם משתמש חדש:',newPassword:'סיסמה חדשה (12+ תווים, אות גדולה ומספר):',newEmail:'אימייל חדש:',reauthNeeded:'התנתק והתחבר מחדש, ואז נסה שוב',saved:'נשמר!',shareBrag:'🔥 יש לי {pts} נקודות ורצף של {streak} ימים ב-FlashArena! בוא/י אליי:',shareJoin:'🔥 בוא/י ל-FlashArena — משימות אמיתיות ופרסים אמיתיים:',onb1Title:'משימות מהחיים',onb1Text:'כל יום מחכות לך משימות כיפיות לבצע בעולם האמיתי.',onb2Title:'העלה הוכחה',onb2Text:'צלם תמונה או סרטון תוך כדי המשימה כדי לזכות בנקודות.',onb3Title:'טפס בדירוג',onb3Text:'צבור נקודות, שמור על הרצף, ועלה בלוח המובילים.',onbNext:'הבא →',onbStart:'יאללה!',onbSkip:'דלג',trending:'טרנדים',recentSearches:'חיפושים אחרונים',clearAll:'נקה הכל',edit:'עריכה',delete:'מחיקה',edited:'נערך',editComment:'עריכת התגובה:',deleteCommentConfirm:'למחוק את התגובה?',reportPostLabel:'הפוסט הזה',lbNoPlayers:'אין עדיין שחקנים — היה הראשון!',lbPickCountry:'בחר מדינה בפרופיל כדי לראות את דירוג המדינה',comingSoon:'בקרוב!',couldNotLoadFeed:'לא ניתן לטעון את הפיד',phLoginPass:'הסיסמה שלך',phComment:'הוסף תגובה…',phMessage:'הודעה…',couldNotLoadPosts:'לא ניתן לטעון פוסטים',couldNotLoadRankings:'לא ניתן לטעון את הדירוג',couldNotLoadComments:'לא ניתן לטעון תגובות',noCommentsYet:'אין עדיין תגובות',beFirstComment:'היה הראשון להגיב!',cookiesNote:'אפשר להשתמש באפליקציה בלי עוגיות, אך חלק מהתכונות יוגבלו',errNotLoggedIn:'לא מחובר',exportingData:'מייצא את הנתונים שלך…',dataExported:'הנתונים יוצאו! בדוק בהורדות.',exportFailed:'הייצוא נכשל',deletingAccount:'מוחק חשבון…',accountDeleted:'החשבון נמחק',deletionFailed:'המחיקה נכשלה',googleFailed:'ההתחברות עם Google נכשלה',loginToLike:'התחבר כדי לעשות לייק',errLike:'שגיאה בלייק',errUnlike:'שגיאה בהסרת הלייק',noPostShare:'אין פוסט לשיתוף',loginToFollow:'התחבר כדי לעקוב',alreadyFollowing:'כבר עוקב!',nowFollowing:'עוקב אחרי',uploadProofFirst:'העלה הוכחה קודם!',storageUnavailable:'האחסון לא זמין',uploadingProof:'מעלה הוכחה…',uploadingT:'מעלה',postedToFeed:'פורסם לפיד!',uploadFailedNoMedia:'ההעלאה נכשלה (הפוסט נוצר בלי מדיה)',adLimitReached:'הגעת למגבלה היומית (10/10)',missionsReset:'המשימות אופסו!',feedCleared:'הפיד נוקה!',rewardsNeedServer:'הפרסים דורשים שרת (Blaze)',removedFromSaves:'הוסר מהשמורים',savedShort:'נשמר',saveLabel:'שמור',shareLabel:'שיתוף',couldNotLoad:'לא ניתן לטעון פרופיל',deleteVideoConfirm:'למחוק את הסרטון?',errLogin:'אימייל או סיסמה שגויים',delAcc1:'בטוח/ה? הפעולה תמחק לצמיתות את החשבון וכל הנתונים. אי אפשר לבטל.',delAcc2:'באמת למחוק הכל? לחץ/י אישור עוד פעם כדי לאשר.',delFeedConfirm:'למחוק את כל הפוסטים בפיד? אי אפשר לבטל.',currentPassword:'סיסמה נוכחית',wrongPassword:'הסיסמה הנוכחית שגויה',pvPrivate:'פרופיל פרטי',pvPrivateD:'רק השם שלך מוצג; פוסטים וסטטיסטיקות מוסתרים',pvHideLb:'הסתר מלוח המובילים',pvHideLbD:'לא תופיע בדירוג',pvDm:'הודעות מנעקבים בלבד',pvDmD:'רק אנשים שאתה עוקב אחריהם יכולים לשלוח לך הודעה',privateProfileTitle:'פרופיל פרטי',privateProfileSub:'המשתמש הזה שומר על פרופיל פרטי',dmRestricted:'המשתמש מקבל הודעות רק מאנשים שהוא עוקב אחריהם',moderation:'ניהול דיווחים',noReports:'אין דיווחים 🎉',markReviewed:'טופל',viewProfile:'צפה',reportedLabel:'משתמש שדווח:',
+  close:'סגור',you:'(אתה)',ptsUnit:'נק׳',missionsLbl:'משימות',allRanksTitle:'כל הדרגות',allRanksSub:'צבור נקודות כדי לעלות בדרגות',save:'שמור',noConnection:'אין חיבור. נסה שוב.',forgotPw:'שכחת סיסמה?',resetSent:'נשלח אימייל לאיפוס הסיסמה',verifyEmailSent:'נשלח אימייל אימות — בדוק את התיבה',blockTitle:'חסימת משתמש',blockConfirm:'האם אתה בטוח שברצונך לחסום את',blockReport:'חסום ודווח',blockOnly:'חסום בלבד',blockedDone:'נחסם',unblockedDone:'החסימה הוסרה',blockedUsers:'משתמשים חסומים',noBlocked:'לא חסמת אף אחד',unblock:'הסר חסימה',freezeUsed:'הקפאת רצף נוצלה — רצף {n} הימים שלך נשמר!',changeUsername:'שינוי שם משתמש',changePassword:'שינוי סיסמה',changeEmail:'שינוי אימייל',newUsername:'שם משתמש חדש:',newPassword:'סיסמה חדשה (12+ תווים, אות גדולה ומספר):',newEmail:'אימייל חדש:',reauthNeeded:'התנתק והתחבר מחדש, ואז נסה שוב',saved:'נשמר!',shareBrag:'🔥 יש לי {pts} נקודות ורצף של {streak} ימים ב-FlashArena! בוא/י אליי:',shareJoin:'🔥 בוא/י ל-FlashArena — משימות אמיתיות ופרסים אמיתיים:',onb1Title:'משימות מהחיים',onb1Text:'כל יום מחכות לך משימות כיפיות לבצע בעולם האמיתי.',onb2Title:'העלה הוכחה',onb2Text:'צלם תמונה או סרטון תוך כדי המשימה כדי לזכות בנקודות.',onb3Title:'טפס בדירוג',onb3Text:'צבור נקודות, שמור על הרצף, ועלה בלוח המובילים.',onbNext:'הבא →',onbStart:'יאללה!',onbSkip:'דלג',trending:'טרנדים',recentSearches:'חיפושים אחרונים',clearAll:'נקה הכל',edit:'עריכה',delete:'מחיקה',edited:'נערך',editComment:'עריכת התגובה:',deleteCommentConfirm:'למחוק את התגובה?',reportPostLabel:'הפוסט הזה',lbNoPlayers:'אין עדיין שחקנים — היה הראשון!',lbPickCountry:'בחר מדינה בפרופיל כדי לראות את דירוג המדינה',comingSoon:'בקרוב!',couldNotLoadFeed:'לא ניתן לטעון את הפיד',phLoginPass:'הסיסמה שלך',phComment:'הוסף תגובה…',phMessage:'הודעה…',couldNotLoadPosts:'לא ניתן לטעון פוסטים',couldNotLoadRankings:'לא ניתן לטעון את הדירוג',couldNotLoadComments:'לא ניתן לטעון תגובות',noCommentsYet:'אין עדיין תגובות',beFirstComment:'היה הראשון להגיב!',cookiesNote:'אפשר להשתמש באפליקציה בלי עוגיות, אך חלק מהתכונות יוגבלו',errNotLoggedIn:'לא מחובר',exportingData:'מייצא את הנתונים שלך…',dataExported:'הנתונים יוצאו! בדוק בהורדות.',exportFailed:'הייצוא נכשל',deletingAccount:'מוחק חשבון…',accountDeleted:'החשבון נמחק',deletionFailed:'המחיקה נכשלה',googleFailed:'ההתחברות עם Google נכשלה',loginToLike:'התחבר כדי לעשות לייק',errLike:'שגיאה בלייק',errUnlike:'שגיאה בהסרת הלייק',noPostShare:'אין פוסט לשיתוף',loginToFollow:'התחבר כדי לעקוב',alreadyFollowing:'כבר עוקב!',nowFollowing:'עוקב אחרי',uploadProofFirst:'העלה הוכחה קודם!',storageUnavailable:'האחסון לא זמין',uploadingProof:'מעלה הוכחה…',uploadingT:'מעלה',postedToFeed:'פורסם לפיד!',uploadFailedNoMedia:'ההעלאה נכשלה (הפוסט נוצר בלי מדיה)',adLimitReached:'הגעת למגבלה היומית (10/10)',missionsReset:'המשימות אופסו!',feedCleared:'הפיד נוקה!',rewardsNeedServer:'הפרסים דורשים שרת (Blaze)',removedFromSaves:'הוסר מהשמורים',savedShort:'נשמר',saveLabel:'שמור',shareLabel:'שיתוף',couldNotLoad:'לא ניתן לטעון פרופיל',deleteVideoConfirm:'למחוק את הסרטון?',errLogin:'אימייל או סיסמה שגויים',delAcc1:'בטוח/ה? הפעולה תמחק לצמיתות את החשבון וכל הנתונים. אי אפשר לבטל.',delAcc2:'באמת למחוק הכל? לחץ/י אישור עוד פעם כדי לאשר.',delFeedConfirm:'למחוק את כל הפוסטים בפיד? אי אפשר לבטל.',currentPassword:'סיסמה נוכחית',wrongPassword:'הסיסמה הנוכחית שגויה',pvPrivate:'פרופיל פרטי',pvPrivateD:'רק השם שלך מוצג; פוסטים וסטטיסטיקות מוסתרים',pvHideLb:'הסתר מלוח המובילים',pvHideLbD:'לא תופיע בדירוג',pvDm:'הודעות מנעקבים בלבד',pvDmD:'רק אנשים שאתה עוקב אחריהם יכולים לשלוח לך הודעה',privateProfileTitle:'פרופיל פרטי',privateProfileSub:'המשתמש הזה שומר על פרופיל פרטי',dmRestricted:'המשתמש מקבל הודעות רק מאנשים שהוא עוקב אחריהם',moderation:'ניהול דיווחים',fxLabel:'צליל ורטט',aReports:'דיווחים',aPlayers:'שחקנים',aDauToday:'פעילים היום',aDauYest:'פעילים אתמול',aMissionPop:'פופולריות משימות',noReports:'אין דיווחים 🎉',markReviewed:'טופל',viewProfile:'צפה',reportedLabel:'משתמש שדווח:',
   adComeBack:'חזור מחר',adDone:'הושלם',adLeft:'נותרו היום',adAllDone:'צפית בכל הפרסומות היום',ptsTo:'נק׳ עד',maxRank:'הגעת לדרגה הגבוהה ביותר!',
   lbPoints:'נקודות',lbMissions:'משימות',lbStreak:'סטריק',season:'עונה',seasonEnds:'העונה מסתיימת בעוד',daysShort:'ימ׳',
   notifTitle:'התראות',notifEmpty:'אין התראות עדיין',notifLiked:'אהב את הסרטון שלך',notifFollowed:'התחיל לעקוב אחריך',notifCommented:'הגיב על הסרטון שלך',notifReplied:'הגיב לתגובה שלך',notifReferral:'הצטרף דרך ההזמנה שלך — +200!',justNow:'עכשיו',minShort:'ד׳',hrShort:'ש׳',dayShort2:'ימ׳',
@@ -1698,7 +1710,7 @@ function applyLoadedData(data, user){
 // Settings panel (TikTok-style), opened from the profile gear button.
 function openSettings(){
   var o=document.getElementById('settings-overlay');
-  if(o){ o.classList.add('show'); try{applyTranslations();}catch(e){} try{syncPushToggle();}catch(e){} var ar=document.getElementById('admin-setting-row'); if(ar) ar.style.display=isAdmin()?'':'none'; }
+  if(o){ o.classList.add('show'); try{applyTranslations();}catch(e){} try{syncPushToggle();}catch(e){} try{syncFxToggle();}catch(e){} var ar=document.getElementById('admin-setting-row'); if(ar) ar.style.display=isAdmin()?'':'none'; }
   // Lock background scroll while the sheet is open
   var sc=document.querySelector('.screen.active');
   if(sc){ sc.style.overflow='hidden'; window._settingsLockedScreen=sc; }
@@ -1798,6 +1810,9 @@ function finishLoad(){
   try{loadMyBlocked();}catch(e){}
   try{loadMyLikes();}catch(e){}
   try{loadMySaves();}catch(e){}
+  try{syncFxToggle();}catch(e){}
+  // Analytics: daily-active marker + last-active (for retention)
+  try{ if(db&&userUID){ var _d=todayStr(); db.ref('stats/dau/'+_d+'/'+userUID).set(true).catch(function(){}); db.ref('users/'+userUID+'/lastActive').set(_d).catch(function(){}); } }catch(e){}
   try{watchNotifUnread();}catch(e){}
   try{updateDailyDot();}catch(e){}
   try{maybeClaimReferral();}catch(e){}
@@ -3004,6 +3019,7 @@ function feedLikePost(postId,btn){
           post.likes=(post.likes||0)+1;
           if(countEl) countEl.textContent=formatFeedCount(post.likes);
           db.ref('feed/'+postId+'/likes').transaction(function(c){return (c||0)+1;}).catch(function(){});
+          try{ playFx('like'); }catch(e){}
           try{ if(post.uid) pushNotification(post.uid,'like',{postId:postId}); }catch(e){}
         }
       })
@@ -3920,6 +3936,38 @@ async function quickValidateFile(file){
   return {error:null};
 }
 
+// ══════════ SOUND & HAPTICS ══════════
+var _audioCtx=null;
+function fxEnabled(){ try{ return localStorage.getItem('fa_fx')!=='0'; }catch(e){ return true; } }
+function playFx(type){
+  if(!fxEnabled()) return;
+  try{ if(navigator.vibrate){ navigator.vibrate(type==='success'?[12,40,18]:(type==='like'?14:8)); } }catch(e){}
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+    _audioCtx=_audioCtx||new AC(); var ctx=_audioCtx; if(ctx.state==='suspended'){ try{ctx.resume();}catch(e){} }
+    var now=ctx.currentTime;
+    function tone(freq,start,dur,vol){
+      var o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sine'; o.frequency.value=freq;
+      g.gain.setValueAtTime(0,now+start);
+      g.gain.linearRampToValueAtTime(vol,now+start+0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001,now+start+dur);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(now+start); o.stop(now+start+dur+0.03);
+    }
+    if(type==='like'){ tone(680,0,0.12,0.09); }
+    else if(type==='success'){ tone(523,0,0.13,0.10); tone(784,0.11,0.20,0.10); }
+    else { tone(440,0,0.06,0.06); }
+  }catch(e){}
+}
+function toggleFx(){
+  var on=fxEnabled();
+  try{ localStorage.setItem('fa_fx', on?'0':'1'); }catch(e){}
+  var el=document.getElementById('fx-toggle'); if(el) el.checked=!on;
+  if(on){ try{if(navigator.vibrate)navigator.vibrate(0);}catch(e){} } else { playFx('tap'); }
+}
+function syncFxToggle(){ var el=document.getElementById('fx-toggle'); if(el) el.checked=fxEnabled(); }
+
 async function complete(){
   if(!proofUploaded){toast('📷 '+t('uploadProofFirst'));return;}
 
@@ -3983,6 +4031,9 @@ async function complete(){
     updateUI();
     saveUserData();
     markCardDone(mIdx);
+    try{ playFx('success'); }catch(e){}
+    // Analytics: count this mission's completions (atomic, no read needed)
+    try{ db.ref('stats/missionDone/m'+mIdx).set(firebase.database.ServerValue.increment(1)); }catch(e){}
 
     setTimeout(function(){
       toast('🎉 +'+earned+' '+t('points')+'!');
@@ -3990,7 +4041,7 @@ async function complete(){
 
     // Upload file if present
     if(file){
-      uploadMissionFile(file, mIdx, result.data.postId);
+      uploadMissionFile(file, mIdx, null);
     }
   }catch(err){
     console.error('[Complete] error:', err);
@@ -4552,7 +4603,30 @@ function pushNotification(targetUid,type,extra){
 // ══════════ ADMIN MODERATION ══════════
 var ADMIN_EMAIL='shahar070510@gmail.com';
 function isAdmin(){ return !!(auth&&auth.currentUser&&(auth.currentUser.email||'').toLowerCase()===ADMIN_EMAIL); }
-function openAdmin(){ var o=document.getElementById('admin-overlay'); if(o){ o.classList.add('show'); renderAdminReports(); } }
+function openAdmin(){ var o=document.getElementById('admin-overlay'); if(o){ o.classList.add('show'); renderAdminStats(); renderAdminReports(); } }
+function renderAdminStats(){
+  var el=document.getElementById('admin-stats'); if(!el||!db) return;
+  var today=todayStr(); var y=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  Promise.all([
+    db.ref('leaderboard').once('value').catch(function(){return null;}),
+    db.ref('stats/dau/'+today).once('value').catch(function(){return null;}),
+    db.ref('stats/dau/'+y).once('value').catch(function(){return null;}),
+    db.ref('stats/missionDone').once('value').catch(function(){return null;})
+  ]).then(function(r){
+    var players=r[0]?r[0].numChildren():0;
+    var dauT=r[1]?r[1].numChildren():0;
+    var dauY=r[2]?r[2].numChildren():0;
+    var md=(r[3]&&r[3].val())||{};
+    var rows=Object.keys(md).map(function(k){var i=parseInt(k.replace('m',''));return {title:(typeof MISSIONS!=='undefined'&&MISSIONS[i])?t(MISSIONS[i].titleKey):k,n:md[k]};}).sort(function(a,b){return b.n-a.n;});
+    var html='<div class="admin-stat-grid">'
+      +'<div class="admin-stat"><div class="admin-stat-n">'+players+'</div><div class="admin-stat-l">'+t('aPlayers')+'</div></div>'
+      +'<div class="admin-stat"><div class="admin-stat-n">'+dauT+'</div><div class="admin-stat-l">'+t('aDauToday')+'</div></div>'
+      +'<div class="admin-stat"><div class="admin-stat-n">'+dauY+'</div><div class="admin-stat-l">'+t('aDauYest')+'</div></div>'
+      +'</div>';
+    if(rows.length){ html+='<div class="admin-sub">'+t('aMissionPop')+'</div>'+rows.map(function(x){return '<div class="admin-pop-row"><span>'+escHtml(x.title)+'</span><b>'+x.n+'</b></div>';}).join(''); }
+    el.innerHTML=html;
+  }).catch(function(){ el.innerHTML=''; });
+}
 function closeAdmin(){ var o=document.getElementById('admin-overlay'); if(o) o.classList.remove('show'); }
 function renderAdminReports(){
   var list=document.getElementById('admin-list'); if(!list) return;
@@ -6152,6 +6226,8 @@ window.addEventListener('beforeunload',function(){
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">🛡️ <span data-i="moderation">Moderation</span></div>
+    <div id="admin-stats" class="admin-stats"></div>
+    <div class="admin-sub" data-i="aReports">Reports</div>
     <div id="admin-list" class="blocked-list"></div>
     <button class="modal-cancel" onclick="closeAdmin()" data-i="close">Close</button>
   </div>

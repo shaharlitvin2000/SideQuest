@@ -43,7 +43,7 @@
 
         "completedMissionsToday": {
           ".read": "$uid === auth.uid",
-          ".write": false
+          ".write": "$uid === auth.uid"
         },
         "followers": {
           ".read": true,
@@ -208,6 +208,18 @@
       "$uid": {
         ".read": "$uid === auth.uid",
         ".write": "$uid === auth.uid"
+      }
+    },
+
+    "stats": {
+      ".read": "auth !== null && auth.token.email === 'shahar070510@gmail.com'",
+      "missionDone": {
+        "$mid": { ".write": "auth !== null", ".validate": "newData.isNumber()" }
+      },
+      "dau": {
+        "$date": {
+          "$uid": { ".write": "$uid === auth.uid", ".validate": "newData.val() === true" }
+        }
       }
     },
 
