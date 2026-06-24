@@ -1315,7 +1315,7 @@ svg.ic-lg{width:19px;height:19px}
         <button type="button" class="upload-choice" onclick="document.getElementById('file-in').click()"><span class="uc-ic">🖼️</span><span data-i="fromGallery">Gallery</span></button>
       </div>
     </div>
-    <input type="file" id="file-in" accept="image/*,video/*" style="display:none" onchange="fileSelected(this)">
+    <input type="file" id="file-in" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" style="display:none" onchange="fileSelected(this)">
     <input type="file" id="file-cap" accept="image/*,video/*" capture="environment" style="display:none" onchange="fileSelected(this)">
     <div class="verify-box" id="verify-box"></div>
     <button class="modal-cta" id="modal-cta-btn" onclick="complete()" data-i="markComplete">Mark as completed ✓</button>
@@ -6734,7 +6734,7 @@ window.addEventListener('beforeunload',function(){
       <button type="button" class="upload-choice uc-record" onclick="_camGalleryInput='upload-video-file';_camFallbackInput='uv-cap';openCamera(handleUploadFile)"><span class="uc-ic">📹</span><span data-i="recordNow">Record</span></button>
       <button type="button" class="upload-choice" onclick="document.getElementById('upload-video-file').click()"><span class="uc-ic">🖼️</span><span data-i="fromGallery">Gallery</span></button>
     </div>
-    <input id="upload-video-file" type="file" accept="video/*,image/*" style="display:none" onchange="previewUploadVideo(this)">
+    <input id="upload-video-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" style="display:none" onchange="previewUploadVideo(this)">
     <input id="uv-cap" type="file" accept="video/*,image/*" capture="environment" style="display:none" onchange="previewUploadVideo(this)">
 
     <div class="input-group">
