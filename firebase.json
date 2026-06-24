@@ -34,7 +34,10 @@
       "*.md",
       "*.txt",
       "*.json",
+      ".git/**",
+      ".vscode/**",
       "flash-arena.html",
+      "admin.html",
       "admin-dashboard.html"
     ],
     "rewrites": [
