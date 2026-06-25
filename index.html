@@ -5303,8 +5303,7 @@ function showAnnouncement(ann){
   var claimed=annClaimedSet().has(ann.id);
   var body=g('ann-body');
   if(body){
-    body.innerHTML=ann.lines.map(function(k){return '<div class="ann-line">'+escHtml(t(k))+'</div>';}).join('')
-      +'<div class="ann-gift">🎁 '+escHtml(claimed?t('annAlreadyGot'):t('annGiftLine'))+'</div>';
+    body.innerHTML=ann.lines.map(function(k){return '<div class="ann-line">'+escHtml(t(k))+'</div>';}).join('');
     body.scrollTop=0;
   }
   var claim=g('ann-claim');
