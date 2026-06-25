@@ -929,6 +929,8 @@ svg.ic-lg{width:19px;height:19px}
 .follow-sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:flex-end;justify-content:center}
 .follow-sheet-overlay.show{display:flex}
 .follow-sheet{background:var(--bg);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:72vh;display:flex;flex-direction:column;animation:up .22s ease;padding-bottom:env(safe-area-inset-bottom,16px)}
+/* The notifications panel covers most of the page (not just a small bottom sheet) */
+#notif-overlay .follow-sheet{height:92vh;height:92dvh;max-height:92dvh}
 .follow-sheet-handle{width:32px;height:3px;background:var(--muted);opacity:.28;border-radius:2px;margin:14px auto 0}
 .follow-sheet-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
 .follow-sheet-title{font-family:var(--font);font-size:16px;font-weight:800}
