@@ -95,6 +95,7 @@
           "at": {".validate": "newData.isNumber()"},
           "createdAt": {".validate": "newData.isNumber()"},
           "edited": {".validate": "newData.isBoolean()"},
+          "parentId": {".validate": "newData.isString() && newData.val().length <= 60"},
           "replyCount": {".validate": "newData.isNumber() && newData.val() >= 0"},
           "likeCount": {".validate": "newData.isNumber() && newData.val() >= 0"},
           "$other": {".validate": false}
