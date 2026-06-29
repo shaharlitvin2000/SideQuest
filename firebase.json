@@ -36,6 +36,10 @@
       "*.json",
       ".git/**",
       ".vscode/**",
+      ".claude/**",
+      "node_modules/**",
+      "snap.js",
+      "shots.js",
       "flash-arena.html",
       "admin.html",
       "admin-dashboard.html"
