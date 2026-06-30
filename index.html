@@ -482,43 +482,25 @@ img,video{max-width:100%}
 .ach-cat-head svg{width:16px;height:16px}
 .ach-cat-cnt{font-size:11px;font-weight:700;color:var(--muted)}
 .ach-cat-cnt.full{color:var(--gold);font-weight:800}
-/* ───── ACHIEVEMENTS — minimal palette: neutral default, gold = earned, orange = next ───── */
-.achievements-grid{display:flex;flex-direction:column;gap:12px;position:relative;padding-inline-start:36px}
-/* timeline connector — single uniform neutral color (no per-category color) */
-.achievements-grid::before{content:'';position:absolute;inset-inline-start:21px;top:24px;bottom:24px;width:4px;background:var(--bg3);border-radius:3px}
-.achievement-badge{position:relative;display:flex;flex-direction:row;align-items:center;gap:14px;cursor:pointer;padding:16px 16px;border-radius:18px;background:var(--bg2);border:1.5px solid var(--border2);transition:transform .15s,box-shadow .2s;opacity:1;animation:cardEntry .35s cubic-bezier(.25,.8,.25,1) both}
-.achievement-badge:nth-child(1){animation-delay:0s}.achievement-badge:nth-child(2){animation-delay:.06s}.achievement-badge:nth-child(3){animation-delay:.08s}.achievement-badge:nth-child(4){animation-delay:.12s}.achievement-badge:nth-child(5){animation-delay:.16s}.achievement-badge:nth-child(n+6){animation-delay:.2s}
-/* timeline dot */
-.achievement-badge::after{content:'';position:absolute;inset-inline-start:-27px;top:50%;transform:translateY(-50%);width:16px;height:16px;border-radius:50%;background:var(--bg3);border:3px solid var(--bg);z-index:1;transition:background .3s,box-shadow .3s}
-.achievement-badge:active{transform:scale(.98)}
-/* icon chip — single neutral grey-white tone for all (category shown by symbol only) */
-.ach-ic{width:52px;height:52px;flex-shrink:0;border-radius:15px;display:flex;align-items:center;justify-content:center;background:var(--bg3);color:#C7C4D6;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
-.ach-ic svg{width:30px;height:30px}
-.ach-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
-.ach-name{font-family:var(--font-display);font-size:16.5px;font-weight:700;color:var(--text);line-height:1.05;letter-spacing:-.2px}
-.ach-prog-row{display:flex;align-items:center;gap:11px}
-.ach-bar{flex:1;height:9px;background:var(--bg3);border-radius:6px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.45)}
-/* progress fill — ONE consistent gold tone everywhere, no exceptions */
-.ach-bar-fill{height:100%;border-radius:6px;background:var(--gold);transition:width .55s cubic-bezier(.4,0,.2,1)}
-.ach-num{font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;font-family:var(--font);min-width:46px;text-align:end;letter-spacing:-.2px}
-.ach-check{flex-shrink:0;font-size:16px;font-weight:800;color:var(--gold);display:none;align-items:center}
-/* locked / in-progress: neutral, faintly dimmed */
-.achievement-badge.locked{opacity:.92}
-.achievement-badge.locked .ach-name{color:var(--text);opacity:.82}
-.achievement-badge.locked .ach-num{color:var(--muted)}
-/* next up: single subtle orange highlight */
-.achievement-badge.ach-next{opacity:1;border-color:rgba(255,107,53,.42);box-shadow:none}
-.achievement-badge.ach-next .ach-ic{background:rgba(255,107,53,.15);color:var(--accent2);box-shadow:none}
-.achievement-badge.ach-next .ach-num{color:var(--text)}
-.achievement-badge.ach-next::after{background:var(--accent2);box-shadow:none}
-/* unlocked: full gold card */
-.achievement-badge.unlocked{opacity:1;border-color:rgba(255,208,0,.42);background:var(--bg2);box-shadow:none}
-.achievement-badge.unlocked .ach-ic{background:var(--bg3);color:var(--gold);box-shadow:none}
-.achievement-badge.unlocked .ach-name{color:var(--text);font-weight:700}
-.achievement-badge.unlocked .ach-bar-fill{background:var(--gold);box-shadow:none}
-.achievement-badge.unlocked .ach-num{color:var(--gold)}
-.achievement-badge.unlocked .ach-check{display:flex}
-.achievement-badge.unlocked::after{background:var(--gold);box-shadow:none}
+/* ───── ACHIEVEMENTS — clean tile grid (neutral default · gold = earned · accent = next) ───── */
+.ach-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ach-tile{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 12px 13px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;cursor:pointer;transition:transform .12s,border-color .2s}
+.ach-tile:active{transform:scale(.97)}
+.ach-tile-ic{width:46px;height:46px;border-radius:13px;background:var(--bg3);color:#9D9AB0;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ach-tile-ic svg{width:26px;height:26px}
+.ach-tile-name{font-size:12.5px;font-weight:700;color:var(--text);line-height:1.25;min-height:32px;display:flex;align-items:center;justify-content:center}
+.ach-tile-bar{width:100%;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.ach-tile-fill{height:100%;background:var(--muted);border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.ach-tile-num{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:-.2px}
+.ach-tile-check{position:absolute;top:9px;inset-inline-end:10px;font-size:13px;font-weight:800;color:var(--gold);display:none}
+.ach-tile.ach-next{border-color:rgba(255,68,34,.4)}
+.ach-tile.ach-next .ach-tile-fill{background:var(--accent)}
+.ach-tile.unlocked{border-color:rgba(255,208,0,.35)}
+.ach-tile.unlocked .ach-tile-ic{background:var(--gold);color:#1A0800}
+.ach-tile.unlocked .ach-tile-fill{background:var(--gold)}
+.ach-tile.unlocked .ach-tile-num{color:var(--gold)}
+.ach-tile.unlocked .ach-tile-check{display:block}
+.ach-tile.locked{opacity:.55}
 .ach-toggle{display:block;width:100%;margin-top:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:12px;padding:11px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer}
 .ach-toggle:active{transform:scale(.98)}
 .season-banner b{color:var(--gold)}
@@ -5099,19 +5081,19 @@ function renderAchievements(){
     // Find the "next" achievement in this category (first locked one)
     const nextAch=items.find(a=>!isUnlocked(a));
     html+='<div class="ach-cat"'+hidden+'><div class="ach-cat-head"><span style="display:inline-flex;align-items:center;gap:6px;color:var(--muted)">'+cat.svg+' '+t('achCat_'+cat.id)+'</span><span class="ach-cat-cnt'+(done===items.length?' full':'')+'">'+done+'/'+items.length+'</span></div>'
-      +'<div class="achievements-grid cat-'+cat.id+'">'+items.map(function(a){
+      +'<div class="ach-grid">'+items.map(function(a){
         const u=isUnlocked(a);
         const isNext=!u&&a===nextAch;
         const curVal=a.cat==='missions'?(totalMissionsDone||0):a.cat==='points'?(pts||0):a.cat==='followers'?followersCnt:(streak||0);
         const pct=u?100:Math.min(100,Math.round((curVal/a.target)*100));
         const shown=Math.min(curVal,a.target);
-        const cls='achievement-badge'+(u?' unlocked':(isNext?' ach-next':' locked'));
+        const cls='ach-tile'+(u?' unlocked':(isNext?' ach-next':' locked'));
         return '<div class="'+cls+'" onclick="showAchievementInfo(\''+a.id+'\')">'
-          +'<div class="ach-ic">'+a.svg+'</div>'
-          +'<div class="ach-main"><div class="ach-name">'+achName(a)+'</div>'
-          +'<div class="ach-prog-row"><div class="ach-bar"><div class="ach-bar-fill" style="width:'+pct+'%"></div></div>'
-          +'<div class="ach-num">'+shown.toLocaleString()+'/'+a.target.toLocaleString()+'</div></div></div>'
-          +'<div class="ach-check">✓</div>'
+          +'<div class="ach-tile-check">✓</div>'
+          +'<div class="ach-tile-ic">'+a.svg+'</div>'
+          +'<div class="ach-tile-name">'+achName(a)+'</div>'
+          +'<div class="ach-tile-bar"><div class="ach-tile-fill" style="width:'+pct+'%"></div></div>'
+          +'<div class="ach-tile-num">'+shown.toLocaleString()+' / '+a.target.toLocaleString()+'</div>'
           +'</div>';
       }).join('')+'</div></div>';
   });
