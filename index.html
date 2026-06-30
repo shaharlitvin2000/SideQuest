@@ -483,24 +483,31 @@ img,video{max-width:100%}
 .ach-cat-cnt{font-size:11px;font-weight:700;color:var(--muted)}
 .ach-cat-cnt.full{color:var(--gold);font-weight:800}
 /* ───── ACHIEVEMENTS — clean tile grid (neutral default · gold = earned · accent = next) ───── */
-.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 8px}
-.ach-tile{display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;padding:4px 2px;cursor:pointer;transition:transform .12s}
-.ach-tile:active{transform:scale(.93)}
-.ach-ring{position:relative;width:62px;height:62px;flex-shrink:0}
-.ach-ring>svg{width:62px;height:62px;transform:rotate(-90deg)}
-.ach-ring-bg{fill:none;stroke:var(--bg3);stroke-width:4}
-.ach-ring-fg{fill:none;stroke:var(--muted);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .65s cubic-bezier(.4,0,.2,1)}
-.ach-ring-ic{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#7C7A88}
-.ach-ring-ic svg{width:25px;height:25px}
-.ach-tile-name{font-size:10.5px;font-weight:700;color:var(--text);line-height:1.2;min-height:25px;display:flex;align-items:center;justify-content:center}
+.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ach-tile{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:13px 8px 11px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;cursor:pointer;transition:transform .12s,border-color .2s}
+.ach-tile:active{transform:scale(.95)}
+.ach-tile-ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--bg3);color:#8C8A97;flex-shrink:0}
+.ach-tile-ic svg{width:23px;height:23px}
+.ach-tile.c-missions .ach-tile-ic{background:rgba(255,68,34,.13);color:#FF6F52}
+.ach-tile.c-points .ach-tile-ic{background:rgba(255,208,0,.13);color:#FFD42E}
+.ach-tile.c-followers .ach-tile-ic{background:rgba(129,140,248,.14);color:#9AA3F2}
+.ach-tile.c-streak .ach-tile-ic{background:rgba(255,138,46,.14);color:#FF9A4D}
+.ach-tile-name{font-size:10.5px;font-weight:700;color:var(--text);line-height:1.18;min-height:25px;display:flex;align-items:center;justify-content:center}
+.ach-tile-bar{width:100%;height:4px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.ach-tile-fill{height:100%;border-radius:3px;background:currentColor;color:var(--muted);transition:width .55s cubic-bezier(.4,0,.2,1)}
+.ach-tile.c-missions .ach-tile-fill{color:#FF6F52}
+.ach-tile.c-points .ach-tile-fill{color:#FFD42E}
+.ach-tile.c-followers .ach-tile-fill{color:#9AA3F2}
+.ach-tile.c-streak .ach-tile-fill{color:#FF9A4D}
 .ach-tile-num{font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:-.2px}
-.ach-tile.ach-next .ach-ring-fg{stroke:var(--accent)}
-.ach-tile.ach-next .ach-ring-ic{color:var(--accent)}
-.ach-tile.unlocked .ach-ring-fg{stroke:var(--gold)}
-.ach-tile.unlocked .ach-ring-bg{stroke:rgba(255,208,0,.16)}
-.ach-tile.unlocked .ach-ring-ic{color:var(--gold)}
+.ach-tile-check{position:absolute;top:7px;inset-inline-end:8px;font-size:11px;font-weight:800;color:var(--gold);display:none}
+.ach-tile.ach-next{border-color:rgba(255,68,34,.4)}
+.ach-tile.unlocked{border-color:rgba(255,208,0,.3)}
+.ach-tile.unlocked .ach-tile-ic{background:var(--gold);color:#1A0800}
+.ach-tile.unlocked .ach-tile-fill{color:var(--gold)}
 .ach-tile.unlocked .ach-tile-num{color:var(--gold)}
-.ach-tile.locked{opacity:.6}
+.ach-tile.unlocked .ach-tile-check{display:block}
+.ach-tile.locked{opacity:.5}
 .ach-toggle{display:block;width:100%;margin-top:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:12px;padding:11px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer}
 .ach-toggle:active{transform:scale(.98)}
 .season-banner b{color:var(--gold)}
@@ -5060,12 +5067,12 @@ function renderAchievements(){
         const curVal=a.cat==='missions'?(totalMissionsDone||0):a.cat==='points'?(pts||0):a.cat==='followers'?followersCnt:(streak||0);
         const pct=u?100:Math.min(100,Math.round((curVal/a.target)*100));
         const shown=Math.min(curVal,a.target);
-        const cls='ach-tile'+(u?' unlocked':(isNext?' ach-next':' locked'));
-        const C=150.8, off=(C*(1-pct/100)).toFixed(1);
+        const cls='ach-tile c-'+a.cat+(u?' unlocked':(isNext?' ach-next':' locked'));
         return '<div class="'+cls+'" onclick="showAchievementInfo(\''+a.id+'\')">'
-          +'<div class="ach-ring"><svg viewBox="0 0 62 62"><circle class="ach-ring-bg" cx="31" cy="31" r="24"/><circle class="ach-ring-fg" cx="31" cy="31" r="24" stroke-dasharray="'+C+'" stroke-dashoffset="'+off+'"/></svg>'
-          +'<div class="ach-ring-ic">'+a.svg+'</div></div>'
+          +'<div class="ach-tile-check">✓</div>'
+          +'<div class="ach-tile-ic">'+a.svg+'</div>'
           +'<div class="ach-tile-name">'+achName(a)+'</div>'
+          +'<div class="ach-tile-bar"><div class="ach-tile-fill" style="width:'+pct+'%"></div></div>'
           +'<div class="ach-tile-num">'+shown.toLocaleString()+' / '+a.target.toLocaleString()+'</div>'
           +'</div>';
       }).join('')+'</div></div>';
