@@ -27,14 +27,14 @@ button:focus-visible,input:focus-visible,a:focus-visible,.setting-row:focus-visi
 :root{
   --font:'Rubik',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans Hebrew',sans-serif;
   --font-display:'Secular One','Rubik',sans-serif;
-  --bg:#0A0A12;--bg2:#131320;--bg3:#1E1C30;
+  --bg:#0B0B0D;--bg2:#161619;--bg3:#232227;
   --accent:#FF4422;--accent2:#FF6B35;
   --accent-soft:rgba(255,68,34,0.12);--accent-glow:rgba(255,68,34,0.20);
   --gold:#FFD000;--gold-soft:rgba(255,208,0,0.12);
   --green:#2DD4BF;--green-soft:rgba(45,212,191,0.12);
   --blue:#818CF8;--blue-soft:rgba(129,140,248,0.12);
   --purple:#A78BFA;--purple-soft:rgba(167,139,250,0.12);
-  --text:#F0EEF8;--muted:#706D85;
+  --text:#F1F0F3;--muted:#79767F;
   --border:rgba(255,255,255,0.05);--border2:rgba(255,255,255,0.10);
   --sh0:0 1px 4px rgba(0,0,0,0.5);
   --sh1:0 2px 12px rgba(0,0,0,0.45);
@@ -156,7 +156,7 @@ img,video{max-width:100%}
 .pts-pill .star{color:var(--gold);font-size:13px;line-height:1}
 .streak-pill.bump{transform:scale(1.12);box-shadow:none}
 .streak-pill .num.count-up{transform:scale(1.3);color:var(--gold);transition:transform .2s,color .2s}
-.rank-pill{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--purple);background:var(--purple-soft);border:1px solid rgba(139,92,246,.25);border-radius:9px;padding:5px 9px;cursor:pointer;transition:transform .15s;white-space:nowrap}
+.rank-pill{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--text);background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:5px 9px;cursor:pointer;transition:transform .15s;white-space:nowrap}
 .rank-pill #rank-emoji{font-size:13px}
 .rank-pill:active{transform:scale(.92)}
 .name-badge{font-size:.95em;line-height:1}
@@ -555,7 +555,7 @@ img,video{max-width:100%}
 /* ── HERO CARD: first undone mission — immersive poster ── */
 .mcard:first-child:not(.done){opacity:1;border-radius:18px;min-height:40vh;border:1.5px solid var(--border2);box-shadow:none;display:flex;flex-direction:column;justify-content:space-between;background:var(--bg2);position:relative;overflow:hidden}
 /* Decorative radial glow — fills the upper body */
-.mcard:first-child:not(.done)::after{content:'';position:absolute;top:-18%;inset-inline-end:-14%;width:82%;height:72%;background:radial-gradient(circle at 60% 42%,rgba(var(--mc-rgb,255,68,34),.3) 0%,transparent 66%);pointer-events:none;border-radius:50%}
+.mcard:first-child:not(.done)::after{display:none}
 /* Subtle grid pattern */
 .mcard:first-child:not(.done)::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(135deg,transparent,transparent 40px,rgba(255,255,255,.015) 40px,rgba(255,255,255,.015) 41px);pointer-events:none;z-index:0}
 .mcard:first-child:not(.done)>*{position:relative;z-index:1}
@@ -583,9 +583,7 @@ img,video{max-width:100%}
 .mcard.done{opacity:.4;pointer-events:none}
 .mcard-top{padding:15px 16px 0;display:flex;align-items:center;gap:8px}
 .badge{font-size:11px;font-weight:800;letter-spacing:0;text-transform:none;padding:5px 11px;border-radius:9px;flex-shrink:0;display:inline-flex;align-items:center;gap:4px}
-.b-social{background:var(--blue-soft);color:var(--blue)}
-.b-dare{background:var(--accent-soft);color:var(--accent)}
-.b-explore{background:var(--purple-soft);color:var(--purple)}
+.b-social,.b-dare,.b-explore{background:var(--bg3);color:var(--muted)}
 .bdiff{font-size:11px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted);flex-shrink:0;display:inline-flex;align-items:center;gap:4px}
 .bdiff::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
 .d-easy{color:var(--green)}
