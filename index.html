@@ -1250,7 +1250,7 @@ svg.ic-lg{width:19px;height:19px}
           <div class="rank-lbl" data-i="rankProgress">Rank progress</div>
           <div class="rank-row"><div class="rank-name" id="pf-rank-name">🔥 Daredevil</div><div class="rank-next" id="pf-rank-next">116 pts to Legend</div></div>
           <div class="ptrack"><div class="pfill" id="pf-rank-fill" style="width:72%"></div></div>
-          <div class="ptrack-lbl" id="pf-rank-lbl">884 / 1,000 pts</div>
+          <div class="ptrack-lbl" id="pf-rank-lbl" dir="ltr">884 / 1,000 pts</div>
         </div>
       </div>
       <div class="achievements-wrap" id="achievements-wrap" style="display:none">
@@ -2595,7 +2595,7 @@ var followingSeenIds=new Set();
 var followingLoadingMore=false;
 
 function getUserColor(str){
-  var colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#c77dff','#ff9a3c','#00b4d8','#f72585'];
+  var colors=['#C8705A','#CBA255','#5AA093','#828AAE','#9990B0','#C99560','#6AA8B0','#B07C92'];
   var h=0;for(var i=0;i<str.length;i++) h=((h*31)+str.charCodeAt(i))&0x7fffffff;
   return colors[h%colors.length];
 }
@@ -4803,14 +4803,14 @@ function updateAdBanner(){
 
 
 const LB_COLORS=[
-  'rgba(255,191,0,.15);color:var(--gold)',
-  'rgba(96,165,250,.15);color:#2563eb',
-  'rgba(255,94,58,.15);color:var(--accent)',
-  'rgba(167,139,250,.15);color:#a78bfa',
-  'rgba(34,197,94,.15);color:#16a34a',
-  'rgba(251,146,60,.15);color:#ea580c',
-  'rgba(52,211,153,.15);color:#059669',
-  'rgba(244,114,182,.15);color:#db2777',
+  'rgba(203,162,85,.13);color:var(--gold)',
+  'rgba(130,138,174,.13);color:#828AAE',
+  'rgba(229,86,59,.13);color:var(--accent)',
+  'rgba(153,144,176,.13);color:#9990B0',
+  'rgba(90,160,147,.13);color:#5AA093',
+  'rgba(201,149,96,.13);color:#C99560',
+  'rgba(106,168,176,.13);color:#6AA8B0',
+  'rgba(176,124,146,.13);color:#B07C92',
 ];
 const RANK_COLORS=['r1','r2','r3'];
 
