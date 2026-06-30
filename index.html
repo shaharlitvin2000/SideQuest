@@ -149,7 +149,7 @@ img,video{max-width:100%}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(13px + env(safe-area-inset-top)) 15px 11px;background:rgba(10,10,18,.92);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);border-bottom:1px solid var(--border);flex-shrink:0;box-shadow:0 1px 0 var(--border),0 4px 20px rgba(0,0,0,.06);position:relative;z-index:10}
 .logo{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.5px;background:var(--accent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:flex;align-items:center;gap:0}
 .logo span{-webkit-text-fill-color:inherit}
-.logo::after{content:'';display:inline-block;width:4px;height:20px;background:var(--accent);transform:skewX(-14deg);margin-inline-start:5px;border-radius:2px;flex-shrink:0;box-shadow:none}
+.logo::after{display:none}
 .topbar-right{display:flex;align-items:center;gap:7px}
 .streak-pill,.pts-pill{display:flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:5px 9px;font-size:12px;font-weight:600;color:var(--text);transition:transform .15s,box-shadow .15s}
 .streak-pill .num,.pts-pill .num{color:var(--text);font-weight:700}
@@ -1092,7 +1092,7 @@ svg.ic-lg{width:19px;height:19px}
 <div class="page" id="p-app">
 
   <div class="topbar">
-    <div class="logo">Flash<span>Arena</span></div>
+    <div class="logo" dir="ltr">Flash<span>Arena</span></div>
     <div class="topbar-right">
       <button class="tb-bell" onclick="openNotifications()" aria-label="Notifications">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
