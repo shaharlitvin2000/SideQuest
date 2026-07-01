@@ -44,7 +44,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,.setting-row:focus-visi
   --t-title:clamp(44px,12vw,58px);--t-h:18px;--t-body:15px;--t-cap:11px;
 }
 html,body{height:100%;overflow:hidden}
-body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;height:100vh;height:100dvh;position:relative;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-synthesis:none;letter-spacing:.1px;background-image:radial-gradient(120% 55% at 50% -6%,rgba(34,212,106,.045),transparent 52%),url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");background-attachment:fixed}
+body{font-family:var(--font);background:var(--bg);color:var(--text);width:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;height:100vh;height:100dvh;position:relative;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-synthesis:none;letter-spacing:.1px;background-image:radial-gradient(120% 55% at 50% -6%,rgba(34,212,106,.05),transparent 52%)}
 /* ───── RESPONSIVE: adapt to screen size for comfort ───── */
 @media (max-width:380px){
   .topbar{padding:calc(11px + env(safe-area-inset-top)) 12px 9px;gap:6px}
@@ -533,7 +533,7 @@ img,video{max-width:100%}
 .hero-title{font-family:var(--font-display);font-size:var(--t-title);font-weight:700;line-height:.95;letter-spacing:-1.5px}
 .hero-sub{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.5}
 .hero-sub b{color:var(--accent)}
-.progress-wrap{margin:18px 20px 0;background:var(--bg2);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh0)}
+.progress-wrap{display:none}
 .progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600}
 .progress-track{height:7px;background:var(--bg3);border-radius:10px;overflow:hidden}
 .progress-fill{height:100%;background:var(--accent);border-radius:10px;transition:width .5s cubic-bezier(.4,0,.2,1)}
