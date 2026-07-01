@@ -5500,9 +5500,14 @@ let myFreezes=1, _freezeJustUsed=false;
 function todayILStr(){ return israelDate().toISOString().slice(0,10); }
 function dailyAvailable(){ return myLastDailyClaim!==todayILStr(); }
 function updateDailyDot(){
-  const avail=userUID&&dailyAvailable();
   const btn=document.getElementById('daily-reward-btn');
-  if(btn){ btn.style.display=avail?'':'none'; var seen=false; try{seen=localStorage.getItem('fa_dailySeen')===todayILStr();}catch(e){} btn.classList.toggle('is-new', !!(avail&&!seen)); }
+  if(!btn) return;
+  const loggedIn=!!userUID;
+  const avail=loggedIn&&dailyAvailable();
+  btn.style.display=loggedIn?'':'none';           // stays visible even after collecting
+  var seen=false; try{seen=localStorage.getItem('fa_dailySeen')===todayILStr();}catch(e){}
+  btn.classList.toggle('is-new', !!(avail&&!seen)); // glow only when there's a new, unseen reward
+  var tag=btn.querySelector('.daily-cta-tag'); if(tag) tag.textContent=avail?'+':'✓';
 }
 function openDailyReward(){
   // once opened, the reward has been "seen" — stop the attention glow
