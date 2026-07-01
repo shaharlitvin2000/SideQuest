@@ -474,35 +474,38 @@ img,video{max-width:100%}
 .achievements-icon{display:flex;align-items:center;justify-content:center}
 .achievements-title{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text)}
 .achievements-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.ach-count{flex-shrink:0;display:inline-flex;align-items:center;background:var(--accent-soft);border:1px solid rgba(255,94,58,.25);border-radius:20px;padding:6px 14px;font-family:var(--font);font-size:14px;font-weight:800;line-height:1}
+.ach-count{flex-shrink:0;display:inline-flex;align-items:center;background:var(--accent-soft);border:1px solid rgba(34,212,106,.25);border-radius:20px;padding:6px 14px;font-family:var(--font);font-size:14px;font-weight:800;line-height:1}
 .ach-count-num{color:var(--accent)}
 .ach-count-total{color:var(--muted);font-weight:700}
 .ach-cat{margin-bottom:18px}
 .ach-cat-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1.5px solid var(--bg3);font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px}
 .ach-cat-head svg{width:16px;height:16px}
 .ach-cat-cnt{font-size:11px;font-weight:700;color:var(--muted)}
-.ach-cat-cnt.full{color:var(--gold);font-weight:800}
+.ach-cat-cnt.full{color:var(--accent);font-weight:800}
 /* ───── ACHIEVEMENTS — clean tile grid (neutral default · gold = earned · accent = next) ───── */
 .ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
 .ach-tile{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 7px 12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;cursor:pointer;transition:transform .12s,border-color .2s}
 .ach-tile:active{transform:scale(.95)}
 .ach-tile-ic{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:var(--bg3);font-size:24px;line-height:1;flex-shrink:0}
 .ach-tile.c-missions .ach-tile-ic{background:rgba(34,212,106,.15)}
-.ach-tile.c-points .ach-tile-ic{background:rgba(255,210,63,.15)}
-.ach-tile.c-followers .ach-tile-ic{background:rgba(76,169,255,.15)}
-.ach-tile.c-streak .ach-tile-ic{background:rgba(255,138,74,.15)}
+.ach-tile.c-points .ach-tile-ic{background:rgba(34,212,106,.15)}
+.ach-tile.c-followers .ach-tile-ic{background:rgba(34,212,106,.15)}
+.ach-tile.c-streak .ach-tile-ic{background:rgba(34,212,106,.15)}
 .ach-tile-name{font-size:11px;font-weight:700;color:var(--text);line-height:1.2;min-height:27px;display:flex;align-items:center;justify-content:center}
 .ach-tile-bar{width:100%;height:5px;background:var(--bg3);border-radius:4px;overflow:hidden}
 .ach-tile-fill{height:100%;border-radius:4px;background:currentColor;color:var(--muted);transition:width .55s cubic-bezier(.4,0,.2,1)}
 .ach-tile.c-missions .ach-tile-fill{color:var(--accent)}
-.ach-tile.c-points .ach-tile-fill{color:var(--gold)}
-.ach-tile.c-followers .ach-tile-fill{color:var(--blue)}
-.ach-tile.c-streak .ach-tile-fill{color:#FF8A4A}
+.ach-tile.c-points .ach-tile-fill{color:var(--accent)}
+.ach-tile.c-followers .ach-tile-fill{color:var(--accent)}
+.ach-tile.c-streak .ach-tile-fill{color:var(--accent)}
 .ach-tile-num{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:-.2px}
 .ach-tile-check{position:absolute;top:8px;inset-inline-end:9px;font-size:11px;font-weight:800;color:var(--gold);display:none}
-.ach-tile.ach-next{border-color:rgba(34,212,106,.45)}
-.ach-tile.unlocked{border-color:rgba(255,210,63,.35)}
-.ach-tile.unlocked .ach-tile-ic{background:rgba(255,210,63,.24);box-shadow:0 0 0 1.5px rgba(255,210,63,.45) inset}
+.ach-tile.c-missions{border-color:rgba(34,212,106,.28)}
+.ach-tile.c-points{border-color:rgba(34,212,106,.28)}
+.ach-tile.c-followers{border-color:rgba(34,212,106,.28)}
+.ach-tile.c-streak{border-color:rgba(34,212,106,.28)}
+.ach-tile.unlocked{border-color:rgba(255,210,63,.4)}
+.ach-tile.unlocked .ach-tile-ic{background:rgba(255,210,63,.24);box-shadow:0 0 0 1.5px rgba(255,210,63,.5) inset}
 .ach-tile.unlocked .ach-tile-fill{color:var(--gold)}
 .ach-tile.unlocked .ach-tile-num{color:var(--gold)}
 .ach-tile.unlocked .ach-tile-check{display:block}
