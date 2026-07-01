@@ -2696,7 +2696,7 @@ function feedOpenProfile(uid,username,init){
     document.getElementById('fpp-s-posts').textContent='0';
     var fnEl=document.getElementById('fpp-followers-n'),fgEl=document.getElementById('fpp-following-n');
     if(fnEl) fnEl.textContent='0'; if(fgEl) fgEl.textContent='0';
-    document.getElementById('fpp-grid').innerHTML='<div style="padding:36px;text-align:center;color:var(--muted);font-size:13px">'+t('noConnection')+'</div>';
+    document.getElementById('fpp-grid').innerHTML='<div class="liked-empty"><div class="liked-empty-icon">📡</div><div class="liked-empty-title">'+t('noConnection')+'</div></div>';
     if(!isMe&&followBtn) followBtn.style.display='block';
     showContent();
     return;
@@ -2775,7 +2775,7 @@ function feedOpenProfile(uid,username,init){
   }).catch(function(){
     applyAvatar(null,null);
     document.getElementById('fpp-rank-badge').textContent='';
-    document.getElementById('fpp-grid').innerHTML='<div style="padding:36px;text-align:center;color:var(--muted)">'+t('couldNotLoad')+'</div>';
+    document.getElementById('fpp-grid').innerHTML='<div class="liked-empty"><div class="liked-empty-icon">😕</div><div class="liked-empty-title">'+t('couldNotLoad')+'</div></div>';
     showContent();
   });
 }
@@ -4923,7 +4923,7 @@ function loadLeaderboard(){
   updateSeasonBanner();
   const list=document.getElementById('lb-list');
   if(!list) return;
-  list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">'+t('loading')+'</div>';
+  list.innerHTML='<div style="display:flex;justify-content:center;padding:44px 0"><div class="fpp-spinner"></div></div>';
   // Read from the public 'leaderboard' node (readable + indexed). 'users' isn't listable by rules.
   db.ref('leaderboard').orderByChild('pts').limitToLast(100).once('value').then(snap=>{
     const users=[];
@@ -6248,7 +6248,7 @@ function openCommentSheet(postId, countEl){
     av.textContent=(userName||'?')[0].toUpperCase();
     av.style.background=getUserColor(userUID||userName||'u');
   }
-  document.getElementById('comment-list').innerHTML='<div class="comment-empty">'+t('loading')+'</div>';
+  document.getElementById('comment-list').innerHTML='<div style="display:flex;justify-content:center;padding:40px 0"><div class="fpp-spinner"></div></div>';
   document.getElementById('comment-overlay').classList.add('show');
   document.getElementById('comment-inp').value='';
   try{cancelReply();}catch(e){}
