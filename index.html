@@ -776,11 +776,14 @@ svg.ic-lg{width:19px;height:19px}
 .pf-settings-btn{position:absolute;top:14px;inset-inline-end:16px;z-index:3;background:rgba(0,0,0,.4);border:1px solid var(--border2);color:var(--text);width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:transform .12s}
 .pf-settings-btn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .pf-bell-btn:active,.pf-edit-btn:active,.pf-settings-btn:active{transform:scale(.88)}
-.settings-overlay{position:fixed;inset:0;z-index:350;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+.settings-overlay{position:fixed!important;inset:0!important;z-index:9999!important;display:none;align-items:stretch;justify-content:center;background:var(--bg)}
 .settings-overlay.show{display:flex}
-.settings-panel{background:var(--bg2);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;animation:up .28s cubic-bezier(.4,0,.2,1);box-shadow:0 -12px 48px rgba(0,0,0,.32);overflow:hidden}
-.settings-handle{width:36px;height:4px;background:var(--muted);opacity:.25;border-radius:2px;margin:12px auto 4px;flex-shrink:0}
-.settings-head-title{font-family:var(--font);font-size:17px;font-weight:700;text-align:center;padding:4px 16px 12px;flex-shrink:0}
+.settings-panel{background:var(--bg);width:100%;max-width:480px;height:100%;display:flex;flex-direction:column;animation:up .26s cubic-bezier(.4,0,.2,1);overflow:hidden}
+.settings-head{display:flex;align-items:center;gap:8px;padding:calc(11px + env(safe-area-inset-top)) 12px 11px;border-bottom:1px solid var(--border);flex-shrink:0}
+.settings-close{width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .12s,background .15s}
+.settings-close:active{transform:scale(.9)}
+.settings-close svg{width:20px;height:20px}
+.settings-head-title{font-family:var(--font);font-size:18px;font-weight:800;flex:1;text-align:center;padding-inline-end:38px}
 .settings-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:8px 0 max(22px,env(safe-area-inset-bottom))}
 .pf-bell-btn svg{width:21px;height:21px}
 .feed-pts-tag{font-size:13px;color:var(--gold);font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6);margin-bottom:3px}
@@ -1325,8 +1328,10 @@ svg.ic-lg{width:19px;height:19px}
   <!-- SETTINGS PANEL (TikTok-style, opened from the profile gear) -->
   <div class="settings-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
     <div class="settings-panel">
-      <div class="settings-handle"></div>
-      <div class="settings-head-title" data-i="settingsTitle">Settings</div>
+      <div class="settings-head">
+        <button class="settings-close" onclick="closeSettings()" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        <div class="settings-head-title" data-i="settingsTitle">Settings</div>
+      </div>
       <div class="settings-scroll">
         <div class="settings-list">
           <div class="setting-row" onclick="closeSettings();showPage('p-lang')">
