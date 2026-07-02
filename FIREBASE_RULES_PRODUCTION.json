@@ -77,7 +77,8 @@
         "status": {".validate": "newData.val() === 'verified' || newData.val() === 'pending' || newData.val() === 'rejected'"},
         "pts": {".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000 && (!data.exists() || newData.val() <= data.val() + 50000)"},
         "likes": {".write": "auth !== null", ".validate": "newData.isNumber() && newData.val() >= 0 && (newData.val() === (data.exists() ? data.val() : 0) || newData.val() === (data.exists() ? data.val() : 0) + 1 || newData.val() === (data.exists() ? data.val() : 0) - 1)"},
-        "views": {".write": "auth !== null", ".validate": "newData.isNumber() && newData.val() >= 0 && (newData.val() === (data.exists() ? data.val() : 0) || newData.val() === (data.exists() ? data.val() : 0) + 1)"}
+        "views": {".write": "auth !== null", ".validate": "newData.isNumber() && newData.val() >= 0 && (newData.val() === (data.exists() ? data.val() : 0) || newData.val() === (data.exists() ? data.val() : 0) + 1)"},
+        "music": {".validate": "newData.isString() && newData.val().length <= 20"}
       }
     },
 

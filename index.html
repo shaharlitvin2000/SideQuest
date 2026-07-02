@@ -3505,12 +3505,14 @@ function feedRenderPost(post,slot){
       feedTapVideo(e,vid,slot.querySelector('.feed-pause-icon'));
     };
   } else {
-    var lastTapI=0;
+    var lastTapI=0, singleTapT=null;
     postEl.onclick=function(e){
       if(e.target.closest('.feed-actions')) return;
       var now=Date.now();
-      if(now-lastTapI<300){lastTapI=0;feedDoubleTapLike(slot,postId);}
+      if(now-lastTapI<300){ lastTapI=0; if(singleTapT){clearTimeout(singleTapT);singleTapT=null;} feedDoubleTapLike(slot,postId); return; }
       lastTapI=now;
+      if(singleTapT) clearTimeout(singleTapT);
+      singleTapT=setTimeout(function(){ musicToggle(); singleTapT=null; }, 300);  // tap photo -> pause/resume music only
     };
   }
 }
@@ -3679,6 +3681,7 @@ function feedSlide(direction){
       // Play video in new current
       var nv=preSlot.querySelector('video');
       if(nv){nv.muted=true;nv.play().catch(function(){});}
+      feedSyncMusic();   // start the newly-active post's music (photo or video)
       // Append new neighbor slot
       var neighborPost=advancing?
         (feedPos>0?feedSeen[feedPos-1]:null):
@@ -3741,6 +3744,7 @@ function feedGetH(){var w=feedMode==='foryou'?document.getElementById('feed-wrap
 function feedAutoplayCurrent(){
   var slot=document.getElementById('feed-slot');
   if(!slot) return;
+  feedSyncMusic();
   var vid=slot.querySelector('video');
   if(vid){
     vid.muted=true;
@@ -3750,7 +3754,11 @@ function feedAutoplayCurrent(){
   }
 }
 
+// Play the current post's chosen music (photo or video); stop if none. Guarded so it doesn't restart the same vibe.
+function feedSyncMusic(){ var cp=feedSeen[feedPos]; if(cp&&cp.music){ if(_currentVibe!==cp.music) playVibe(cp.music); } else { stopVibe(); } }
+
 function feedPauseCurrent(){
+  stopVibe();
   var slot=document.getElementById('feed-slot');
   if(slot){
     var vid=slot.querySelector('video');
@@ -4116,8 +4124,8 @@ function feedInitEvents(wrap){
 
 function feedTapVideo(e,v,pauseEl){
   if(!v) return;
-  if(v.paused){v.play().catch(function(){});if(pauseEl) pauseEl.classList.remove('show');}
-  else{v.pause();if(pauseEl){pauseEl.textContent='▶️';pauseEl.classList.add('show');setTimeout(function(){pauseEl.classList.remove('show');},1200);}}
+  if(v.paused){v.play().catch(function(){});musicResume();if(pauseEl) pauseEl.classList.remove('show');}   // tap video -> resume video + music
+  else{v.pause();musicSuspend();if(pauseEl){pauseEl.textContent='▶️';pauseEl.classList.add('show');setTimeout(function(){pauseEl.classList.remove('show');},1200);}}   // tap video -> pause video + music
 }
 
 function feedToggleMute(e){
@@ -6871,8 +6879,10 @@ async function submitUploadVideo(){
       views:0,
       likes:0,
       status:'pending', // pending verification
-      isUserVideo:true
+      isUserVideo:true,
+      music:_pendingPostMusic||null   // chosen editor vibe (or null)
     };
+    _pendingPostMusic='';
 
     await db.ref('feed').push(post);
     console.log('[Upload] Success!');
