@@ -324,6 +324,41 @@
           "$other": {".validate": false}
         }
       }
+    },
+
+    "rooms": {
+      ".read": "auth != null",
+      "$code": {
+        "meta": {
+          ".write": "auth != null && (!data.exists() || data.child('host').val() === auth.uid)",
+          ".validate": "newData.hasChildren(['host'])",
+          "host": {".validate": "newData.val() === auth.uid || newData.val() === data.val()"},
+          "hostName": {".validate": "newData.isString() && newData.val().length <= 40"},
+          "createdAt": {".validate": "newData.isNumber()"},
+          "mission": {".validate": "newData.isString() && newData.val().length <= 140"},
+          "$other": {".validate": false}
+        },
+        "members": {
+          "$uid": {
+            ".write": "$uid === auth.uid",
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          }
+        },
+        "posts": {
+          ".indexOn": ["at"],
+          "$pid": {
+            ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid)",
+            ".validate": "newData.hasChildren(['uid','at'])",
+            "uid": {".validate": "newData.val() === auth.uid"},
+            "name": {".validate": "newData.isString() && newData.val().length <= 40"},
+            "caption": {".validate": "newData.isString() && newData.val().length <= 300"},
+            "mediaURL": {".validate": "newData.isString() && newData.val().length <= 600"},
+            "mediaType": {".validate": "newData.val() === 'image' || newData.val() === 'video'"},
+            "at": {".validate": "newData.isNumber()"},
+            "$other": {".validate": false}
+          }
+        }
+      }
     }
   }
 }
