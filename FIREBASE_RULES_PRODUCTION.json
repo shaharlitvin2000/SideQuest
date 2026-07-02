@@ -332,7 +332,7 @@
         "meta": {
           ".write": "auth != null && (!data.exists() || data.child('host').val() === auth.uid)",
           ".validate": "newData.hasChildren(['host'])",
-          "host": {".validate": "newData.val() === auth.uid || newData.val() === data.val()"},
+          "host": {".validate": "newData.val() === auth.uid || data.exists()"},
           "hostName": {".validate": "newData.isString() && newData.val().length <= 40"},
           "createdAt": {".validate": "newData.isNumber()"},
           "mission": {".validate": "newData.isString() && newData.val().length <= 140"},
@@ -341,7 +341,10 @@
         "members": {
           "$uid": {
             ".write": "$uid === auth.uid",
-            ".validate": "newData.isString() && newData.val().length <= 40"
+            ".validate": "newData.hasChildren(['name','at'])",
+            "name": {".validate": "newData.isString() && newData.val().length <= 40"},
+            "at": {".validate": "newData.isNumber()"},
+            "$other": {".validate": false}
           }
         },
         "posts": {
