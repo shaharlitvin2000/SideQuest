@@ -4664,18 +4664,24 @@ function roomClose(){
   if(_roomMembersRef){try{_roomMembersRef.off();}catch(e){}_roomMembersRef=null;}
   roomSheetClose();
   document.getElementById('room-overlay').classList.remove('show'); _roomCode='';
-  // host leaves -> pass leadership to the earliest joiner (the 2nd person who entered)
-  if(wasHost&&code&&db&&userUID){
-    db.ref('rooms/'+code+'/members').once('value').then(function(s){
-      var best=null;
-      s.forEach(function(c){
-        if(c.key===userUID) return;
-        var v=c.val()||{}, at=(typeof v==='object')?(v.at||0):0, nm=(typeof v==='object')?(v.name||''):String(v||'');
-        if(!best||at<best.at) best={uid:c.key,name:nm,at:at};
-      });
-      if(best){
-        db.ref('rooms/'+code+'/meta').update({host:best.uid,hostName:best.name||'?'}).catch(function(){});
-        db.ref('rooms/'+code+'/members/'+userUID).remove().catch(function(){});
+  // leaving: remove myself from members; empty room -> delete it; host leaving -> pass to earliest joiner
+  if(code&&db&&userUID){
+    db.ref('rooms/'+code+'/members/'+userUID).remove().then(function(){
+      return db.ref('rooms/'+code+'/members').once('value');
+    }).then(function(s){
+      if(!s.exists()||s.numChildren()===0){
+        db.ref('rooms/'+code).remove().catch(function(){});
+        try{ if(localStorage.getItem('fa_lastRoom')===code){ localStorage.removeItem('fa_lastRoom'); _roomChipChecked=''; } }catch(e){}
+        try{roomUpdateReturnChip();}catch(e){}
+        return;
+      }
+      if(wasHost){
+        var best=null;
+        s.forEach(function(c){
+          var v=c.val()||{}, at=(typeof v==='object')?(v.at||0):0, nm=(typeof v==='object')?(v.name||''):String(v||'');
+          if(!best||at<best.at) best={uid:c.key,name:nm,at:at};
+        });
+        if(best) db.ref('rooms/'+code+'/meta').update({host:best.uid,hostName:best.name||'?'}).catch(function(){});
       }
     }).catch(function(){});
   }
@@ -4733,11 +4739,23 @@ function roomPostSave(){
     .then(function(){ roomSheetClose(); })
     .catch(function(){ toast('❌ '+t('roomPostFail')); });
 }
+var _roomChipChecked='';
 function roomUpdateReturnChip(){
   var b=document.getElementById('rooms-return'); if(!b) return;
   var c=''; try{c=localStorage.getItem('fa_lastRoom')||'';}catch(e){}
-  if(c&&userUID){ b.style.display=''; b.textContent=t('roomReturn').replace('{code}',c); }
-  else b.style.display='none';
+  if(!c||!userUID){ b.style.display='none'; return; }
+  b.style.display=''; b.textContent=t('roomReturn').replace('{code}',c);
+  // verify the room still exists — if it was closed, drop the chip
+  if(db&&_roomChipChecked!==c){
+    _roomChipChecked=c;
+    db.ref('rooms/'+c+'/meta').once('value').then(function(s){
+      if(!s.exists()){
+        try{localStorage.removeItem('fa_lastRoom');}catch(e){}
+        _roomChipChecked='';
+        var b2=document.getElementById('rooms-return'); if(b2) b2.style.display='none';
+      }
+    }).catch(function(){});
+  }
 }
 function roomRejoin(){
   var c=''; try{c=localStorage.getItem('fa_lastRoom')||'';}catch(e){}
