@@ -888,7 +888,7 @@ svg.ic-lg{width:19px;height:19px}
 .feed-no-media{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg3);font-size:72px}
 
 /* ── FEED USER PROFILE ── */
-.fpp-overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);z-index:300;display:none;align-items:flex-end;justify-content:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.fpp-overlay{position:fixed!important;inset:0!important;z-index:9998!important;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .fpp-overlay.show{display:flex}
 .fpp-page{background:var(--bg);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;max-width:480px;height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:up .28s cubic-bezier(.4,0,.2,1);box-shadow:0 -12px 48px rgba(0,0,0,.2);position:relative}
 /* legacy fpp elements — unused but kept for no-op */
@@ -1552,14 +1552,14 @@ svg.ic-lg{width:19px;height:19px}
             </div>
           </div>
           <div class="fpp-stats-4">
-            <div class="fpp-stat-box"><div class="fpp-stat-val" style="color:var(--gold)" id="fpp-s-pts">—</div><div class="fpp-stat-lbl">Points</div></div>
-            <div class="fpp-stat-box"><div class="fpp-stat-val" style="color:var(--accent)" id="fpp-s-streak">—</div><div class="fpp-stat-lbl">Streak 🔥</div></div>
-            <div class="fpp-stat-box"><div class="fpp-stat-val" style="color:var(--green)" id="fpp-s-missions">—</div><div class="fpp-stat-lbl">Missions</div></div>
-            <div class="fpp-stat-box"><div class="fpp-stat-val" style="color:var(--blue)" id="fpp-s-posts">—</div><div class="fpp-stat-lbl">Posts</div></div>
+            <div class="fpp-stat-box"><div class="fpp-stat-val" style="color:var(--gold)" id="fpp-s-pts">—</div><div class="fpp-stat-lbl" data-i="lbPoints">Points</div></div>
+            <div class="fpp-stat-box"><div class="fpp-stat-val" style="color:var(--accent)" id="fpp-s-streak">—</div><div class="fpp-stat-lbl" data-i="lbStreak">Streak</div></div>
+            <div class="fpp-stat-box"><div class="fpp-stat-val" style="color:var(--green)" id="fpp-s-missions">—</div><div class="fpp-stat-lbl" data-i="lbMissions">Missions</div></div>
+            <div class="fpp-stat-box"><div class="fpp-stat-val" style="color:var(--blue)" id="fpp-s-posts">—</div><div class="fpp-stat-lbl" data-i="tabVideos">Posts</div></div>
           </div>
           <div class="fpp-posts-sec"><span class="fpp-posts-sec-txt" data-i="achievements">Achievements</span><span class="fpp-posts-sec-line"></span><span class="fpp-ach-count" id="fpp-ach-count"></span></div>
           <div class="fpp-ach-strip" id="fpp-ach-strip"></div>
-          <div class="fpp-posts-sec"><span class="fpp-posts-sec-txt" data-i="myVideos">Posts</span><span class="fpp-posts-sec-line"></span></div>
+          <div class="fpp-posts-sec"><span class="fpp-posts-sec-txt" data-i="tabVideos">Videos</span><span class="fpp-posts-sec-line"></span></div>
           <div class="fpp-grid" id="fpp-grid"></div>
         </div>
       </div>
@@ -2785,7 +2785,7 @@ function feedOpenProfile(uid,username,init){
       else {av.style.backgroundImage='';av.textContent=init;av.style.background='var(--accent)';av.style.color='#1A0800';}
     }
     var unameEl=document.getElementById('fpp-uname-new');
-    unameEl.innerHTML='@'+escHtml(username)+(isMe?' <span class="fpp-you-badge">'+t('you')+'</span>':'');
+    unameEl.innerHTML='<span dir="ltr" style="unicode-bidi:isolate">@'+escHtml(username)+'</span>'+(isMe?' <span class="fpp-you-badge">'+t('you')+'</span>':'');
   }
   // Render another user's achievements from their public stats (no private reads).
   function renderFppAch(missions,points,followers,streak){
@@ -6760,7 +6760,7 @@ function renderOneComment(c,isReply){
   return '<div class="comment-item'+(isReply?' comment-reply':'')+'">'
     +'<div class="comment-av" style="background:'+color+'">'+init+'</div>'
     +'<div class="comment-body">'
-      +'<div class="comment-name">@'+escHtml(c.username||'user')+(isMe?' <span style="font-size:10px;color:var(--accent)">(you)</span>':'')+'</div>'
+      +'<div class="comment-name"><span dir="ltr" style="unicode-bidi:isolate">@'+escHtml(c.username||'user')+'</span>'+(isMe?' <span style="font-size:10px;color:var(--accent)">'+t('you')+'</span>':'')+'</div>'
       +'<div class="comment-text">'+escHtml(c.text||'')+(c.edited?' <span class="comment-edited">('+t('edited')+')</span>':'')+'</div>'
       +'<div class="comment-actions">'
         +'<span class="comment-time">'+timeSince(c.at||0)+'</span>'
