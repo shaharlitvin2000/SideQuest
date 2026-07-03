@@ -412,7 +412,7 @@ img,video{max-width:100%}
 .daily-cta.is-new .daily-cta-tag{box-shadow:0 0 12px rgba(255,188,48,.7)}
 .daily-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
 .daily-day{background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:3px}
-.daily-day-lbl{font-size:10px;color:var(--muted);font-weight:700}
+.daily-day-lbl{font-size:10px;color:var(--muted);font-weight:700;text-transform:capitalize}
 .daily-day-pts{font-size:13px;font-weight:800;color:#FFCB3D;text-shadow:0 0 10px rgba(255,188,48,.5)}
 .daily-day.today{border-color:#FFCB3D;background:rgba(255,205,61,.13);box-shadow:0 0 18px -3px rgba(255,188,48,.55)}
 .share-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
@@ -5941,7 +5941,7 @@ function openDailyReward(){
   const todayDay=((cont-1)%7)+1;
   if(grid) grid.innerHTML=DAILY_REWARDS.map(function(r,i){
     const day=i+1, isToday=claimable&&day===todayDay;
-    return '<div class="daily-day'+(isToday?' today':'')+'"><div class="daily-day-lbl">'+t('dayShort2')+day+'</div><div class="daily-day-pts">★'+r+'</div></div>';
+    return '<div class="daily-day'+(isToday?' today':'')+'"><div class="daily-day-lbl">'+t('day')+' '+day+'</div><div class="daily-day-pts">★'+r+'</div></div>';
   }).join('');
   const btn=document.getElementById('daily-claim-btn');
   if(btn){ btn.disabled=!claimable; btn.textContent=claimable?t('dailyClaim'):t('dailyClaimed'); }
