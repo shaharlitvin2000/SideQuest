@@ -239,8 +239,11 @@
 
     "usernames": {
       ".read": "auth !== null",
-      ".write": false,
-      ".indexOn": [".value"]
+      ".indexOn": [".value"],
+      "$uname": {
+        ".write": "auth !== null && !data.exists()",
+        ".validate": "newData.val() === auth.uid"
+      }
     },
 
     "leaderboard": {
