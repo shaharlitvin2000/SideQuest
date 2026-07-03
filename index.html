@@ -817,7 +817,7 @@ svg.ic-lg{width:19px;height:19px}
 @keyframes pulse{0%{opacity:.8}50%{opacity:1}100%{opacity:.8}}
 
 /* ── TOAST ── */
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-90px);background:rgba(15,15,24,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:#fff;font-size:13px;font-weight:600;padding:12px 20px;border-radius:40px;z-index:600;transition:transform .3s cubic-bezier(.4,0,.2,1);white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.3);border:1px solid rgba(34,212,106,.35)}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-90px);background:rgba(15,15,24,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:#fff;font-size:13px;font-weight:600;padding:12px 20px;border-radius:40px;z-index:10500;transition:transform .3s cubic-bezier(.4,0,.2,1);white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.3);border:1px solid rgba(34,212,106,.35)}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
 /* ── FEED ── */
@@ -1519,7 +1519,7 @@ svg.ic-lg{width:19px;height:19px}
       <div class="fpp-body-scroll">
         <div id="fpp-loading-wrap" class="fpp-loading-center">
           <div class="fpp-spinner"></div>
-          <div class="fpp-loading-txt">Loading profile...</div>
+          <div class="fpp-loading-txt" data-i="loading">Loading...</div>
         </div>
         <div id="fpp-profile-content" style="display:none">
           <div class="fpp-hero" id="fpp-hero">
