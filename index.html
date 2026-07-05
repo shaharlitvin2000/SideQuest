@@ -4971,6 +4971,10 @@ function roomRenderAll(){
     var msgs=_roomChatArr.slice();
     textOnly.forEach(function(p){ msgs.push({uid:p.uid,name:p.name,text:'📝 '+(p.caption||''),at:p.at}); });
     msgs.sort(function(a,b){ return (a.at||0)-(b.at||0); });
+    // hide the whole chat panel (frame + drag handle) until there's something to show,
+    // so an empty room doesn't display a floating empty box
+    var wrap=document.getElementById('room-chat-wrap');
+    if(wrap) wrap.style.display=msgs.length?'':'none';
     if(!msgs.length){
       chat.innerHTML='';   // overlay chat: show nothing when there are no messages
     } else {
