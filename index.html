@@ -695,7 +695,7 @@ img,video{max-width:100%}
 /* floating live-chat bubbles over the videos (stream-overlay style, draggable) */
 .room-chat-col{position:absolute;right:10px;bottom:31%;width:60%;max-width:240px;min-width:172px;display:flex;flex-direction:column;align-items:flex-start;pointer-events:none;z-index:4;background:rgba(9,11,15,.08);border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:8px;transition:border-color .2s}
 .room-chat-col.dragging{border-color:rgba(34,212,106,.6)}
-.room-chat-drag{pointer-events:auto;width:100%;height:20px;border-radius:11px;background:rgba(9,11,15,.14);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:3px;cursor:grab;margin-bottom:6px;touch-action:none;user-select:none}
+.room-chat-drag{pointer-events:auto;width:100%;height:20px;border-radius:11px;background:rgba(9,11,15,.14);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:3px;cursor:grab;margin-bottom:6px;touch-action:none;-webkit-user-select:none;user-select:none}
 .room-chat-drag:active{cursor:grabbing;color:var(--accent)}
 .room-chat-list{height:42vh;width:100%;overflow-y:auto;display:flex;flex-direction:column;gap:6px;pointer-events:none;scrollbar-width:none;-webkit-mask-image:linear-gradient(180deg,transparent,#000 12%);mask-image:linear-gradient(180deg,transparent,#000 12%)}
 .room-chat-list::-webkit-scrollbar{display:none}
