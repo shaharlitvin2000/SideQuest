@@ -2074,6 +2074,9 @@ function setupAuthListener(){
     console.log('[Auth] state received, user:', user ? user.uid : 'none');
     if(user){
       userUID=user.uid;
+      // let the RTDB socket finish authenticating before firing best-effort writes
+      // (view counters) — avoids the transient permission_denied at first render
+      setTimeout(function(){ window._viewTrackReady=true; }, 2500);
       // Provisional name immediately, so nothing is ever saved as "Player"
       // during the async DB load. loadUserData() refines it from data.username.
       if(!userName || userName==='Guest'){
@@ -3704,8 +3707,14 @@ function feedRenderPost(post,slot){
   if(commentBtn) commentBtn.addEventListener('click',function(e){e.stopPropagation();openCommentSheet(postId,commentCountEl);});
   if(postId&&db){
     loadCommentCount(postId,commentCountEl);
-    // track view
-    db.ref('feed/'+postId+'/views').transaction(function(cur){return (cur||0)+1;});
+    // track view — best-effort, once per post per session. Swallow the transient
+    // permission_denied that fires when a slot renders before the RTDB socket has
+    // finished authenticating right after boot (server sees auth==null for a moment).
+    window._viewedPosts=window._viewedPosts||{};
+    if(window._viewTrackReady && !window._viewedPosts[postId]){
+      window._viewedPosts[postId]=1;
+      try{ db.ref('feed/'+postId+'/views').transaction(function(cur){return (cur||0)+1;}).catch(function(){}); }catch(e){}
+    }
   }
 
   var avBtn=slot.querySelector('#feed-av-btn');
