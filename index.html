@@ -5001,9 +5001,11 @@ function roomChatSend(){
   var inp=document.getElementById('room-chat-input'); var txt=((inp&&inp.value)||'').trim();
   if(!txt) return;
   if(hasHarmfulContent(txt)){ toast('🛡️ '+t('contentBlocked')); return; }
+  // clear + refocus immediately so the keyboard stays up and you can keep typing hands-free
+  if(inp){ inp.value=''; try{inp.focus();}catch(e){} }
   db.ref('rooms/'+_roomCode+'/chat').push({ uid:userUID, name:myName(), text:txt.slice(0,300), at:firebase.database.ServerValue.TIMESTAMP })
-    .then(function(){ if(inp) inp.value=''; })
-    .catch(function(){ toast('❌ '+t('chatSendFail')); });
+    .then(function(){ if(inp) try{inp.focus();}catch(e){} })
+    .catch(function(){ toast('❌ '+t('chatSendFail')); if(inp) inp.value=txt; });
 }
 function roomUserOpen(uid,name){
   if(!uid||uid===userUID) return;
