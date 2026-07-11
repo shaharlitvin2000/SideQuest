@@ -418,13 +418,9 @@ exports.completeMission = functions.https.onCall(async (data, context) => {
   // The missionId is the authoritative source of which mission this is
 
   // ===== SECURITY CHECKS =====
-
-  if (!context.auth.token.email_verified) {
-    throw new functions.https.HttpsError(
-      'permission-denied',
-      'Please verify your email before completing missions'
-    );
-  }
+  // Email verification is NOT required: the client never enforced it, so gating
+  // here would lock out existing unverified users. Anti-abuse still applies below
+  // (abuse scoring, blocked check, atomic daily-limit) which is the real protection.
 
   if (checkAbuseScore(uid)) {
     const abuse = abuseScores.get(uid);

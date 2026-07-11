@@ -2205,10 +2205,13 @@ function saveUserData(){
   try{localStorage.setItem('fa_'+userUID,JSON.stringify(d));}catch(e){}
 
   if(!userUID||!db) return;
-  db.ref('users/'+userUID).update(d).catch(e=>{if(!isFnUnavailable(e))console.error('[DB] save error:',e);});
-  // Publish my public leaderboard entry so I appear in rankings (unless the user opted out)
+  // pts is SERVER-authoritative (anti-cheat): never write it from the client.
+  var dServer=Object.assign({},d); delete dServer.pts;
+  db.ref('users/'+userUID).update(dServer).catch(e=>{if(!isFnUnavailable(e))console.error('[DB] save error:',e);});
+  // Publish my public leaderboard entry. pts/seasonPts/missions are written by the
+  // server functions only; the client writes just the display fields it owns.
   if(myPrivacy&&myPrivacy.hideFromLeaderboard){ db.ref('leaderboard/'+userUID).remove().catch(()=>{}); }
-  else { db.ref('leaderboard/'+userUID).update({username:userName,pts:pts||0,missions:totalMissionsDone||0,streak:streak||0,country:myCountryName||''}).catch(()=>{}); }
+  else { db.ref('leaderboard/'+userUID).update({username:userName,streak:streak||0,country:myCountryName||''}).catch(()=>{}); }
 
   // Reset daily quotas if new day
   db.ref('userStorage/'+userUID+'/adsDate').once('value').then(snap=>{
@@ -2518,12 +2521,13 @@ function doRegister(){
         return db.ref(`users/${userUID}`).set({
           username: userName,
           email: email,
-          pts: 0,
           streak: 0,
           agreedToTerms: true,
           consentAt: firebase.database.ServerValue.TIMESTAMP,
           createdAt: firebase.database.ServerValue.TIMESTAMP
         });
+        // pts is intentionally omitted — it is written SERVER-SIDE only (anti-cheat).
+        // Reads use (pts||0), so a missing pts is treated as 0.
       })
       .then(() => {
         saveUserData();
@@ -5303,25 +5307,28 @@ async function complete(){
       return;
     }
 
-    // Mark mission as completed
+    // Submit to the server — points are awarded SERVER-SIDE (anti-cheat).
     verifySetState('loading',''+t('vSubmit'));
 
     const db = firebase.database();
-    // BUG FIX: this read `missionArray[mIdx]` — an undefined variable — so every
-    // mission completion threw before awarding points. `d` is already MISSIONS[mIdx].
-    const earnedPts = d.pts || 150;
-
-    // Check if already completed today
-    const snapshot = await db.ref(`users/${userUID}/completedMissionsToday/${mIdx}`).get();
-    if(snapshot.exists()){
-      verifySetState('fail',''+t('vAlreadyDone'));
-      ctaBtn.disabled=false;
-      return;
+    // Server-authoritative completion: the Cloud Function verifies, awards pts +
+    // seasonPts, bumps totalMissionsDone, updates the leaderboard, creates the feed
+    // post and returns its id (for media upload). The client no longer writes pts.
+    var res;
+    try{
+      var call=await firebase.functions().httpsCallable('completeMission')({missionId:mIdx, missionTitle:mTitle});
+      res=call.data;
+    }catch(err){
+      var msg=(err&&err.message)||'';
+      if(err&&(err.code==='functions/already-exists'||/already completed/i.test(msg))){
+        verifySetState('fail',''+t('vAlreadyDone')); ctaBtn.disabled=false; return;
+      }
+      if(err&&(err.code==='functions/resource-exhausted'||/limit/i.test(msg))){
+        verifySetState('fail',''+t('vAlreadyDone')); ctaBtn.disabled=false; return;
+      }
+      throw err;
     }
-
-    // Update database
-    await db.ref(`users/${userUID}/completedMissionsToday/${mIdx}`).set(Date.now());
-    await db.ref(`users/${userUID}/pts`).transaction(val => (val||0) + earnedPts);
+    if(!res||!res.success){ verifySetState('fail','❌'); ctaBtn.disabled=false; return; }
 
     // Success
     verifySetState('ok','<strong>'+t('vApproved')+'</strong>');
@@ -5333,12 +5340,12 @@ async function complete(){
       document.getElementById('modal-bg').classList.remove('show');
     },800);
 
-    // Update UI
-    const earned=earnedPts;
-    pts=(pts||0)+earnedPts;
+    // Sync local state from the SERVER response (authoritative source of truth)
+    const earned=res.earned||d.pts||0;
+    pts=(typeof res.newPoints==='number')?res.newPoints:((pts||0)+earned);
     completed++;
-    completedMissions.push(mIdx);
-    totalMissionsDone=(totalMissionsDone||0)+1;
+    if(completedMissions.indexOf(mIdx)<0) completedMissions.push(mIdx);
+    totalMissionsDone=(typeof res.totalMissionsDone==='number')?res.totalMissionsDone:((totalMissionsDone||0)+1);
 
     updateUI();
     saveUserData();
@@ -5351,19 +5358,15 @@ async function complete(){
       toast('🎉 +'+earned+' '+t('points')+'!');
     },900);
 
-    // Upload file if present
-    if(file){
-      uploadMissionFile(file, mIdx, null);
+    // Upload the proof media to the post the server just created
+    if(file && res.postId){
+      uploadMissionFile(file, mIdx, res.postId);
     }
   }catch(err){
     console.error('[Complete] error:', err);
-    let errorMsg=err.message||'Unknown error';
-    if(err.code==='permission-denied'&&errorMsg.includes('verify')){
-      errorMsg='Please verify your email first (check your inbox)';
-    } else if(err.code==='permission-denied'&&errorMsg.includes('Suspicious')){
-      errorMsg='Too many actions. Wait a moment and try again.';
-    } else if(err.code==='permission-denied'){
-      errorMsg='Account blocked. Contact support.';
+    let errorMsg=(err&&err.message)||'Unknown error';
+    if(err&&err.code==='functions/permission-denied'&&/blocked/i.test(errorMsg)){
+      errorMsg='🚫 '+errorMsg;
     }
     verifySetState('fail',''+errorMsg);
     ctaBtn.disabled=false;
@@ -5394,10 +5397,10 @@ async function uploadMissionFile(file, missionId, postId){
     await task;
     const mediaUrl=await ref.getDownloadURL();
 
-    // Update post with media URL
+    // Update post with media URL (field name must match what the feed renders: mediaURL)
     const db = firebase.database();
     await db.ref(`feed/${postId}`).update({
-      mediaUrl: mediaUrl,
+      mediaURL: mediaUrl,
       mediaType: file.type.startsWith('video')?'video':'image'
     });
 
