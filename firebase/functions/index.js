@@ -1434,7 +1434,7 @@ exports.batchVerifyPosts = functions.pubsub.schedule('every 24 hours').onRun(asy
 // CLEANUP OLD POSTS - SCHEDULED WEEKLY
 // ══════════════════════════════════════════════════════════════════
 
-exports.cleanupOldPosts = functions.pubsub.schedule('every 7 days').onRun(async (context) => {
+exports.cleanupOldPosts = functions.pubsub.schedule('0 3 * * 0').timeZone('Asia/Jerusalem').onRun(async (context) => {
   const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
   const snap = await db.ref('feed').once('value');
 
