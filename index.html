@@ -743,11 +743,11 @@ img,video{max-width:100%}
 .room-videos-col{flex:1;min-width:0;overflow-y:auto;padding:10px 12px 110px;scrollbar-width:none}
 .room-videos-col::-webkit-scrollbar{display:none}
 .room-videos{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-/* chat opens as a bottom sheet in the same screen (grid stays visible above it) */
-.room-chat-screen{position:absolute;left:0;right:0;bottom:0;top:16%;z-index:6;background:var(--bg);display:none;flex-direction:column;border-radius:22px 22px 0 0;box-shadow:0 -10px 34px rgba(0,0,0,.28);animation:up .24s cubic-bezier(.4,0,.2,1)}
+/* docked chat panel: sits BELOW the grid in the flex column, so videos stay visible
+   and scrollable above it while you chat; the X (chevron) collapses it */
+.room-chat-screen{display:none;flex-direction:column;height:45%;min-height:250px;flex-shrink:0;background:var(--bg);border-top:1px solid var(--border);box-shadow:0 -8px 26px rgba(0,0,0,.12);animation:up .2s cubic-bezier(.4,0,.2,1)}
 .room-chat-screen.show{display:flex}
-.room-chat-head{border-radius:22px 22px 0 0}
-.room-chat-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.room-chat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
 .room-chat-back{width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .room-chat-back svg{width:18px;height:18px}
 .room-chat-title{font-family:var(--font-display);font-size:16px;font-weight:800}
@@ -1554,28 +1554,28 @@ svg.ic-lg{width:19px;height:19px}
         <div class="room-videos-col"><div class="room-videos" id="room-videos"></div></div>
       </div>
 
-      <!-- fullscreen vertical video viewer -->
-      <div class="room-viewer" id="room-viewer">
-        <button class="room-viewer-close" onclick="closeRoomViewer()" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-        <div class="room-viewer-scroll" id="room-viewer-scroll"></div>
-      </div>
-
-      <div class="room-bottom-bar">
-        <button class="room-bar-btn" onclick="roomPost()" aria-label="Upload attempt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span data-i="roomUploadBtn">Upload</span></button>
-        <button class="room-bar-btn" onclick="openRoomChat()" aria-label="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span data-i="roomChatBtn">Chat</span><span class="room-chat-badge" id="room-chat-badge" style="display:none"></span></button>
-      </div>
-
-      <!-- separate chat screen (slides up over the grid) -->
+      <!-- docked chat panel: bottom ~45%, the video grid stays visible & scrollable above it -->
       <div class="room-chat-screen" id="room-chat-screen">
         <div class="room-chat-head">
-          <button class="room-chat-back" onclick="closeRoomChat()" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
           <div class="room-chat-title" data-i="roomChatTitle">Room chat</div>
+          <button class="room-chat-back" onclick="closeRoomChat()" aria-label="Close chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
         </div>
         <div class="room-chat-msgs" id="room-chat"></div>
         <div class="room-chat-inputbar">
           <input class="room-chat-input" id="room-chat-input" maxlength="300" autocomplete="off" onkeydown="if(event.key==='Enter')roomChatSend()">
           <button class="room-chat-send" onclick="roomChatSend()" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
         </div>
+      </div>
+
+      <!-- fullscreen vertical video viewer -->
+      <div class="room-viewer" id="room-viewer">
+        <button class="room-viewer-close" onclick="closeRoomViewer()" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        <div class="room-viewer-scroll" id="room-viewer-scroll"></div>
+      </div>
+
+      <div class="room-bottom-bar" id="room-bottom-bar">
+        <button class="room-bar-btn" onclick="roomPost()" aria-label="Upload attempt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span data-i="roomUploadBtn">Upload</span></button>
+        <button class="room-bar-btn" onclick="openRoomChat()" aria-label="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span data-i="roomChatBtn">Chat</span><span class="room-chat-badge" id="room-chat-badge" style="display:none"></span></button>
       </div>
 
       <!-- tap-a-user actions (profile / report / kick) -->
@@ -4825,6 +4825,8 @@ var _roomChatOpen=false, _roomChatSeen=0;
 function openRoomChat(){
   _roomChatOpen=true;
   var sc=document.getElementById('room-chat-screen'); if(sc) sc.classList.add('show');
+  // the docked panel has its own input, so the bottom bar steps aside while it's open
+  var bar=document.getElementById('room-bottom-bar'); if(bar) bar.style.display='none';
   var badge=document.getElementById('room-chat-badge'); if(badge) badge.style.display='none';
   _roomChatSeen=_roomChatArr.length;
   var box=document.getElementById('room-chat'); if(box) box.scrollTop=box.scrollHeight;
@@ -4833,6 +4835,7 @@ function openRoomChat(){
 function closeRoomChat(){
   _roomChatOpen=false;
   var sc=document.getElementById('room-chat-screen'); if(sc) sc.classList.remove('show');
+  var bar=document.getElementById('room-bottom-bar'); if(bar) bar.style.display='';
 }
 // tap a name/avatar anywhere in the room -> open that user's profile (self or others)
 function roomOpenProfile(uid,name){
