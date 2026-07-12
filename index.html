@@ -3011,7 +3011,7 @@ function feedOpenProfile(uid,username,init){
   }
   function renderGrid(){
     if(!fppPosts.length){
-      document.getElementById('fpp-grid').innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('noPostsYet')+'</div><div class="liked-empty-sub">'+(isMe?t('noPostsSub'):t('noPostsOther'))+'</div></div>';
+      document.getElementById('fpp-grid').innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('noPostsYet')+'</div><div class="liked-empty-sub">'+(isMe?t('noPostsSub'):t('noPostsOther'))+'</div></div>';
       return;
     }
     document.getElementById('fpp-grid').innerHTML=fppPosts.map(function(p,i){
@@ -3037,7 +3037,7 @@ function feedOpenProfile(uid,username,init){
     document.getElementById('fpp-s-posts').textContent='0';
     var fnEl=document.getElementById('fpp-followers-n'),fgEl=document.getElementById('fpp-following-n');
     if(fnEl) fnEl.textContent='0'; if(fgEl) fgEl.textContent='0';
-    document.getElementById('fpp-grid').innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('noConnection')+'</div></div>';
+    document.getElementById('fpp-grid').innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('noConnection')+'</div></div>';
     if(!isMe&&followBtn) followBtn.style.display='block';
     showContent();
     return;
@@ -3107,7 +3107,7 @@ function feedOpenProfile(uid,username,init){
     renderGrid();
     if(isPrivate){
       // Private profile: hide posts, achievements and stats from others.
-      document.getElementById('fpp-grid').innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('privateProfileTitle')+'</div><div class="liked-empty-sub">'+t('privateProfileSub')+'</div></div>';
+      document.getElementById('fpp-grid').innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('privateProfileTitle')+'</div><div class="liked-empty-sub">'+t('privateProfileSub')+'</div></div>';
       var stripEl=document.getElementById('fpp-ach-strip'); if(stripEl) stripEl.innerHTML='';
       var cntEl=document.getElementById('fpp-ach-count'); if(cntEl) cntEl.textContent='';
       ['fpp-s-pts','fpp-s-streak','fpp-s-missions','fpp-s-posts'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent='—';});
@@ -3116,7 +3116,7 @@ function feedOpenProfile(uid,username,init){
   }).catch(function(){
     applyAvatar(null,null);
     document.getElementById('fpp-rank-badge').textContent='';
-    document.getElementById('fpp-grid').innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('couldNotLoad')+'</div></div>';
+    document.getElementById('fpp-grid').innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('couldNotLoad')+'</div></div>';
     showContent();
   });
 }
@@ -3227,7 +3227,7 @@ function renderLikedGrid(posts){
   var countEl=document.getElementById('liked-header-count');
   if(!posts.length){
     if(countEl) countEl.style.display='none';
-    grid.innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('noLikedYet')+'</div><div class="liked-empty-sub">'+t('noLikedSub')+'</div></div>';
+    grid.innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('noLikedYet')+'</div><div class="liked-empty-sub">'+t('noLikedSub')+'</div></div>';
     return;
   }
   if(countEl){countEl.textContent=posts.length;countEl.style.display='inline-block';}
@@ -3253,7 +3253,7 @@ function loadLikedPosts(){
   if(!grid) return;
   var likedIds=feedGetLikedSet();
   if(!likedIds.size){
-    grid.innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('noLikedYet')+'</div><div class="liked-empty-sub">'+t('noLikedSub')+'</div></div>';
+    grid.innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('noLikedYet')+'</div><div class="liked-empty-sub">'+t('noLikedSub')+'</div></div>';
     return;
   }
   var fromCache=feedAllPosts.filter(function(p){return likedIds.has(p.id);});
@@ -3416,7 +3416,7 @@ function loadFollowingFeed(){
         if(wrap) feedInitEvents(wrap);
       }
     }).catch(function(){
-      if(wrap) wrap.innerHTML='<div class="feed-empty"><div class="feed-empty-icon"><svg viewBox="0 0 24 24" <div class="feed-empty-text">'+t('couldNotLoadFeed')+'</div></div>';
+      if(wrap) wrap.innerHTML='<div class="feed-empty"><div class="feed-empty-icon"><div class="feed-empty-text">'+t('couldNotLoadFeed')+'</div></div>';
     });
   },100);
 }
@@ -3491,7 +3491,7 @@ function loadFeed(isRefresh){
   var wrap=document.getElementById('feed-wrap-foryou');
   if(wrap) feedInitEvents(wrap);
   if(!db){
-    if(wrap) wrap.innerHTML='<div class="feed-empty"><div class="feed-empty-icon"><svg viewBox="0 0 24 24" <div class="feed-empty-text">'+t('noConnection')+'</div></div>';
+    if(wrap) wrap.innerHTML='<div class="feed-empty"><div class="feed-empty-icon"><div class="feed-empty-text">'+t('noConnection')+'</div></div>';
     return;
   }
 
@@ -3547,7 +3547,7 @@ function loadFeed(isRefresh){
   }).catch(function(e){
     console.error('[Feed]',e);
     var w=document.getElementById('feed-wrap-foryou');
-    if(w) w.innerHTML='<div class="feed-empty"><div class="feed-empty-icon"><svg viewBox="0 0 24 24" <div class="feed-empty-text">'+t('couldNotLoadFeed')+'</div></div>';
+    if(w) w.innerHTML='<div class="feed-empty"><div class="feed-empty-icon"><div class="feed-empty-text">'+t('couldNotLoadFeed')+'</div></div>';
   });
 }
 
@@ -3581,7 +3581,7 @@ function loadSavedPosts(){
   if(cnt){cnt.style.display=savedPosts.length>0?'inline-block':'none';cnt.textContent=savedPosts.length;}
 
   if(savedPosts.length===0){
-    grid.innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('noSavedYet')+'</div><div class="liked-empty-sub">'+t('noSavedSub')+'</div></div>';
+    grid.innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('noSavedYet')+'</div><div class="liked-empty-sub">'+t('noSavedSub')+'</div></div>';
     return;
   }
 
@@ -5823,7 +5823,7 @@ function loadLeaderboard(){
     renderLb();
   }).catch(e=>{
     console.error('[LB] error:',e);
-    list.innerHTML='<div class="liked-empty" style="margin:28px 16px 0"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('couldNotLoadRankings')+'</div></div>';
+    list.innerHTML='<div class="liked-empty" style="margin:28px 16px 0"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('couldNotLoadRankings')+'</div></div>';
   });
 }
 
@@ -6716,17 +6716,17 @@ function openChatList(){
   const ov=document.getElementById('chat-list-overlay'),list=document.getElementById('chat-list');
   if(!ov||!list) return;
   ov.classList.add('show');
-  if(!db||!userUID){list.innerHTML='<div class="liked-empty" style="margin:24px 16px"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('noChats')+'</div></div>';return;}
+  if(!db||!userUID){list.innerHTML='<div class="liked-empty" style="margin:24px 16px"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('noChats')+'</div></div>';return;}
   list.innerHTML='<div class="empty-sheet">'+t('loading')+'</div>';
   db.ref('chatMeta/'+userUID).orderByChild('lastAt').once('value').then(function(snap){
     var chats=[];snap.forEach(c=>chats.push({chatId:c.key,...c.val()}));chats=chats.filter(c=>!_blockedSet.has(c.peerUid));chats.reverse();
-    if(!chats.length){list.innerHTML='<div class="liked-empty" style="margin:24px 16px"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('noChats')+'</div></div>';return;}
+    if(!chats.length){list.innerHTML='<div class="liked-empty" style="margin:24px 16px"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('noChats')+'</div></div>';return;}
     list.innerHTML=chats.map(function(c){
       var ini=(c.peerName||'?')[0].toUpperCase();
       var time=c.lastAt?new Date(c.lastAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
       return '<div class="chat-row" onclick="openChatWith(\''+escHtml(c.peerUid)+'\',\''+escHtml(c.peerName||'Player')+'\')"><div class="chat-row-av">'+ini+'</div><div class="chat-row-info"><div class="chat-row-name">'+escHtml(c.peerName||'Player')+'</div><div class="chat-row-last">'+escHtml(c.lastText||'')+'</div></div>'+(c.unread>0?'<div class="chat-unread">'+c.unread+'</div>':'<div class="chat-row-time">'+time+'</div>')+'</div>';
     }).join('');
-  }).catch(()=>{list.innerHTML='<div class="liked-empty" style="margin:24px 16px"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('noChats')+'</div></div>';});
+  }).catch(()=>{list.innerHTML='<div class="liked-empty" style="margin:24px 16px"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('noChats')+'</div></div>';});
 }
 function openChatWith(peerUid,peerName){
   if(!peerUid||peerUid===userUID||!db) return;
@@ -7799,7 +7799,7 @@ async function loadMyVideos(){
     if(cnt){cnt.style.display=videos.length>0?'inline-block':'none';cnt.textContent=videos.length;}
 
     if(videos.length===0){
-      grid.innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><svg viewBox="0 0 24 24" <div class="liked-empty-title">'+t('noPostsYet')+'</div><div class="liked-empty-sub">'+t('noPostsSub')+'</div></div>';
+      grid.innerHTML='<div class="liked-empty"><div class="liked-empty-icon"><div class="liked-empty-title">'+t('noPostsYet')+'</div><div class="liked-empty-sub">'+t('noPostsSub')+'</div></div>';
       return;
     }
 
@@ -8093,12 +8093,12 @@ window.addEventListener('beforeunload',function(){
     <div class="modal-title"><svg class="ic ic-lg" viewBox="0 0 24 24" style="vertical-align:-3px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span data-i="safetyTitle">Community &amp; Safety</span></div>
     <div class="modal-desc" data-i="safetyIntro">Side Quest is about fun, real-life missions — let's keep everyone safe.</div>
     <div class="safety-rules">
-      <div class="safety-rule"><span class="safety-ic"><svg viewBox="0 0 24 24" <span data-i="safetyRule1">Never do anything dangerous, illegal, or that could hurt you or others.</span></div>
-      <div class="safety-rule"><span class="safety-ic"><svg viewBox="0 0 24 24" <span data-i="safetyRule2">No dangerous dares, violence, hate, nudity or self-harm.</span></div>
-      <div class="safety-rule"><span class="safety-ic"><svg viewBox="0 0 24 24" <span data-i="safetyRule3">Respect others — no harassment or bullying.</span></div>
-      <div class="safety-rule"><span class="safety-ic"><svg viewBox="0 0 24 24" <span data-i="safetyRule4">Be age-appropriate. You must be 13 or older.</span></div>
-      <div class="safety-rule"><span class="safety-ic"><svg viewBox="0 0 24 24" <span data-i="safetyRule5">You are responsible for your own safety — don't trespass or break the law.</span></div>
-      <div class="safety-rule"><span class="safety-ic"><svg viewBox="0 0 24 24" <span data-i="safetyRule6">Report anything harmful — we review every report.</span></div>
+      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule1">Never do anything dangerous, illegal, or that could hurt you or others.</span></div>
+      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule2">No dangerous dares, violence, hate, nudity or self-harm.</span></div>
+      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule3">Respect others — no harassment or bullying.</span></div>
+      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule4">Be age-appropriate. You must be 13 or older.</span></div>
+      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule5">You are responsible for your own safety — don't trespass or break the law.</span></div>
+      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule6">Report anything harmful — we review every report.</span></div>
     </div>
     <button class="modal-cta" onclick="acknowledgeSafety()" data-i="safetyAgree">I understand</button>
   </div>
@@ -8153,7 +8153,7 @@ window.addEventListener('beforeunload',function(){
     <button class="pe-sc-btn" onclick="peSize(-2)" aria-label="Smaller">A−</button>
     <button class="pe-sc-btn" onclick="peSize(2)" aria-label="Bigger">A+</button>
     <div class="pe-colors" id="pe-colors"></div>
-    <button class="pe-sc-btn pe-sc-del" onclick="peDelSel()" aria-label="Delete"><svg viewBox="0 0 24 24" width="16" height="16" 
+    <button class="pe-sc-btn pe-sc-del" onclick="peDelSel()" aria-label="Delete"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
   </div>
   <div class="pe-panels">
     <div id="pe-panel-filters" class="pe-panel"><div id="pe-filters" class="pe-filters"></div></div>
@@ -8167,11 +8167,11 @@ window.addEventListener('beforeunload',function(){
     <div id="pe-panel-music" class="pe-panel" style="display:none"><div id="pe-music" class="pe-music"></div></div>
   </div>
   <div class="pe-tabs">
-    <button class="pe-tab on" data-tab="filters" onclick="peTab('filters')"><span class="pe-tab-ic"><svg viewBox="0 0 24 24" <span data-i="peFilters">Filters</span></button>
-    <button class="pe-tab" data-tab="adjust" onclick="peTab('adjust')"><span class="pe-tab-ic"><svg viewBox="0 0 24 24" <span data-i="peAdjust">Adjust</span></button>
-    <button class="pe-tab" data-tab="text" onclick="peTab('text')"><span class="pe-tab-ic"><svg viewBox="0 0 24 24" <span data-i="peText">Text</span></button>
-    <button class="pe-tab" data-tab="sticker" onclick="peTab('sticker')"><span class="pe-tab-ic"><svg viewBox="0 0 24 24" <span data-i="peStickers">Stickers</span></button>
-    <button class="pe-tab" data-tab="music" onclick="peTab('music')"><span class="pe-tab-ic"><svg viewBox="0 0 24 24" <span data-i="peMusic">Music</span></button>
+    <button class="pe-tab on" data-tab="filters" onclick="peTab('filters')"><span class="pe-tab-ic"><span data-i="peFilters">Filters</span></button>
+    <button class="pe-tab" data-tab="adjust" onclick="peTab('adjust')"><span class="pe-tab-ic"><span data-i="peAdjust">Adjust</span></button>
+    <button class="pe-tab" data-tab="text" onclick="peTab('text')"><span class="pe-tab-ic"><span data-i="peText">Text</span></button>
+    <button class="pe-tab" data-tab="sticker" onclick="peTab('sticker')"><span class="pe-tab-ic"><span data-i="peStickers">Stickers</span></button>
+    <button class="pe-tab" data-tab="music" onclick="peTab('music')"><span class="pe-tab-ic"><span data-i="peMusic">Music</span></button>
   </div>
 </div>
 
@@ -8212,9 +8212,9 @@ window.addEventListener('beforeunload',function(){
     <div class="modal-title" data-i="blockTitle">Block user</div>
     <div class="modal-desc"><span data-i="blockConfirm">Are you sure you want to block</span> <strong id="block-sheet-name">@user</strong>?</div>
     <div class="report-reasons">
-      <button class="report-reason" id="mute-sheet-btn" onclick="muteFromSheet()"><span class="rr-ic"><svg viewBox="0 0 24 24"  data-i="muteUser">Mute (hide their content)</span></button>
-      <button class="report-reason" onclick="doBlock(true)"><span class="rr-ic"><svg viewBox="0 0 24 24"  data-i="blockReport">Block & Report</span></button>
-      <button class="report-reason" onclick="doBlock(false)"><span class="rr-ic"><svg viewBox="0 0 24 24"  data-i="blockOnly">Just block</span></button>
+      <button class="report-reason" id="mute-sheet-btn" onclick="muteFromSheet()"><span class="rr-ic"><span data-i="muteUser">Mute (hide their content)</span></button>
+      <button class="report-reason" onclick="doBlock(true)"><span class="rr-ic"><span data-i="blockReport">Block & Report</span></button>
+      <button class="report-reason" onclick="doBlock(false)"><span class="rr-ic"><span data-i="blockOnly">Just block</span></button>
     </div>
     <button class="modal-cancel" onclick="closeBlockSheet()" data-i="cancel">Cancel</button>
   </div>
@@ -8280,8 +8280,8 @@ window.addEventListener('beforeunload',function(){
 
     <button class="modal-cta" id="upload-video-btn" onclick="submitUploadVideo()" data-i="upload">Upload</button>
     <div class="upload-draft-row">
-      <button class="upload-draft-btn" onclick="saveDraft()"><span class="rr-ic"><svg viewBox="0 0 24 24"  data-i="draftSave">Save draft</span></button>
-      <button class="upload-draft-btn" onclick="openDrafts()"><span class="rr-ic"><svg viewBox="0 0 24 24"  data-i="myDrafts">Drafts</span></button>
+      <button class="upload-draft-btn" onclick="saveDraft()"><span class="rr-ic"><span data-i="draftSave">Save draft</span></button>
+      <button class="upload-draft-btn" onclick="openDrafts()"><span class="rr-ic"><span data-i="myDrafts">Drafts</span></button>
     </div>
     <button class="modal-cancel" onclick="document.getElementById('upload-video-bg').classList.remove('show')" data-i="cancel">Cancel</button>
   </div>
