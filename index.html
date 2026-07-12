@@ -744,13 +744,13 @@ img,video{max-width:100%}
 .room-videos-col::-webkit-scrollbar{display:none}
 .room-videos{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
 /* floating chat box: a semi-transparent square hovering over the grid; X closes it */
-.room-chat-screen{position:absolute;right:10px;bottom:86px;width:76%;max-width:300px;height:46%;min-height:190px;z-index:6;display:none;flex-direction:column;background:rgba(255,255,255,.26);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,.08);border-radius:18px;box-shadow:0 12px 34px rgba(0,0,0,.18);overflow:hidden;animation:up .2s cubic-bezier(.4,0,.2,1)}
+.room-chat-screen{position:absolute;right:10px;bottom:86px;width:76%;max-width:300px;height:46%;min-height:190px;z-index:6;display:none;flex-direction:column;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(0,0,0,.08);border-radius:18px;box-shadow:0 12px 34px rgba(0,0,0,.18);overflow:hidden;animation:up .2s cubic-bezier(.4,0,.2,1)}
 .room-chat-screen.show{display:flex}
 .room-chat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 10px;padding-left:34px;border-bottom:1px solid rgba(0,0,0,.06);flex-shrink:0;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
 .room-chat-screen.dragging{border-color:rgba(108,79,224,.5)}
 .room-chat-screen.dragging .room-chat-head{cursor:grabbing}
-.room-chat-screen .room-chat-input{background:rgba(255,255,255,.5)}
-.room-chat-screen .room-chat-send{background:rgba(255,255,255,.5)}
+.room-chat-screen .room-chat-input{background:rgba(255,255,255,.35)}
+.room-chat-screen .room-chat-send{background:rgba(255,255,255,.35)}
 .room-chat-resize{position:absolute;top:0;left:0;width:30px;height:30px;cursor:nwse-resize;touch-action:none;display:flex;align-items:flex-start;justify-content:flex-start;padding:6px;color:rgba(0,0,0,.35);z-index:2}
 .room-chat-resize svg{width:13px;height:13px}
 .room-chat-back{width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
@@ -759,7 +759,7 @@ img,video{max-width:100%}
 .room-chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px;padding:10px 10px 12px;scrollbar-width:none}
 .room-chat-msgs::-webkit-scrollbar{display:none}
 .room-chat-inputbar{display:flex;gap:7px;align-items:center;padding:8px 9px 9px;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0}
-.rcm{align-self:flex-start;max-width:88%;background:rgba(255,255,255,.45);border:1px solid rgba(0,0,0,.05);border-radius:4px 15px 15px 15px;padding:8px 13px;font-size:14px;line-height:1.5;word-break:break-word;cursor:pointer}
+.rcm{align-self:flex-start;max-width:88%;background:rgba(255,255,255,.32);border:1px solid rgba(0,0,0,.05);border-radius:4px 15px 15px 15px;padding:8px 13px;font-size:14px;line-height:1.5;word-break:break-word;cursor:pointer}
 .rcm-sys{align-self:center;text-align:center;max-width:100%;background:var(--accent-soft);border:1px solid rgba(108,79,224,.28);color:var(--accent);font-weight:700;font-size:12px;border-radius:12px;cursor:default}
 .rcm-name{font-weight:800;display:block;font-size:11.5px;margin-bottom:2px}
 .rcm-text{color:var(--text)}
@@ -4857,7 +4857,7 @@ function roomChatBoxDragInit(){
     if(pr){
       // vertical limits: never all the way up (stay below the header area) and
       // never all the way down (stop above the bottom bar)
-      var topLimit=pr.top+92;
+      var topLimit=pr.top+92; var mc=document.querySelector('.room-mission'); if(mc){ var mr2=mc.getBoundingClientRect(); if(mr2.bottom+6>topLimit) topLimit=mr2.bottom+6; }
       var bar=document.getElementById('room-bottom-bar'); var bottomLimit=pr.bottom-8;
       if(bar){ var brr=bar.getBoundingClientRect(); if(brr.top<bottomLimit) bottomLimit=brr.top-6; }
       var baseL=br.left-ox, baseR=br.right-ox, baseT=br.top-oy, baseB=br.bottom-oy;
