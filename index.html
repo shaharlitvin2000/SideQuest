@@ -743,9 +743,10 @@ img,video{max-width:100%}
 .room-videos-col{flex:1;min-width:0;overflow-y:auto;padding:10px 12px 110px;scrollbar-width:none}
 .room-videos-col::-webkit-scrollbar{display:none}
 .room-videos{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-/* chat lives on its own screen (opened from the bottom bar) */
-.room-chat-screen{position:absolute;inset:0;z-index:6;background:var(--bg);display:none;flex-direction:column;animation:up .22s cubic-bezier(.4,0,.2,1)}
+/* chat opens as a bottom sheet in the same screen (grid stays visible above it) */
+.room-chat-screen{position:absolute;left:0;right:0;bottom:0;top:16%;z-index:6;background:var(--bg);display:none;flex-direction:column;border-radius:22px 22px 0 0;box-shadow:0 -10px 34px rgba(0,0,0,.28);animation:up .24s cubic-bezier(.4,0,.2,1)}
 .room-chat-screen.show{display:flex}
+.room-chat-head{border-radius:22px 22px 0 0}
 .room-chat-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
 .room-chat-back{width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .room-chat-back svg{width:18px;height:18px}
@@ -765,8 +766,22 @@ img,video{max-width:100%}
 .room-vid-av{width:18px;height:18px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:9px;flex-shrink:0}
 .room-vid-name{font-size:10px;font-weight:800;color:#fff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .room-vid-name .room-msg-host{font-size:8px;padding:0 3px}
-.room-vids-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;color:var(--muted);font-size:12.5px;padding:40px 24px;line-height:1.55}
+.room-vids-empty{grid-column:1 / -1;min-height:62vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;color:var(--muted);font-size:12.5px;padding:40px 24px;line-height:1.55}
 .rve-icon{width:66px;height:66px;border-radius:50%;background:radial-gradient(circle at 50% 35%,var(--accent-soft),var(--bg2));border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:30px}
+/* fullscreen vertical video viewer (tap a grid video to enter, scroll up/down) */
+.room-viewer{position:absolute;inset:0;z-index:7;background:#000;display:none}
+.room-viewer.show{display:block}
+.room-viewer-scroll{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.room-viewer-scroll::-webkit-scrollbar{display:none}
+.room-viewer-slide{position:relative;height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;background:#000}
+.room-viewer-slide video,.room-viewer-slide img{width:100%;height:100%;object-fit:contain;background:#000}
+.room-viewer-info{position:absolute;left:0;right:0;bottom:0;padding:22px 16px calc(30px + env(safe-area-inset-bottom, 0px));background:linear-gradient(180deg,transparent,rgba(0,0,0,.82));color:#fff;pointer-events:none}
+.room-viewer-author{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:800;font-size:15px;color:#fff;pointer-events:auto;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.room-viewer-av{width:30px;height:30px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0}
+.room-viewer-cap{font-size:14px;margin-top:9px;opacity:.96;line-height:1.45;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.room-viewer-close{position:absolute;top:calc(12px + env(safe-area-inset-top, 0px));inset-inline-end:12px;z-index:2;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.5);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.room-viewer-close svg{width:20px;height:20px}
+.room-viewer-hint{position:absolute;top:calc(14px + env(safe-area-inset-top, 0px));inset-inline-start:16px;z-index:2;color:rgba(255,255,255,.6);font-size:11px;font-weight:700}
 .room-chat{flex:1;overflow-y:auto;padding:10px 16px 96px}
 .room-chat-empty{text-align:center;color:var(--muted);font-size:12px;padding:26px 20px;line-height:1.5}
 .room-post{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;animation:cardEntry .3s cubic-bezier(.25,.8,.25,1) both}
@@ -1538,6 +1553,13 @@ svg.ic-lg{width:19px;height:19px}
       <div class="room-main">
         <div class="room-videos-col"><div class="room-videos" id="room-videos"></div></div>
       </div>
+
+      <!-- fullscreen vertical video viewer -->
+      <div class="room-viewer" id="room-viewer">
+        <button class="room-viewer-close" onclick="closeRoomViewer()" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        <div class="room-viewer-scroll" id="room-viewer-scroll"></div>
+      </div>
+
       <div class="room-bottom-bar">
         <button class="room-bar-btn" onclick="roomPost()" aria-label="Upload attempt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span data-i="roomUploadBtn">Upload</span></button>
         <button class="room-bar-btn" onclick="openRoomChat()" aria-label="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span data-i="roomChatBtn">Chat</span><span class="room-chat-badge" id="room-chat-badge" style="display:none"></span></button>
@@ -4812,6 +4834,37 @@ function closeRoomChat(){
   _roomChatOpen=false;
   var sc=document.getElementById('room-chat-screen'); if(sc) sc.classList.remove('show');
 }
+// tap a name/avatar anywhere in the room -> open that user's profile (self or others)
+function roomOpenProfile(uid,name){
+  if(!uid) return;
+  try{ feedOpenProfile(uid, name||myName(), (name||myName()||'?').charAt(0).toUpperCase()); }catch(e){}
+}
+// tap a grid video -> fullscreen vertical viewer (scroll up/down through the room's videos)
+function openRoomViewer(idx){
+  var posts=_roomPostsArr.filter(function(p){return !!p.mediaURL;}).slice().sort(function(a,b){return (b.at||0)-(a.at||0);});
+  if(!posts.length) return;
+  var sc=document.getElementById('room-viewer-scroll'); if(!sc) return;
+  sc.innerHTML=posts.map(function(p){
+    var nm=p.name||'', uid=p.uid||'';
+    var init=escHtml((nm||'?').charAt(0).toUpperCase());
+    var col=(typeof getUserColor==='function')?getUserColor(nm||uid||'?'):'var(--accent)';
+    var crown=(uid&&uid===_roomHostUid)?'♛ ':'';
+    var media=(p.mediaType==='video')
+      ? '<video src="'+escHtml(p.mediaURL)+'" controls playsinline loop preload="metadata"></video>'
+      : '<img src="'+escHtml(p.mediaURL)+'" alt="">';
+    return '<div class="room-viewer-slide">'+media
+      +'<div class="room-viewer-info"><span class="room-viewer-author" data-uid="'+escHtml(uid)+'" data-name="'+escHtml(nm)+'"><span class="room-viewer-av" style="background:'+col+'">'+init+'</span>'+crown+escHtml(nm)+'</span>'
+      +(p.caption?'<div class="room-viewer-cap">'+escHtml(p.caption)+'</div>':'')+'</div></div>';
+  }).join('');
+  sc.onclick=function(e){ var a=e.target.closest('.room-viewer-author'); if(a&&a.dataset.uid) roomOpenProfile(a.dataset.uid, a.dataset.name||''); };
+  document.getElementById('room-viewer').classList.add('show');
+  var slides=sc.querySelectorAll('.room-viewer-slide');
+  if(slides[idx]) setTimeout(function(){ try{ slides[idx].scrollIntoView(); }catch(e){} },20);
+}
+function closeRoomViewer(){
+  var v=document.getElementById('room-viewer'); if(v) v.classList.remove('show');
+  var sc=document.getElementById('room-viewer-scroll'); if(sc) sc.innerHTML=''; // stop videos
+}
 function roomInfoRender(){
   var el=document.getElementById('room-members'); if(!el) return;
   var html='';
@@ -5007,20 +5060,26 @@ function roomRenderAll(){
     if(!posts.length){
       vids.innerHTML='<div class="room-vids-empty"><div class="rve-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m22 8-6 4 6 4z"/></svg></div><div>'+t('roomNoVideos')+'</div></div>';
     } else {
-      vids.innerHTML=posts.map(function(p){
+      vids.innerHTML=posts.map(function(p,i){
         var nm=p.name||'', uid=p.uid||'';
         var init=escHtml((nm||'?').charAt(0).toUpperCase());
         var col=(typeof getUserColor==='function')?getUserColor(nm||uid||'?'):'var(--accent)';
         var hostTag=(uid&&uid===_roomHostUid)?' <span class="room-msg-host">'+t('roomHostTag')+'</span>':'';
+        // grid thumbnails: no controls — tapping the media opens the fullscreen viewer
         var media=(p.mediaType==='video'
-              ? '<video src="'+escHtml(p.mediaURL)+'" controls playsinline preload="metadata"></video>'
+              ? '<video src="'+escHtml(p.mediaURL)+'" muted playsinline preload="metadata"></video>'
               : '<img src="'+escHtml(p.mediaURL)+'" alt="">');
-        return '<div class="room-vid-card" data-uid="'+escHtml(uid)+'" data-name="'+escHtml(nm)+'" title="'+escHtml(p.caption||'')+'">'+media
-          +'<div class="room-vid-info"><div class="room-vid-av" style="background:'+col+'">'+init+'</div><span class="room-vid-name">'+escHtml(nm)+hostTag+'</span></div>'
+        return '<div class="room-vid-card" data-vidx="'+i+'" data-uid="'+escHtml(uid)+'" data-name="'+escHtml(nm)+'" title="'+escHtml(p.caption||'')+'">'+media
+          +'<div class="room-vid-info" data-role="author"><div class="room-vid-av" style="background:'+col+'">'+init+'</div><span class="room-vid-name">'+escHtml(nm)+hostTag+'</span></div>'
           +'</div>';
       }).join('');
     }
-    _roomTapWire(vids);
+    // tap the name/avatar -> that user's profile; tap the video -> fullscreen viewer
+    vids.onclick=function(e){
+      var card=e.target.closest('.room-vid-card'); if(!card) return;
+      if(e.target.closest('[data-role="author"]')){ roomOpenProfile(card.dataset.uid, card.dataset.name||''); return; }
+      if(card.dataset.vidx!=null) openRoomViewer(parseInt(card.dataset.vidx,10));
+    };
   }
   // ── chat lives on its own screen; render into #room-chat, newest at the bottom ──
   var chat=document.getElementById('room-chat');
