@@ -744,18 +744,22 @@ img,video{max-width:100%}
 .room-videos-col::-webkit-scrollbar{display:none}
 .room-videos{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
 /* floating chat box: a semi-transparent square hovering over the grid; X closes it */
-.room-chat-screen{position:absolute;right:10px;bottom:86px;width:76%;max-width:300px;height:46%;min-height:250px;z-index:6;display:none;flex-direction:column;background:rgba(255,255,255,.42);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(0,0,0,.09);border-radius:18px;box-shadow:0 12px 34px rgba(0,0,0,.18);overflow:hidden;animation:up .2s cubic-bezier(.4,0,.2,1)}
+.room-chat-screen{position:absolute;right:10px;bottom:86px;width:76%;max-width:300px;height:46%;min-height:190px;z-index:6;display:none;flex-direction:column;background:rgba(255,255,255,.26);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,.08);border-radius:18px;box-shadow:0 12px 34px rgba(0,0,0,.18);overflow:hidden;animation:up .2s cubic-bezier(.4,0,.2,1)}
 .room-chat-screen.show{display:flex}
-.room-chat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 10px;border-bottom:1px solid rgba(0,0,0,.06);flex-shrink:0;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+.room-chat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 10px;padding-left:34px;border-bottom:1px solid rgba(0,0,0,.06);flex-shrink:0;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
 .room-chat-screen.dragging{border-color:rgba(108,79,224,.5)}
 .room-chat-screen.dragging .room-chat-head{cursor:grabbing}
+.room-chat-screen .room-chat-input{background:rgba(255,255,255,.5)}
+.room-chat-screen .room-chat-send{background:rgba(255,255,255,.5)}
+.room-chat-resize{position:absolute;top:0;left:0;width:30px;height:30px;cursor:nwse-resize;touch-action:none;display:flex;align-items:flex-start;justify-content:flex-start;padding:6px;color:rgba(0,0,0,.35);z-index:2}
+.room-chat-resize svg{width:13px;height:13px}
 .room-chat-back{width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .room-chat-back svg{width:18px;height:18px}
 .room-chat-title{font-family:var(--font-display);font-size:16px;font-weight:800}
 .room-chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px;padding:10px 10px 12px;scrollbar-width:none}
 .room-chat-msgs::-webkit-scrollbar{display:none}
 .room-chat-inputbar{display:flex;gap:7px;align-items:center;padding:8px 9px 9px;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0}
-.rcm{align-self:flex-start;max-width:88%;background:rgba(255,255,255,.58);border:1px solid rgba(0,0,0,.06);border-radius:4px 15px 15px 15px;padding:8px 13px;font-size:14px;line-height:1.5;word-break:break-word;cursor:pointer}
+.rcm{align-self:flex-start;max-width:88%;background:rgba(255,255,255,.45);border:1px solid rgba(0,0,0,.05);border-radius:4px 15px 15px 15px;padding:8px 13px;font-size:14px;line-height:1.5;word-break:break-word;cursor:pointer}
 .rcm-sys{align-self:center;text-align:center;max-width:100%;background:var(--accent-soft);border:1px solid rgba(108,79,224,.28);color:var(--accent);font-weight:700;font-size:12px;border-radius:12px;cursor:default}
 .rcm-name{font-weight:800;display:block;font-size:11.5px;margin-bottom:2px}
 .rcm-text{color:var(--text)}
@@ -1558,14 +1562,15 @@ svg.ic-lg{width:19px;height:19px}
       <!-- docked chat panel: bottom ~45%, the video grid stays visible & scrollable above it -->
       <div class="room-chat-screen" id="room-chat-screen">
         <div class="room-chat-head">
-          <div class="room-chat-title" data-i="roomChatTitle">Room chat</div>
           <button class="room-chat-back" onclick="closeRoomChat()" aria-label="Close chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+          <div class="room-chat-title" data-i="roomChatTitle">Room chat</div>
         </div>
         <div class="room-chat-msgs" id="room-chat"></div>
         <div class="room-chat-inputbar">
           <input class="room-chat-input" id="room-chat-input" maxlength="300" autocomplete="off" onkeydown="if(event.key==='Enter')roomChatSend()">
           <button class="room-chat-send" onclick="roomChatSend()" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
         </div>
+        <div class="room-chat-resize" id="room-chat-resize" title="Resize"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 20 20 4M4 13l9 9"/></svg></div>
       </div>
 
       <!-- fullscreen vertical video viewer -->
@@ -4850,8 +4855,14 @@ function roomChatBoxDragInit(){
     var panel=document.querySelector('.room-panel'); var pr=panel?panel.getBoundingClientRect():null;
     var br=box.getBoundingClientRect();
     if(pr){
+      // vertical limits: never all the way up (stay below the header area) and
+      // never all the way down (stop above the bottom bar)
+      var topLimit=pr.top+92;
+      var bar=document.getElementById('room-bottom-bar'); var bottomLimit=pr.bottom-8;
+      if(bar){ var brr=bar.getBoundingClientRect(); if(brr.top<bottomLimit) bottomLimit=brr.top-6; }
       var baseL=br.left-ox, baseR=br.right-ox, baseT=br.top-oy, baseB=br.bottom-oy;
-      bnd={minX:(pr.left+4)-baseL, maxX:(pr.right-4)-baseR, minY:(pr.top+4)-baseT, maxY:(pr.bottom-4)-baseB};
+      bnd={minX:(pr.left+4)-baseL, maxX:(pr.right-4)-baseR, minY:topLimit-baseT, maxY:bottomLimit-baseB};
+      if(bnd.maxY<bnd.minY) bnd.maxY=bnd.minY;
     } else bnd=null;
     box.classList.add('dragging');
     try{hd.setPointerCapture(e.pointerId);}catch(err){} e.preventDefault();
@@ -4866,6 +4877,30 @@ function roomChatBoxDragInit(){
   function end(){ drag=false; box.classList.remove('dragging'); try{localStorage.setItem('fa_roomChatBoxPos',JSON.stringify({x:_rcbX,y:_rcbY}));}catch(e){} }
   hd.addEventListener('pointerup',end);
   hd.addEventListener('pointercancel',end);
+  // resize by the top-left grip (the box grows up/left since it's anchored bottom-right)
+  var rs=document.getElementById('room-chat-resize');
+  if(rs && !rs.dataset.bound){
+    rs.dataset.bound='1';
+    var rsx=0,rsy=0,ow=0,oh=0,rz=false;
+    rs.addEventListener('pointerdown',function(e){
+      rz=true; rsx=e.clientX; rsy=e.clientY; ow=box.offsetWidth; oh=box.offsetHeight;
+      box.classList.add('dragging');
+      try{rs.setPointerCapture(e.pointerId);}catch(err){} e.preventDefault(); e.stopPropagation();
+    });
+    rs.addEventListener('pointermove',function(e){
+      if(!rz) return;
+      var panel=document.querySelector('.room-panel'); var pw=panel?panel.clientWidth:390, ph=panel?panel.clientHeight:700;
+      var w=ow+(rsx-e.clientX);              // drag left = wider
+      var hgt=oh+(rsy-e.clientY);            // drag up = taller
+      w=Math.min(Math.max(w,190), Math.min(pw-24,380));
+      hgt=Math.min(Math.max(hgt,190), Math.round(ph*0.62));
+      box.style.width=w+'px'; box.style.maxWidth=w+'px';
+      box.style.height=hgt+'px'; box.style.minHeight='0';
+    });
+    function rend(){ if(!rz) return; rz=false; box.classList.remove('dragging'); try{localStorage.setItem('fa_roomChatBoxSize',JSON.stringify({w:box.offsetWidth,h:box.offsetHeight}));}catch(e){} }
+    rs.addEventListener('pointerup',rend);
+    rs.addEventListener('pointercancel',rend);
+  }
 }
 function roomChatBoxRestore(){
   var x=0,y=0;
@@ -4873,6 +4908,11 @@ function roomChatBoxRestore(){
   _rcbX=x; _rcbY=y;
   var box=document.getElementById('room-chat-screen');
   if(box) box.style.transform=(x||y)?('translate('+x+'px,'+y+'px)'):'';
+  // restore the saved size too
+  try{
+    var sz=JSON.parse(localStorage.getItem('fa_roomChatBoxSize')||'null');
+    if(box && sz && sz.w>=190 && sz.h>=190){ box.style.width=sz.w+'px'; box.style.maxWidth=sz.w+'px'; box.style.height=sz.h+'px'; box.style.minHeight='0'; }
+  }catch(e){}
 }
 // tap a name/avatar anywhere in the room -> open that user's profile (self or others)
 function roomOpenProfile(uid,name){
