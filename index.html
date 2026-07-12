@@ -1318,7 +1318,7 @@ svg.ic-lg{width:19px;height:19px}
 <div class="page" id="p-app">
 
   <div class="topbar">
-    <div class="logo" dir="ltr"><span class="logo-bolt"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></span>Side<span>Quest</span></div>
+    <div class="logo" dir="ltr" onclick="go('home',document.getElementById('nav-home'))" style="cursor:pointer"><span class="logo-bolt"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></span>Side<span>Quest</span></div>
     <div class="topbar-right">
       <button class="tb-bell" onclick="openNotifications()" aria-label="Notifications">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
@@ -1335,7 +1335,7 @@ svg.ic-lg{width:19px;height:19px}
   <div class="app-body">
 
     <!-- HOME SCREEN -->
-    <div class="screen active" id="s-home">
+    <div class="screen" id="s-home">
       <div class="hero">
         <div class="hero-label" id="greeting">Hey</div>
         <div class="hero-title" data-i="heroTitle">Ready for<br>today's missions?</div>
@@ -1528,7 +1528,7 @@ svg.ic-lg{width:19px;height:19px}
     </div>
 
     <!-- FEED SCREEN -->
-    <div class="screen" id="s-feed">
+    <div class="screen active" id="s-feed">
       <div class="feed-top-bar">
         <div class="feed-tabs">
           <div class="feed-tab active" onclick="feedSwitchMode('foryou')" data-i="forYou">For You</div>
@@ -1675,10 +1675,10 @@ svg.ic-lg{width:19px;height:19px}
   </div>
 
   <nav class="bottom-nav">
-    <div class="nav-item active" onclick="go('home',this)"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg></div><div class="nav-label" data-i="missions">Missions</div></div>
+    <div class="nav-item active" id="nav-feed" onclick="go('feed',this)"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></svg></div><div class="nav-label" data-i="feed">Feed</div></div>
     <div class="nav-item" onclick="go('lb',this)"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v3a6 6 0 0 1-12 0Z"/><path d="M6 5H3.5v2A3.5 3.5 0 0 0 6 10M18 5h2.5v2A3.5 3.5 0 0 1 18 10"/><path d="M9 14.5h6M12 10.5v4M8.5 20h7M10 17h4v3h-4z"/></svg></div><div class="nav-label" data-i="ranks">Ranks</div></div>
     <div class="nav-create" onclick="openUploadVideo()" aria-label="Create"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-    <div class="nav-item" id="nav-feed" onclick="go('feed',this)"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></svg></div><div class="nav-label" data-i="feed">Feed</div></div>
+    <div class="nav-item" id="nav-home" onclick="go('home',this)"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg></div><div class="nav-label" data-i="missions">Missions</div></div>
     <div class="nav-item" onclick="go('pf',this)"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div><div class="nav-label" data-i="profile">Profile</div></div>
   </nav>
 
@@ -2022,6 +2022,10 @@ function showPage(id){
   el.style.display='flex';
   el.classList.add('active');
   if(id==='p-lang') buildLangGrid();
+  // the feed is the app's main screen — kick off its load the moment the app opens
+  if(id==='p-app'){
+    try{ var sf=document.getElementById('s-feed'); if(sf&&sf.classList.contains('active')) feedNavTap(); }catch(e){}
+  }
 }
 
 // ══════════ LOADING ══════════
@@ -3144,7 +3148,7 @@ function feedViewPost(idx){
   body.appendChild(slot);
   feedRenderPost(post,slot);
   var vid=slot.querySelector('video');
-  if(vid) vid.play().catch(function(){});
+  if(vid){ try{vid.currentTime=0;}catch(e){} vid.play().catch(function(){}); }
   document.getElementById('fpv-overlay').classList.add('show');
   fpvInitEvents(body);
 }
@@ -3196,7 +3200,7 @@ function fpvSlide(direction){
       fpvAnimating=false;
       fpvUpdateTitle();
       var vid=newSlot.querySelector('video');
-      if(vid) vid.play().catch(function(){});
+      if(vid){ try{vid.currentTime=0;}catch(e){} vid.play().catch(function(){}); }
     },360);
   });});
 }
@@ -3263,6 +3267,7 @@ function loadLikedPosts(){
   db.ref('feed').orderByChild('timestamp').limitToLast(100).once('value').then(function(snap){
     var posts=[];
     snap.forEach(function(c){if(likedIds.has(c.key)) posts.push({id:c.key,...c.val()});});
+    posts.sort(function(a,b){return (b.timestamp||0)-(a.timestamp||0);});   // newest first
     renderLikedGrid(posts);
   }).catch(function(){
     grid.innerHTML='<div class="liked-empty">'+t('couldNotLoadPosts')+'</div>';
@@ -3576,7 +3581,7 @@ function loadSavedPosts(){
   var grid=document.getElementById('saved-grid');
   if(!grid) return;
 
-  var savedPosts=feedAllPosts.filter(p=>savedIds.has(p.id));
+  var savedPosts=feedAllPosts.filter(p=>savedIds.has(p.id)).sort(function(a,b){return (b.timestamp||0)-(a.timestamp||0);});   // newest first
   var cnt=document.getElementById('saved-header-count');
   if(cnt){cnt.style.display=savedPosts.length>0?'inline-block':'none';cnt.textContent=savedPosts.length;}
 
@@ -4035,7 +4040,7 @@ function feedSlide(direction){
       try{if(leftover)wrap.removeChild(leftover);}catch(e){}
       // Play video in new current
       var nv=preSlot.querySelector('video');
-      if(nv){nv.muted=true;nv.play().catch(function(){});}
+      if(nv){nv.muted=true;try{nv.currentTime=0;}catch(e){}nv.play().catch(function(){});}
       feedSyncMusic();   // start the newly-active post's music (photo or video)
       // Append new neighbor slot
       var neighborPost=advancing?
@@ -4104,6 +4109,7 @@ function feedAutoplayCurrent(){
   if(vid){
     vid.muted=true;
     vid.loop=true;
+    try{vid.currentTime=0;}catch(e){}
     vid.play().catch(function(){});
     feedStartWatchTimer(feedSeen[feedPos]?.id);
   }
@@ -4304,6 +4310,7 @@ function feedMountFollowing(){
   if(vid){
     vid.muted=true;
     vid.loop=true;
+    try{vid.currentTime=0;}catch(e){}
     vid.play().catch(function(){});
     feedStartWatchTimer(currPost.id);
   }
@@ -4986,7 +4993,7 @@ function openMediaViewer(posts,idx){
   _mvIO=new IntersectionObserver(function(ents){
     ents.forEach(function(en){
       var v=en.target.querySelector('video'); if(!v) return;
-      if(en.isIntersecting){ v.muted=_mvMuted; v.play().catch(function(){}); en.target.classList.remove('paused'); }
+      if(en.isIntersecting){ v.muted=_mvMuted; try{v.currentTime=0;}catch(e){} v.play().catch(function(){}); en.target.classList.remove('paused'); }
       else v.pause();
     });
   },{root:sc,threshold:[0.6]});
