@@ -1449,11 +1449,11 @@ svg.ic-lg{width:19px;height:19px}
         <div class="my-hero-bg" id="my-hero-bg"></div>
         <button class="pf-settings-btn" onclick="openSettings()" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
         <button class="pf-edit-btn" onclick="openEditProfile()" aria-label="Edit"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>
-        <div class="my-hero-ring" id="my-hero-ring" onclick="document.getElementById('pf-avatar-file').click()" style="cursor:pointer">
+        <div class="my-hero-ring" id="my-hero-ring" onclick="openAvatarSource()" style="cursor:pointer">
           <div class="my-hero-gap">
             <div class="pf-avatar" id="pf-av">S</div>
           </div>
-          <button class="pf-cam-btn" onclick="event.stopPropagation();document.getElementById('pf-avatar-file').click()" aria-label="Change photo"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+          <button class="pf-cam-btn" onclick="event.stopPropagation();openAvatarSource()" aria-label="Change photo"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
         </div>
         <input type="file" id="pf-avatar-file" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
         <div class="pf-name" id="pf-name">Player</div>
@@ -6902,12 +6902,32 @@ function putWithTimeout(ref,file,ms){
 }
 async function uploadAvatar(inp){
   const file=inp.files&&inp.files[0];
+  inp.value='';
+  return uploadAvatarFile(file);
+}
+// choose your avatar source: shoot it right now, or pick from the gallery
+function openAvatarSource(){
+  var m=document.getElementById('avatar-src-modal'); if(m){ m.classList.add('show'); try{applyTranslations();}catch(e){} }
+}
+function avatarFromGallery(){
+  var m=document.getElementById('avatar-src-modal'); if(m) m.classList.remove('show');
+  document.getElementById('pf-avatar-file').click();
+}
+function avatarFromCamera(){
+  var m=document.getElementById('avatar-src-modal'); if(m) m.classList.remove('show');
+  openCamera(function(file){
+    if(!file) return;
+    if(!file.type||!file.type.startsWith('image/')){ toast('⚠️ '+(curLang==='he'?'בחר תמונה':'Pick an image')); return; }
+    uploadAvatarFile(file);
+  });
+}
+async function uploadAvatarFile(file){
   console.log('[Avatar] selected:', file && file.name, file && file.type, file && file.size, 'storage?', !!storage, 'uid?', !!userUID);
   if(!file){ return; }
-  if(!userUID){ toast('⚠️ '+ (curLang==='he'?'התחבר תחילה':'Sign in first')); inp.value=''; return; }
-  if(!storage){ toast('⚠️ '+ (curLang==='he'?'האחסון לא זמין':'Storage unavailable')); inp.value=''; return; }
-  if(!file.type||!file.type.startsWith('image/')){ toast('⚠️ '+(curLang==='he'?'בחר תמונה':'Pick an image')); inp.value=''; return; }
-  if(file.size>5*1024*1024){ toast('⚠️ '+(curLang==='he'?'התמונה גדולה מדי (עד 5MB)':'Image too large (max 5MB)')); inp.value=''; return; }
+  if(!userUID){ toast('⚠️ '+ (curLang==='he'?'התחבר תחילה':'Sign in first')); return; }
+  if(!storage){ toast('⚠️ '+ (curLang==='he'?'האחסון לא זמין':'Storage unavailable')); return; }
+  if(!file.type||!file.type.startsWith('image/')){ toast('⚠️ '+(curLang==='he'?'בחר תמונה':'Pick an image')); return; }
+  if(file.size>5*1024*1024){ toast('⚠️ '+(curLang==='he'?'התמונה גדולה מדי (עד 5MB)':'Image too large (max 5MB)')); return; }
   toast('⏳ '+t('loading'));
   try{
     const ext=(file.type.split('/')[1]||'jpg').replace('jpeg','jpg');
@@ -6932,7 +6952,7 @@ async function uploadAvatar(inp){
     else if(code) msg+=' ('+code+')';
     toast('⚠️ '+msg);
   }
-  inp.value=''; // reset so re-selecting the same file fires onchange again
+
 }
 function saveProfile(){
   const bio=(document.getElementById('ep-bio').value||'').trim().slice(0,120);
@@ -8004,8 +8024,8 @@ window.addEventListener('beforeunload',function(){
     <div class="modal-handle"></div>
     <div class="modal-title" data-i="editProfile">✏️ Edit Profile</div>
     <div class="ep-avatar-wrap">
-      <div class="ep-avatar" id="ep-avatar" onclick="document.getElementById('ep-avatar-file').click()">S</div>
-      <button class="ep-avatar-btn" onclick="document.getElementById('ep-avatar-file').click()" data-i="changePhoto">📷 Change photo</button>
+      <div class="ep-avatar" id="ep-avatar" onclick="openAvatarSource()">S</div>
+      <button class="ep-avatar-btn" onclick="openAvatarSource()" data-i="changePhoto">📷 Change photo</button>
       <input type="file" id="ep-avatar-file" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
     </div>
     <div class="input-group"><div class="input-label" data-i="editBio">Bio</div><input class="inp" id="ep-bio" type="text" maxlength="120" placeholder="..."></div>
@@ -8179,6 +8199,18 @@ window.addEventListener('beforeunload',function(){
     <button class="pe-tab" data-tab="text" onclick="peTab('text')"><span class="pe-tab-ic"><span data-i="peText">Text</span></button>
     <button class="pe-tab" data-tab="sticker" onclick="peTab('sticker')"><span class="pe-tab-ic"><span data-i="peStickers">Stickers</span></button>
     <button class="pe-tab" data-tab="music" onclick="peTab('music')"><span class="pe-tab-ic"><span data-i="peMusic">Music</span></button>
+  </div>
+</div>
+
+<div class="overlay" id="avatar-src-modal" style="z-index:10120" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" data-i="changePhoto">Change photo</div>
+    <div class="upload-choices">
+      <button type="button" class="upload-choice uc-record" onclick="avatarFromCamera()"><span class="uc-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span data-i="recordNow">Camera</span></button>
+      <button type="button" class="upload-choice" onclick="avatarFromGallery()"><span class="uc-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21"/></svg></span><span data-i="fromGallery">Gallery</span></button>
+    </div>
+    <button class="modal-cancel" onclick="document.getElementById('avatar-src-modal').classList.remove('show')" data-i="cancel">Cancel</button>
   </div>
 </div>
 
