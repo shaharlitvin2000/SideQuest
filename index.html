@@ -4659,7 +4659,7 @@ function toggleFx(){
 function syncFxToggle(){ var el=document.getElementById('fx-toggle'); if(el) el.checked=fxEnabled(); }
 
 // ══════════ IN-APP CAMERA (TikTok-style) ══════════
-var _camStream=null,_camFacing='user',_camRec=null,_camChunks=[],_camRecording=false,_camHoldTimer=null,_camOnDone=null,_camTimerInt=null,_camStart=0,_camBound=false,_camMode='video',_camMaxDur=60,_camCountdown=0,_camGrid=false,_camCountInt=null,_camTorch=false,_camFx='',_camFxRAF=null,_camFxDrawing=false;
+var _camStream=null,_camFacing='user',_camRec=null,_camChunks=[],_camRecording=false,_camHoldTimer=null,_camOnDone=null,_camTimerInt=null,_camStart=0,_camBound=false,_camMode='video',_camMaxDur=60,_camCountdown=0,_camGrid=false,_camCountInt=null,_camTorch=false,_camFx='',_camFxRAF=null,_camFxDrawing=false,_camPhotoOnly=false;
 // Live camera effects (emoji-labelled, CSS filters applied to the live preview & baked into photos/videos)
 var CAM_FX=[
   {e:'🔆',f:''},
@@ -4687,13 +4687,15 @@ function camToggleFxBar(){
   var b=document.getElementById('cam-fx-btn'); if(b) b.classList.toggle('on',show);
 }
 function camSupported(){ return !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.isSecureContext); }
-function openCamera(onDone){
+function openCamera(onDone,opts){
   _camOnDone=onDone;
+  _camPhotoOnly=!!(opts&&opts.photoOnly);   // e.g. profile photo: stills only, no video
   if(!camSupported()){ camFallback(); return; }
   camBind();
   document.getElementById('cam-overlay').classList.add('show');
-  _camMode='video'; _camMaxDur=60; _camCountdown=0; _camGrid=false; _camFx='';
-  camSetMode('video'); camSyncControls(); camBuildFx();
+  _camMode=_camPhotoOnly?'photo':'video'; _camMaxDur=60; _camCountdown=0; _camGrid=false; _camFx='';
+  camSetMode(_camMode); camSyncControls(); camBuildFx();
+  var modes=document.querySelector('.cam-modes'); if(modes) modes.style.display=_camPhotoOnly?'none':'';
   var fxbar=document.getElementById('cam-fxbar'); if(fxbar) fxbar.style.display='none';
   var fxb=document.getElementById('cam-fx-btn'); if(fxb) fxb.classList.remove('on');
   var vid=document.getElementById('cam-video'); if(vid) vid.style.filter='none';
@@ -4728,6 +4730,7 @@ function camRunCountdown(cb){
 }
 function camDoCapture(){ if(_camMode==='photo') camPhoto(); else camStartRec(); }
 function camSetMode(m){
+  if(_camPhotoOnly) m='photo';
   if(_camRecording) return;
   _camMode=m;
   var sh=document.getElementById('cam-shutter');
@@ -6919,7 +6922,7 @@ function avatarFromCamera(){
     if(!file) return;
     if(!file.type||!file.type.startsWith('image/')){ toast('⚠️ '+(curLang==='he'?'בחר תמונה':'Pick an image')); return; }
     uploadAvatarFile(file);
-  });
+  },{photoOnly:true});
 }
 async function uploadAvatarFile(file){
   console.log('[Avatar] selected:', file && file.name, file && file.type, file && file.size, 'storage?', !!storage, 'uid?', !!userUID);
