@@ -19,7 +19,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;scrollbar-width:none;-ms-overflow-style:none}
 *::-webkit-scrollbar{display:none}
@@ -28,24 +28,26 @@ button:focus-visible,a:focus-visible,.setting-row:focus-visible,[tabindex]:focus
 input:focus-visible,textarea:focus-visible{outline:none;border-color:var(--accent)!important;box-shadow:0 0 0 3px var(--accent-soft)!important}
 :root{
   --font:'Heebo',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans Hebrew',sans-serif;
-  --font-display:'Heebo',sans-serif;
-  --bg:#FAFAFA;--bg2:#FFFFFF;--bg3:#F5F4F7;
+  --font-display:'Rubik','Heebo',sans-serif;
+  /* warmer, faintly-lilac canvas so white cards actually separate & the app feels less sterile */
+  --bg:#F1EFF6;--bg2:#FFFFFF;--bg3:#F4F2F9;
   --accent:#6C4FE0;--accent2:#8E72F5;
-  --accent-soft:#F5F3FE;--accent-glow:rgba(108,79,224,0.2);
+  --accent-soft:#F1EDFE;--accent-glow:rgba(108,79,224,0.22);
   --gold:#B5790A;--gold-ic:#E8A93B;--gold-soft:#FCF3E1;
   --green:#2FA36B;--green-soft:#EAF7F0;
   --blue:#6C4FE0;--blue-soft:#F5F3FE;
   --purple:#6C4FE0;--purple-soft:#F5F3FE;
   --ember:#FF5A36;--ember-soft:#FFEEE8;--ember-text:#D8431F;
-  --grad:linear-gradient(135deg,#FF5A36,#6C4FE0);
-  --shadow-cta:0 8px 18px -8px rgba(108,79,224,.45);
-  --text:#15131C;--muted:#6E6B78;--faint:#A8A5B0;
-  --line:#E9E7ED;
-  --border:#E9E7ED;--border2:#E9E7ED;
-  --sh0:none;
-  --sh1:none;
-  --sh2:none;
-  --r:14px;--rl:18px;--rxl:24px;
+  --grad:linear-gradient(135deg,#FF5A36 0%,#F0416A 42%,#6C4FE0 100%);
+  --shadow-cta:0 10px 22px -8px rgba(108,79,224,.55);
+  --text:#171526;--muted:#6B6880;--faint:#A6A2B6;
+  --line:#ECE9F3;
+  --border:#ECE9F3;--border2:#E4E0EE;
+  /* soft, brand-tinted elevation (replaces the flat borders-only look) */
+  --sh0:0 1px 2px rgba(38,28,78,.05);
+  --sh1:0 6px 16px -8px rgba(38,28,78,.16),0 2px 5px -3px rgba(38,28,78,.10);
+  --sh2:0 18px 42px -14px rgba(38,28,78,.24);
+  --r:14px;--rl:20px;--rxl:26px;
   /* type scale */
   --t-title:clamp(37px,10vw,50px);--t-h:18px;--t-body:15px;--t-cap:11px;
 }
@@ -611,6 +613,11 @@ img,video{max-width:100%}
 .mcard{background:var(--bg2);border:1px solid var(--line);border-radius:18px;overflow:hidden;cursor:pointer;position:relative;display:flex;flex-direction:column;transition:transform .2s,border-color .2s,box-shadow .2s;animation:cardEntry .35s cubic-bezier(.25,.8,.25,1) both;box-shadow:var(--sh1)}
 .mcard:hover{border-color:#DCD9E3}
 .mcard.cat-social,.mcard.cat-dare,.mcard.cat-explore{background:var(--bg2)}
+/* category-coloured top edge — makes each quest card feel distinct & intentional */
+.mcard::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;z-index:2;background:var(--accent)}
+.mcard.cat-social::before{background:linear-gradient(90deg,#8E72F5,#6C4FE0)}
+.mcard.cat-dare::before{background:linear-gradient(90deg,#FF8259,#FF5A36)}
+.mcard.cat-explore::before{background:linear-gradient(90deg,#3DC48A,#2FA36B)}
 .mcard:nth-child(1){grid-column:1/-1}
 .mcard:nth-child(2){animation-delay:.06s}
 .mcard:nth-child(3){animation-delay:.12s}
@@ -625,10 +632,11 @@ img,video{max-width:100%}
 .mcard-footer{display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-top:auto}
 .mcard-pts{font-size:13px;font-weight:700;color:var(--gold);font-family:var(--font);display:inline-flex;align-items:center;gap:4px}
 .mcard-pts svg{width:12px;height:12px;fill:currentColor;flex-shrink:0;color:var(--gold-ic)}
-.mcard-btn{background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-family:var(--font);font-size:11.5px;font-weight:800;cursor:pointer;transition:border-color .2s,color .2s,box-shadow .2s,transform .12s;letter-spacing:-.2px}
-.mcard-btn:hover{border-color:rgba(108,79,224,.65);color:var(--accent)}
-.mcard-btn:active{transform:scale(.95)}
-.mcard-btn.done-btn{background:transparent;color:var(--green);border:1px solid rgba(47,163,107,.25);box-shadow:none}
+/* tactile "candy" button: a solid bottom lip that collapses when pressed (game feel) */
+.mcard-btn{background:var(--accent-soft);color:var(--accent);border:none;border-radius:14px;padding:10px 20px;font-family:var(--font-display);font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 3px 0 rgba(108,79,224,.24);transition:transform .07s ease,box-shadow .07s ease;letter-spacing:0}
+.mcard-btn:active{transform:translateY(3px);box-shadow:0 0 0 rgba(108,79,224,.24)}
+.mcard-btn.done-btn{background:var(--green-soft);color:var(--green);box-shadow:0 3px 0 rgba(47,163,107,.22)}
+.mcard-btn.done-btn:active{transform:translateY(3px);box-shadow:0 0 0 rgba(47,163,107,.22)}
 .badge{font-size:10.5px;font-weight:700;letter-spacing:0;padding:4px 10px;border-radius:20px;flex-shrink:0;display:inline-flex;align-items:center;gap:4px}
 .cat-tile{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
 .cat-tile svg{width:18px;height:18px}
@@ -639,9 +647,10 @@ img,video{max-width:100%}
 .dots{display:inline-flex;gap:3px;align-items:center}
 .dots i{width:5px;height:5px;border-radius:50%;background:var(--line);display:block}
 .dots i.on{background:var(--text)}
-.pts-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:999px;font-weight:800;font-size:11px;background:var(--gold-soft);color:var(--gold);line-height:1;flex-shrink:0}
+.pts-badge{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:11px;font-weight:900;font-size:12px;font-family:var(--font-display);background:var(--gold-soft);color:var(--gold);line-height:1;flex-shrink:0;box-shadow:0 2px 0 rgba(181,121,10,.16);border:1px solid rgba(232,169,59,.35)}
 .pts-badge svg{width:12px;height:12px;fill:var(--gold-ic)}
-.mcard:nth-child(1) .mcard-btn{background:var(--grad);color:#fff;border-color:transparent;box-shadow:var(--shadow-cta);padding:10px 20px;font-size:13px}
+.mcard:nth-child(1) .mcard-btn{background:var(--grad);color:#fff;padding:11px 22px;font-size:13.5px;box-shadow:0 4px 0 #B02752,var(--shadow-cta)}
+.mcard:nth-child(1) .mcard-btn:active{transform:translateY(4px);box-shadow:0 0 0 #B02752,var(--shadow-cta)}
 .b-social{background:var(--blue-soft);color:var(--blue)}
 .b-dare{background:rgba(255,90,54,.16);color:#D8431F}
 .b-explore{background:var(--purple-soft);color:var(--purple)}
