@@ -935,6 +935,25 @@ svg.ic-lg{width:19px;height:19px}
 .upload-icon{font-size:34px;margin-bottom:9px;color:var(--accent)}
 .upload-text{font-size:15px;font-weight:700}
 .upload-sub{font-size:12px;color:var(--muted);margin-top:5px}
+/* TikTok-style upload sheet: compact, thumbnail + caption */
+.uv-modal{padding-bottom:14px}
+.uv-title{font-family:var(--font-display);font-size:17px;font-weight:800;text-align:center;margin-bottom:2px}
+.uv-sources{display:flex;gap:10px;margin-top:14px}
+.uv-source{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 8px;background:var(--bg3);border:1px solid var(--border2);border-radius:16px;color:var(--text);font-family:var(--font);font-weight:800;font-size:14px;cursor:pointer;transition:transform .12s,border-color .15s}
+.uv-source:active{transform:scale(.96)}
+.uv-source svg{width:26px;height:26px}
+.uv-source-cam{background:var(--accent-soft);border-color:rgba(108,79,224,.32);color:var(--accent)}
+.uv-compose{display:flex;gap:12px;margin-top:14px;align-items:stretch}
+.uv-thumb{position:relative;flex-shrink:0;width:96px;aspect-ratio:3/4;border-radius:14px;overflow:hidden;background:#000;border:none;padding:0;cursor:pointer}
+.uv-thumb video,.uv-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.uv-thumb-edit{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.62);color:#fff;font-size:10px;font-weight:800;padding:4px;text-align:center;letter-spacing:.3px}
+.uv-caption{flex:1;min-width:0;min-height:128px;resize:none;background:var(--bg3);border:1px solid var(--border2);border-radius:14px;padding:12px 13px;color:var(--text);font-family:var(--font);font-size:14px;line-height:1.45}
+.uv-caption:focus{outline:none;border-color:var(--accent)}
+.uv-post{margin-top:14px}
+.uv-secondary{display:flex;gap:8px;margin-top:12px}
+.uv-chip{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;color:var(--muted);font-family:var(--font);font-weight:700;font-size:12.5px;cursor:pointer;transition:transform .12s}
+.uv-chip:active{transform:scale(.97)}
+.uv-chip svg{width:16px;height:16px}
 .upload-choices{display:flex;gap:10px;margin-top:16px}
 .upload-choices.uvc{margin-top:4px;margin-bottom:14px}
 .upload-choice{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:14px;padding:14px 8px;font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer;transition:transform .12s,border-color .2s,background .2s}
@@ -7630,9 +7649,16 @@ function openUploadVideo(){
   document.getElementById('upload-video-file').value='';
   var cap=document.getElementById('uv-cap'); if(cap) cap.value='';
   document.getElementById('upload-video-caption').value='';
-  document.getElementById('upload-preview').style.display='none';
   _uploadEditedFile=null; _uploadPickedFile=null;
+  uvSetState(false);   // start on the source picker
   try{applyTranslations();}catch(e){}
+}
+// toggle the sheet between "pick a source" and "compose" (media chosen)
+function uvSetState(hasMedia){
+  var srcs=document.getElementById('uv-sources'); if(srcs) srcs.style.display=hasMedia?'none':'flex';
+  var comp=document.getElementById('uv-compose'); if(comp) comp.style.display=hasMedia?'flex':'none';
+  var post=document.getElementById('upload-video-btn'); if(post) post.style.display=hasMedia?'':'none';
+  var sd=document.getElementById('uv-savedraft'); if(sd) sd.style.display=hasMedia?'':'none';
 }
 
 var _uploadEditedFile=null, _uploadPickedFile=null;
@@ -7718,6 +7744,7 @@ function handleUploadFile(file){
     });
   }
   preview.style.display='block';
+  uvSetState(true);   // switch to the compose view (thumbnail + caption)
 }
 
 async function submitUploadVideo(){
@@ -8298,32 +8325,40 @@ window.addEventListener('beforeunload',function(){
 </div>
 
 <div class="overlay" id="upload-video-bg" onclick="if(event.target===this)document.getElementById('upload-video-bg').classList.remove('show')">
-  <div class="modal">
+  <div class="modal uv-modal">
     <div class="modal-handle"></div>
-    <div class="modal-title"><svg class="ic ic-lg" viewBox="0 0 24 24" style="vertical-align:-3px;color:var(--ember)"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l2-3h4l2 3"/><circle cx="12" cy="13.5" r="3.5"/></svg> <span data-i="uploadVideoTitle">Upload Video</span></div>
-    <div class="modal-desc" data-i="uploadVideoDesc">Share a moment from your life</div>
+    <div class="uv-title" data-i="uploadVideoTitle">Upload Video</div>
 
-    <div class="upload-choices uvc">
-      <button type="button" class="upload-choice uc-record" onclick="_camGalleryInput='upload-video-file';_camFallbackInput='uv-cap';openCamera(handleUploadFile)"><span class="uc-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span data-i="recordNow">Camera</span></button>
-      <button type="button" class="upload-choice" onclick="document.getElementById('upload-video-file').click()"><span class="uc-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21"/></svg></span><span data-i="fromGallery">Gallery</span></button>
-    </div>
     <input id="upload-video-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" style="display:none" onchange="previewUploadVideo(this)">
     <input id="uv-cap" type="file" accept="video/*,image/*" capture="environment" style="display:none" onchange="previewUploadVideo(this)">
 
-    <div class="input-group">
-      <div class="input-label" data-i="captionOptional">Caption (optional)</div>
-      <input class="inp" id="upload-video-caption" type="text" data-i="addCaption" placeholder="Add a caption..." maxlength="200">
+    <!-- STATE A: pick a source (compact) -->
+    <div class="uv-sources" id="uv-sources">
+      <button type="button" class="uv-source uv-source-cam" onclick="_camGalleryInput='upload-video-file';_camFallbackInput='uv-cap';openCamera(handleUploadFile)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span data-i="recordNow">Camera</span>
+      </button>
+      <button type="button" class="uv-source" onclick="document.getElementById('upload-video-file').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span data-i="fromGallery">Gallery</span>
+      </button>
     </div>
 
-    <div class="upload-preview" id="upload-preview" style="display:none;margin-bottom:14px;border-radius:var(--r);overflow:hidden;aspect-ratio:1;background:#000">
-      <video id="preview-vid" style="width:100%;height:100%;object-fit:cover;display:none"></video>
-      <img id="preview-img" style="width:100%;height:100%;object-fit:cover;display:none">
+    <!-- STATE B: compose (media picked) — TikTok-style thumbnail + caption -->
+    <div class="uv-compose" id="uv-compose" style="display:none">
+      <button class="uv-thumb" id="upload-preview" onclick="document.getElementById('upload-video-file').click()">
+        <video id="preview-vid" muted playsinline style="display:none"></video>
+        <img id="preview-img" style="display:none">
+        <span class="uv-thumb-edit" data-i="changePhoto">Change</span>
+      </button>
+      <textarea class="uv-caption" id="upload-video-caption" data-i="addCaption" placeholder="Add a caption..." maxlength="200"></textarea>
     </div>
 
-    <button class="modal-cta" id="upload-video-btn" onclick="submitUploadVideo()" data-i="upload">Upload</button>
-    <div class="upload-draft-row">
-      <button class="upload-draft-btn" onclick="saveDraft()"><span class="rr-ic"><span data-i="draftSave">Save draft</span></button>
-      <button class="upload-draft-btn" onclick="openDrafts()"><span class="rr-ic"><span data-i="myDrafts">Drafts</span></button>
+    <button class="modal-cta uv-post" id="upload-video-btn" onclick="submitUploadVideo()" data-i="upload" style="display:none">Post</button>
+
+    <div class="uv-secondary" id="uv-secondary">
+      <button class="uv-chip" onclick="openDrafts()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span data-i="myDrafts">Drafts</span></button>
+      <button class="uv-chip" id="uv-savedraft" onclick="saveDraft()" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg><span data-i="draftSave">Save draft</span></button>
     </div>
     <button class="modal-cancel" onclick="document.getElementById('upload-video-bg').classList.remove('show')" data-i="cancel">Cancel</button>
   </div>
