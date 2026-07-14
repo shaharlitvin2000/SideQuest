@@ -2098,7 +2098,8 @@ function applyTranslations(){
     const av=userName[0].toUpperCase();
     if(g('greeting')) g('greeting').textContent=t('greeting')+' '+userName.split(' ')[0];
     if(g('pf-name'))  g('pf-name').textContent=userName;
-    if(g('pf-av'))    g('pf-av').textContent=av;
+    // only show the initial when there's no profile photo (else it'd stamp the letter over the image)
+    if(g('pf-av') && !myAvatarURL) g('pf-av').textContent=av;
     if(g('lb-av-me'))   g('lb-av-me').textContent=av;
     if(g('lb-name-me')) g('lb-name-me').textContent=userName;
   }
