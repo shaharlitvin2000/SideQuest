@@ -38,4 +38,17 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- The in-app camera/recorder uses the web getUserMedia() API. Capacitor's own
+         BridgeWebChromeClient (default WebChromeClient, set up automatically — no
+         MainActivity changes needed) already bridges getUserMedia's VIDEO_CAPTURE/
+         AUDIO_CAPTURE resource requests to these Android runtime permissions and
+         prompts for them; without declaring them here, that request can't succeed
+         at all and the camera/mic silently fail inside the WebView. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- required="false" so Play Store still lists the app for camera-less/mic-less devices -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 </manifest>
