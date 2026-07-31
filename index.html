@@ -2707,7 +2707,6 @@ function finishLoad(){
   try{watchNotifUnread();}catch(e){}
   try{updateDailyDot();}catch(e){}
   try{maybeClaimReferral();}catch(e){}
-  try{startNightBatchVerifySchedule();}catch(e){console.error('[finishLoad] batch verify',e);}
   setTimeout(function(){try{animateStreakCountUp(streak);}catch(e){};},400);
   if(_freezeJustUsed){ _freezeJustUsed=false; setTimeout(function(){ toast('🧊 '+t('freezeUsed').replace('{n}',streak)); },1200); }
   try{ if(!maybeShowOnboarding()) maybeShowSafety(); }catch(e){}
@@ -8395,9 +8394,13 @@ async function verifyContent(missionTitle,missionDesc){
   return {ok:true,reason:'Content passed preliminary check - server will verify'};
 }
 
-// ══════════ NIGHT BATCH VERIFICATION ══════════
-// בלילה - בדוק סרטונים שלא עברו בדיקה
-// (זה יחזור להתייצב בCloud Functions בעתיד)
+// ══════════ NIGHT BATCH VERIFICATION — no longer called (see finishLoad) ══════════
+// This downloaded the ENTIRE feed on every single app load for every user (real RTDB
+// read cost, every session) and tried to verify/delete/block based on OTHER users'
+// posts — those writes always failed under the rules (owner-only), so it silently
+// did nothing for anyone but the current user's own posts. batchVerifyPosts (Cloud
+// Function, runs server-side every 24h) already does this properly. Left defined,
+// unused, in case of a one-off manual need — same pattern as cleanHatefulPosts() above.
 
 function startNightBatchVerifySchedule(){
   nightBatchVerify().catch(e=>console.error('[Batch Verify] error:',e));
@@ -8762,7 +8765,7 @@ function editMyVideoCaption(e, postId){
   nc=(''+nc).trim().slice(0,200);
   if(!nc){ toast('✏️ '+t('captionRequired')); return; }
   if(hasHarmfulContent(nc)){ toast('🛡️ '+t('contentBlocked')); return; }
-  db.ref('feed/'+postId).update({caption:nc})
+  firebase.functions().httpsCallable('editFeedCaption')({postId:postId, caption:nc})
     .then(function(){ toast('✅ '+t('saved')); loadMyVideos(); })
     .catch(function(err){ toast('⚠️ '+((err&&err.message)||'')); });
 }

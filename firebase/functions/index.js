@@ -2637,6 +2637,35 @@ exports.setRoomMission = functions.https.onCall(async (data, context) => {
   return { success: true, changed: changed };
 });
 
+exports.editFeedCaption = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const postId = String(data.postId || '').trim();
+  const caption = String(data.caption || '').trim().slice(0, 200);
+
+  if (!postId || !caption) {
+    throw new functions.https.HttpsError('invalid-argument', 'Post ID and caption required');
+  }
+  if (hasHarmfulContent(caption)) {
+    throw new functions.https.HttpsError('permission-denied', 'Caption contains prohibited content');
+  }
+
+  const postSnap = await db.ref(`feed/${postId}`).once('value');
+  const post = postSnap.val();
+  if (!post) {
+    throw new functions.https.HttpsError('not-found', 'Post not found');
+  }
+  if (post.uid !== uid) {
+    throw new functions.https.HttpsError('permission-denied', 'Not your post');
+  }
+
+  await db.ref(`feed/${postId}/caption`).set(caption);
+  return { success: true };
+});
+
 // ══════════════════════════════════════════════════════════════════
 // ADMIN PANEL
 // ══════════════════════════════════════════════════════════════════
