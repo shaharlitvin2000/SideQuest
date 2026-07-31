@@ -4803,11 +4803,7 @@ function feedInitEvents(wrap){
   }
 
   wrap.addEventListener('touchstart',function(e){onStart(e.touches[0].clientY,e.touches[0].clientX);},{passive:true});
-  // A touch that never travels this far from where it landed stays a TAP: we must not
-  // preventDefault it, because that cancels the synthesized click — and the like button
-  // listens to click. Deliberately larger than the 10px axis-lock in onMove: Chrome only
-  // starts delivering touchmove after ~8px of its own slop, so a 10px gate would leave a
-  // 2px window and a normal thumb drift (~15px) would still silently lose the like.
+  // A touch that never travels this far from where it landed stays a TAP.
   var TAP_SLOP=20;   // CSS px
   wrap.addEventListener('touchmove',function(e){
     var t=e.touches[0];
@@ -4818,7 +4814,24 @@ function feedInitEvents(wrap){
     // touch-action:none, which stops those before they can start.
     if(_fd.drag&&(Math.abs(t.clientY-_fd.sy)>TAP_SLOP||Math.abs(t.clientX-_fd.sx)>TAP_SLOP)) e.preventDefault();
   },{passive:false});
-  wrap.addEventListener('touchend',function(e){onEnd(e.changedTouches[0].clientY);},{passive:true});
+  // touchend decides tap-vs-drag itself instead of trusting the browser's synthesized click:
+  // on-device testing (real touch events via CDP, not simulation) showed Chrome stops
+  // synthesizing a click after as little as ~9px of touchmove, well inside our 20px TAP_SLOP
+  // — so "just don't preventDefault" does NOT reliably keep the click alive like the comment
+  // above used to claim. Once confirmed a tap (drift within TAP_SLOP on both axes, same test
+  // as touchmove above), we suppress whatever the browser would've done and dispatch the
+  // click ourselves from the touchstart point — that's real DOM click bubbling, so every
+  // existing click listener (like button, mute, video tap-to-pause, etc.) keeps working
+  // unmodified, it just stops depending on the browser's own undocumented slop.
+  wrap.addEventListener('touchend',function(e){
+    var t=e.changedTouches[0];
+    if(_fd.drag&&Math.abs(t.clientY-_fd.sy)<=TAP_SLOP&&Math.abs(t.clientX-_fd.sx)<=TAP_SLOP){
+      e.preventDefault();
+      var el=document.elementFromPoint(_fd.sx,_fd.sy);
+      if(el) el.click();
+    }
+    onEnd(t.clientY);
+  },{passive:false});
 
   var md=false;
   wrap.addEventListener('mousedown',function(e){md=true;onStart(e.clientY,e.clientX);e.preventDefault();});
