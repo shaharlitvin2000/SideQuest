@@ -45,7 +45,8 @@
       "shots.js",
       "flash-arena.html",
       "admin.html",
-      "admin-dashboard.html"
+      "admin-dashboard.html",
+      "*-DRAFT.html"
     ],
     "rewrites": [
       {
