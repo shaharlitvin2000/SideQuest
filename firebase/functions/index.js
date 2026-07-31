@@ -2,9 +2,35 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const rateLimit = require('express-rate-limit');
 const express = require('express');
+const crypto = require('crypto');
+const { defineSecret } = require('firebase-functions/params');
 
 admin.initializeApp();
 const db = admin.database();
+
+// ══════════════════════════════════════════════════════════════════
+// BUNNY.NET STREAM — video hosting (images stay on Firebase Storage)
+// Library ID + CDN host are public; the API key is a secret (never sent to the client).
+// Set it with:  firebase functions:secrets:set BUNNY_API_KEY
+// ══════════════════════════════════════════════════════════════════
+const bunnyApiKey = defineSecret('BUNNY_API_KEY');
+const BUNNY_LIBRARY_ID = 710175;
+const BUNNY_CDN_HOST = 'vz-a21c2c74-90a.b-cdn.net';
+
+// Delete a video from the Bunny Stream library. Returns true on success (404 = already gone).
+async function bunnyDeleteVideo(guid, apiKey) {
+  if (!guid) return false;
+  try {
+    const r = await fetch(`https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos/${guid}`, {
+      method: 'DELETE',
+      headers: { AccessKey: apiKey, Accept: 'application/json' },
+    });
+    return r.ok || r.status === 404;
+  } catch (e) {
+    console.error('[Bunny] delete error', guid, e);
+    return false;
+  }
+}
 
 // ══════════════════════════════════════════════════════════════════
 // RATE LIMITING & ABUSE DETECTION
@@ -80,7 +106,7 @@ function checkAbuseScore(uid) {
     return false;
   }
 
-  return abuse.score > 50;
+  return abuse.score > 100;   // shared hourly budget; raised from 50 so engaged users who like/comment a lot aren't falsely blocked (bots doing hundreds still trip it)
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -93,33 +119,126 @@ const MISSIONS = [
   { pts: 400, title: 'Find a place you\'ve never been to', category: 'explore' }
 ];
 
+// ══════════ CONTENT MODERATION ══════════
+// Keyword blocklist + light, conservative normalization. Goal: catch only CLEAR offensive content
+// (explicit threats, blunt slurs, explicit sexual/violent terms) while never blocking innocent words.
+// Matching is anchored to word boundaries (with Hebrew/Arabic affixes) so a keyword sitting inside a
+// longer innocent word does not trigger (e.g. Arabic "قتل" inside another word, English "meth" in
+// "something"). Borderline cases are intentionally let through — the manual report flow covers them.
+// ⚠️ KEEP THIS WHOLE MODERATION BLOCK IDENTICAL in index.html and firebase/functions/index.js —
+//    there is no shared module between the single-file client and the Cloud Functions. Edit both.
+// TODO(ai-moderation): for the uncertain middle band (looks suspicious but no keyword hit), add an
+//    AI moderation pass (Perspective API / OpenAI Moderation) called ONLY on that ambiguous slice so
+//    cost stays near-zero. This free keyword gate stays as the fast first layer.
 const HARMFUL_KEYWORDS = {
-  hateful: ['nazi', 'nazism', 'swastika', 'heil', 'hitler', 'fuhrer', 'auschwitz', 'kkk', 'whitepride', 'whitesupremacy', 'genocide', 'antisemit', 'racist', 'racism', 'hate', 'extremist'],
-  danger: ['gore', 'bloodbath', 'murder', 'massacre', 'beheading', 'torture', 'violence', 'bomb', 'kill', 'knife', 'gun', 'shoot'],
-  sexual: ['porn', 'nude', 'nudity', 'nsfw', 'onlyfans', 'xxx', 'rape', 'molestation', 'sexual'],
-  selfharm: ['selfharm', 'suicide', 'suicid', 'selfinjury', 'cutting'],
-  drugs: ['cocaine', 'heroin', 'meth', 'fentanyl', 'weed', 'marijuana']
+  hateful: [
+    'nazi','nazism','swastika','heil','hitler','fuhrer','auschwitz','kkk','whitepride','whitesupremacy','goebbels','himmler',
+    'נאצי','נאציזם','היטלר','גזען','גזענות',
+    'מוות לערבים','מוות ליהודים',
+    'نازي','هتلر','عنصري','عنصرية','ابادة',
+    'الموت للعرب','الموت لليهود'
+  ],
+  danger: [
+    'murder','massacre','beheading','torture','bloodbath','manslaughter',
+    'רצח','לרצוח','רוצח','לשחוט','שחיטה','דקירה','פיגוע','מחבל','לחסל',
+    'قتل','اقتل','ذبح','تفجير','مفجر','طعن','ارهاب','ارهابي'
+  ],
+  dangerousActs: [
+    'trainsurfing','subwaysurf','carsurf','cliffjump','balconyjump','chokinggame','blackoutchallenge','firechallenge','tidepod','drinkbleach','skullbreaker','benadrylchallenge',
+    'אתגר חנק','מסילת רכבת','לשתות אקונומיקה',
+    'تحدي الاختناق'
+  ],
+  sexual: [
+    'porn','porno','nude','nudity','nsfw','onlyfans','xxx','rape','molestation','childporn','pedophile','pedophilia',
+    'פורנו','עירום','אונס','לאנוס','זונה','שרמוטה','זיון','לזיין','זנות','פדופיל','פדופיליה',
+    'اباحي','بورنو','اغتصاب','اغتصب','مغتصب','عاهرة','شرموطة','قحبة','دعارة','تحرش','بيدوفيل'
+  ],
+  selfharm: [
+    'selfharm','suicide','selfinjury',
+    'התאבדות','להתאבד','אובדנות','אובדני',
+    'انتحار','ينتحر'
+  ],
+  drugs: [
+    'cocaine','heroin','methamphetamine','fentanyl',
+    'קוקאין','הרואין',
+    'كوكايين','هيروين'
+  ],
+  harassment: [
+    'killyourself','kys',
+    'תמות','שתמות','לך תמות','אני אהרוג אותך',
+    'ساقتلك','سادمرك'
+  ]
 };
-
-function hasHarmfulContent(text) {
-  if (!text) return false;
-  const normalized = text.toLowerCase()
+// Long, unambiguous terms no innocent word contains — safe to match even in the fully "squeezed"
+// text (all separators removed), which is what defeats spaced-out evasion like  n a z i .
+const EVASION_PRONE = [
+  'nazi','hitler','auschwitz','whitesupremacy','whitepride','blackoutchallenge','benadrylchallenge','skullbreaker','molestation','onlyfans','childporn','pedophile','pedophilia','fentanyl','methamphetamine','crystalmeth','killyourself',
+  'נאצי','היטלר','התאבדות','פדופיליה','פדופיל','גזענות',
+  'نازي','هتلر','اغتصاب','انتحار','عنصرية','ارهابي','بيدوفيل'
+];
+// Innocent tokens to never flag (safety net; token matching already clears these). Extend if needed.
+const MOD_ALLOWLIST = new Set(['grape','therapist','methodology','skill','skilled','assassinate','shiitake','scunthorpe']);
+const _MOD_SEP = /[^a-z\p{Script=Hebrew}\p{Script=Arabic}]+/gu;
+const _MOD_STRIP = /[^a-z\p{Script=Hebrew}\p{Script=Arabic}]/gu;
+// Light normalization: lowercase, drop hidden/bidi chars, strip diacritics (Latin+Hebrew+Arabic),
+// unify Arabic letter shapes and Hebrew final letters, undo digit-leetspeak, collapse 3+ repeats.
+function _modNorm(text) {
+  if (!text) return '';
+  return String(text)
+    .toLowerCase()
+    .replace(/\p{Cf}/gu, '')
     .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\p{M}ـ]/gu, '')
+    .replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه')
+    .replace(/ך/g, 'כ').replace(/ם/g, 'מ').replace(/ן/g, 'נ').replace(/ף/g, 'פ').replace(/ץ/g, 'צ')
     .replace(/[0-9]/g, m => ({ 0: 'o', 1: 'i', 3: 'e', 4: 'a', 5: 's', 7: 't', 8: 'b' }[m] || m))
-    .replace(/[^a-zא-ת]/g, '');
-
+    .replace(/(.)\1{2,}/g, '$1');
+}
+// keyword normalized to letters only (single word) or letters+single spaces (phrase)
+function _modKw(kw) { return _modNorm(kw).replace(_MOD_SEP, ' ').trim(); }
+// Does one token equal the keyword once known Hebrew/Arabic/English affixes are allowed?
+function _modAffixHit(token, kw) {
+  if (token.indexOf(kw) < 0) return false;
+  let pfx, sfx;
+  if (/\p{Script=Hebrew}/u.test(kw)) {
+    pfx = ['', 'ו', 'ה', 'ב', 'כ', 'ל', 'מ', 'ש', 'וה', 'שה', 'לה', 'מה', 'וב', 'ול', 'כש', 'לכ'];
+    sfx = ['', 'ים', 'ות', 'ה', 'י', 'נו', 'תי', 'תם', 'כם', 'יה', 'ם', 'נ'];
+  } else if (/\p{Script=Arabic}/u.test(kw)) {
+    pfx = ['', 'ال', 'لل', 'بال', 'كال', 'وال', 'فال', 'و', 'ف', 'ب', 'ك', 'ل', 'س'];
+    sfx = ['', 'ون', 'ين', 'ه', 'ها', 'هم', 'هن', 'وا', 'ي', 'نا', 'كم', 'ات', 'هما'];
+  } else {
+    pfx = [''];
+    sfx = ['', 's', 'es', 'ed', 'ing', 'er', 'ers'];
+  }
+  for (let i = 0; i < pfx.length; i++) for (let j = 0; j < sfx.length; j++) {
+    if (token === pfx[i] + kw + sfx[j]) return true;
+  }
+  return false;
+}
+function hasHarmfulContent(text) {
+  const base = _modNorm(text);
+  if (!base) return false;
+  const squeezed = base.replace(_MOD_STRIP, '');
+  if (!squeezed) return false;
+  const spaced = ' ' + base.replace(_MOD_SEP, ' ').trim() + ' ';
+  const tokens = spaced.split(' ');
   for (const category in HARMFUL_KEYWORDS) {
-    for (const keyword of HARMFUL_KEYWORDS[category]) {
-      const normKw = keyword.toLowerCase()
-        .normalize('NFKD')
-        .replace(/[̀-ͯ]/g, '')
-        .replace(/[^a-zא-ת]/g, '');
-
-      if (normalized.includes(normKw)) {
-        return true;
+    for (const raw of HARMFUL_KEYWORDS[category]) {
+      const kw = _modKw(raw);
+      if (!kw) continue;
+      if (kw.indexOf(' ') >= 0) {
+        if (spaced.indexOf(kw) >= 0) return true;
+      } else {
+        for (let t = 0; t < tokens.length; t++) {
+          const tok = tokens[t];
+          if (tok && !MOD_ALLOWLIST.has(tok) && _modAffixHit(tok, kw)) return true;
+        }
       }
     }
+  }
+  for (let e = 0; e < EVASION_PRONE.length; e++) {
+    const ek = _modKw(EVASION_PRONE[e]).replace(/ /g, '');
+    if (ek && squeezed.indexOf(ek) >= 0) return true;
   }
   return false;
 }
@@ -135,39 +254,11 @@ function validateEmailVerified(context) {
 }
 
 function getIsraelDate() {
-  const now = new Date();
-
-  // Calculate Israel DST (proper version)
-  // Spring forward: Last Sunday of March at 2:00 AM (UTC+2 → UTC+3)
-  // Fall back: Last Sunday of October at 2:00 AM (UTC+3 → UTC+2)
-  const year = now.getUTCFullYear();
-  const month = now.getUTCMonth() + 1;
-  const date = now.getUTCDate();
-  const hours = now.getUTCHours();
-
-  // Find last Sunday of March and October
-  const getLastSundayOfMonth = (y, m) => {
-    const d = new Date(Date.UTC(y, m - 1, 1));
-    d.setUTCDate(0); // Last day of previous month
-    while (d.getUTCDay() !== 0) { d.setUTCDate(d.getUTCDate() - 1); }
-    return { date: d.getUTCDate(), month: d.getUTCMonth() + 1, day: 0 };
-  };
-
-  const lastSundayMarch = getLastSundayOfMonth(year, 3);
-  const lastSundayOctober = getLastSundayOfMonth(year, 10);
-
-  let isDST = false;
-  if (month > 3 && month < 10) {
-    isDST = true;
-  } else if (month === 3 && date > lastSundayMarch.date) {
-    isDST = true;
-  } else if (month === 10 && date < lastSundayOctober.date) {
-    isDST = true;
-  }
-
-  const offset = isDST ? 3 : 2;
-  const il = new Date(now.getTime() + offset * 3600000);
-  return il.toISOString().slice(0, 10);
+  // Intl with the IANA zone is DST-exact (Node 20 ships full ICU) — no manual offset math.
+  // en-CA formats as YYYY-MM-DD, matching the client's ilDayStr().
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date());
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -908,21 +999,43 @@ exports.redeemPoints = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('not-found', 'User not found');
   }
 
-  // Create redemption record after successful deduction
-  const redemptionRef = db.ref('redemptions').push();
-  await redemptionRef.set({
-    byUid: uid,
-    redeemId: redeemId,
-    rewardType: option.reward_type,
-    value: option.value,
-    code: code,
-    status: 'pending',
-    createdAt: admin.database.ServerValue.TIMESTAMP
-  });
-
-  // Keep public leaderboard in sync
+  // The points ARE deducted now (the transaction committed). From here, ANY failure must refund them —
+  // otherwise the user pays real-money-worth of points for nothing.
   const newPts = txn.snapshot.val().pts || 0;
-  await db.ref(`leaderboard/${uid}/pts`).set(newPts);
+
+  // Create the redemption record. If this write fails, roll the deduction back and tell the user
+  // clearly that they were NOT charged.
+  const redemptionRef = db.ref('redemptions').push();
+  try {
+    await redemptionRef.set({
+      byUid: uid,
+      redeemId: redeemId,
+      rewardType: option.reward_type,
+      value: option.value,
+      code: code,
+      status: 'pending',
+      createdAt: admin.database.ServerValue.TIMESTAMP
+    });
+  } catch (recErr) {
+    console.error(`[Redeem] record write failed for ${uid} (${redeemId}) — refunding ${option.pts} pts`, recErr);
+    let restored = newPts + option.pts;
+    try {
+      const rf = await db.ref(`users/${uid}`).transaction(u => { if (u) u.pts = (u.pts || 0) + option.pts; return u; });
+      if (rf.committed && rf.snapshot.exists()) restored = rf.snapshot.val().pts || restored;
+    } catch (e) {
+      console.error(`[Redeem] REFUND FAILED for ${uid} — ${option.pts} pts owed, needs manual fix`, e);
+    }
+    await db.ref(`leaderboard/${uid}/pts`).set(restored).catch(() => {});
+    await redemptionRef.remove().catch(() => {});   // clear any partial write
+    // 'aborted' (not 'unavailable'/'internal') so the client's isFnUnavailable() Blaze-check doesn't
+    // hijack it — the client maps this code to a clear "you were not charged" message.
+    throw new functions.https.HttpsError('aborted', 'Redemption failed — your points were NOT charged. Please try again.');
+  }
+
+  // Record created → the redemption is real. Sync the leaderboard best-effort: a stale value here is
+  // only cosmetic and must NOT fail a redemption that already succeeded (that would wrongly error the
+  // user for a reward they DID get).
+  await db.ref(`leaderboard/${uid}/pts`).set(newPts).catch(() => {});
 
   console.log(`[Redeem] ${uid} redeemed ${redeemId} for ${option.pts} pts - Code: ${code}`);
 
@@ -978,6 +1091,23 @@ async function writeNotification(targetUid, type, fromUid, fromUsername, extra) 
     }, extra || {}));
   } catch (e) { console.error('[writeNotification]', e); }
 }
+
+// Keep each user's inbox bounded: on every new notification, trim to the 100 newest.
+// Central cap so notifications never grow unbounded (cost + endless list), regardless of source.
+const MAX_NOTIFICATIONS = 100;
+exports.trimNotifications = functions.database
+  .ref('/notifications/{uid}/{nid}')
+  .onCreate(async (snap, context) => {
+    const uid = context.params.uid;
+    const ref = db.ref(`notifications/${uid}`);
+    const all = await ref.orderByChild('createdAt').once('value');
+    const keys = [];
+    all.forEach(c => { keys.push(c.key); });
+    if (keys.length <= MAX_NOTIFICATIONS) return null;
+    const updates = {};
+    keys.slice(0, keys.length - MAX_NOTIFICATIONS).forEach(k => { updates[k] = null; });
+    return ref.update(updates).catch(e => console.error('[trimNotifications]', e));
+  });
 
 // ══════════════════════════════════════════════════════════════════
 // SEND PUSH NOTIFICATION
@@ -1092,8 +1222,9 @@ exports.unsavePost = functions.https.onCall(async (data, context) => {
 // ══════════════════════════════════════════════════════════════════
 
 exports.likePost = functions.https.onCall(async (data, context) => {
-  validateEmailVerified(context);
-
+  // Email verification intentionally NOT required (consistent with completeMission) —
+  // otherwise non-verified users couldn't like. Inflation is prevented by the userLikes
+  // dedup below + the RTDB rules (feed likes/views are write:false for clients).
   const uid = context.auth?.uid;
   const postId = data.postId;
 
@@ -1173,6 +1304,23 @@ exports.unlikePost = functions.https.onCall(async (data, context) => {
   await userLikeRef.remove();
   await db.ref(`feed/${postId}/likes`).transaction(cur => Math.max(0, (cur || 1) - 1));
 
+  // Remove the "liked your video" notification so unlike (and like→unlike→like) doesn't leave
+  // stale/spammy entries. Best-effort: find the post author's like-notif from this user for this post.
+  try {
+    const authorSnap = await db.ref(`feed/${postId}/uid`).once('value');
+    const authorUid = authorSnap.val();
+    if (authorUid && authorUid !== uid) {
+      const notifsSnap = await db.ref(`notifications/${authorUid}`)
+        .orderByChild('byUid').equalTo(uid).once('value');
+      const updates = {};
+      notifsSnap.forEach(c => {
+        const n = c.val();
+        if (n && n.type === 'like' && n.postId === postId) updates[c.key] = null;
+      });
+      if (Object.keys(updates).length) await db.ref(`notifications/${authorUid}`).update(updates);
+    }
+  } catch (e) { console.error('[unlikePost notif cleanup]', e); }
+
   return { success: true };
 });
 
@@ -1181,12 +1329,10 @@ exports.unlikePost = functions.https.onCall(async (data, context) => {
 // ══════════════════════════════════════════════════════════════════
 
 exports.submitComment = functions.https.onCall(async (data, context) => {
-  validateEmailVerified(context);
-
   const uid = context.auth?.uid;
   const postId = data.postId;
   const text = (data.text || '').trim();
-  const parentCommentId = data.parentCommentId || null;  // For replies
+  const parentId = data.parentId || null;  // For replies (client schema)
 
   if (!uid) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
@@ -1235,40 +1381,24 @@ exports.submitComment = functions.https.onCall(async (data, context) => {
   const commentRef = db.ref(`comments/${postId}`).push();
   const commentId = commentRef.key;
 
+  // Client schema: the app renders/orders comments by `at` and links replies by `parentId`.
   const commentData = {
     uid: uid,
     username: userData.username || 'Player',
     text: text,
-    createdAt: admin.database.ServerValue.TIMESTAMP,
-    replyCount: 0,
-    likeCount: 0,
-    parentCommentId: parentCommentId,  // null = top-level, else = reply to parentCommentId
-    status: 'approved',  // 'pending' = awaiting moderation, 'approved' = visible, 'rejected' = hidden
-    approvedAt: admin.database.ServerValue.TIMESTAMP
+    at: admin.database.ServerValue.TIMESTAMP
   };
+  if (parentId) commentData.parentId = parentId;
 
   await commentRef.set(commentData);
 
-  // If this is a reply, increment parent's replyCount
-  if (parentCommentId) {
-    await db.ref(`comments/${postId}/${parentCommentId}/replyCount`)
-      .transaction(cur => (cur || 0) + 1);
-
-    // Notify parent comment author of reply
-    const parentSnap = await db.ref(`comments/${postId}/${parentCommentId}`).once('value');
+  // If this is a reply, notify the parent comment's author
+  if (parentId) {
+    const parentSnap = await db.ref(`comments/${postId}/${parentId}`).once('value');
     const parentData = parentSnap.val();
     if (parentData && parentData.uid && parentData.uid !== uid) {
-      const now = admin.database.ServerValue.TIMESTAMP;
-      await db.ref(`notifications/${parentData.uid}/${Date.now()}`).set({
-        type: 'comment_reply',
-        byUid: uid,
-        byUsername: userData.username || 'Player',
-        inPost: postId,
-        inComment: commentId,
-        createdAt: now,
-        read: false
-      });
-      await writeNotification(parentData.uid, 'comment_reply', uid, userData.username, { inPost: postId });
+      // Single inbox entry (was duplicated before). inPost/inComment let the client deep-link.
+      await writeNotification(parentData.uid, 'comment_reply', uid, userData.username, { inPost: postId, inComment: commentId });
       await sendPushNotification(
         parentData.uid,
         '💬 ' + (userData.username || 'Someone') + ' replied to you',
@@ -1390,11 +1520,14 @@ exports.updatePostMedia = functions.https.onCall(async (data, context) => {
 // BATCH VERIFY POSTS - SCHEDULED NIGHTLY
 // ══════════════════════════════════════════════════════════════════
 
-exports.batchVerifyPosts = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
+exports.batchVerifyPosts = functions
+  .runWith({ secrets: [bunnyApiKey] })
+  .pubsub.schedule('every 24 hours').onRun(async (context) => {
   const snap = await db.ref('feed').once('value');
   let verified = 0, rejected = 0;
 
   const updates = {};
+  const bunnyGuids = [];
 
   snap.forEach(child => {
     const post = child.val();
@@ -1403,6 +1536,7 @@ exports.batchVerifyPosts = functions.pubsub.schedule('every 24 hours').onRun(asy
     const checkText = (post.caption || '') + (post.username || '') + (post.missionTitle || '');
     if (hasHarmfulContent(checkText)) {
       updates[`feed/${child.key}`] = null;
+      if (post.bunnyGuid) bunnyGuids.push(post.bunnyGuid);
       rejected++;
 
       const uid = post.uid;
@@ -1420,9 +1554,14 @@ exports.batchVerifyPosts = functions.pubsub.schedule('every 24 hours').onRun(asy
 
   if (Object.keys(updates).length > 0) {
     await db.ref().update(updates);
+    // free the deleted posts' bunny videos too (best-effort — never block the batch)
+    if (bunnyGuids.length) {
+      const key = bunnyApiKey.value();
+      await Promise.allSettled(bunnyGuids.map(g => bunnyDeleteVideo(g, key)));
+    }
   }
 
-  console.log(`[Batch Verify] Verified: ${verified}, Rejected: ${rejected}`);
+  console.log(`[Batch Verify] Verified: ${verified}, Rejected: ${rejected}, Bunny cleaned: ${bunnyGuids.length}`);
   return { verified, rejected };
 });
 
@@ -1430,26 +1569,35 @@ exports.batchVerifyPosts = functions.pubsub.schedule('every 24 hours').onRun(asy
 // CLEANUP OLD POSTS - SCHEDULED WEEKLY
 // ══════════════════════════════════════════════════════════════════
 
-exports.cleanupOldPosts = functions.pubsub.schedule('0 3 * * 0').timeZone('Asia/Jerusalem').onRun(async (context) => {
+exports.cleanupOldPosts = functions
+  .runWith({ secrets: [bunnyApiKey] })
+  .pubsub.schedule('0 3 * * 0').timeZone('Asia/Jerusalem').onRun(async (context) => {
   const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
   const snap = await db.ref('feed').once('value');
 
   const updates = {};
+  const bunnyGuids = [];
   let deleted = 0;
 
   snap.forEach(child => {
     const post = child.val();
     if (post && post.timestamp && post.timestamp < thirtyDaysAgo) {
       updates[`feed/${child.key}`] = null;
+      if (post.bunnyGuid) bunnyGuids.push(post.bunnyGuid);
       deleted++;
     }
   });
 
   if (Object.keys(updates).length > 0) {
     await db.ref().update(updates);
+    // free the deleted posts' bunny videos too (best-effort — never block the cleanup)
+    if (bunnyGuids.length) {
+      const key = bunnyApiKey.value();
+      await Promise.allSettled(bunnyGuids.map(g => bunnyDeleteVideo(g, key)));
+    }
   }
 
-  console.log(`[Cleanup] Deleted ${deleted} old posts`);
+  console.log(`[Cleanup] Deleted ${deleted} old posts, Bunny cleaned: ${bunnyGuids.length}`);
   return { deleted };
 });
 
@@ -1519,15 +1667,15 @@ exports.processMentionsInComment = functions.database
       userSnap.forEach(child => {
         const mentionedUid = child.key;
 
-        // Create notification for mentioned user
-        const now = admin.database.ServerValue.TIMESTAMP;
-        updates[`notifications/${mentionedUid}/${Date.now()}`] = {
+        // Create notification for mentioned user (push-ID key, not Date.now(), to avoid collisions)
+        const nkey = db.ref(`notifications/${mentionedUid}`).push().key;
+        updates[`notifications/${mentionedUid}/${nkey}`] = {
           type: 'mentioned',
           byUid: comment.uid,
           byUsername: comment.username || 'Player',
           inPost: postId,
           inComment: commentId,
-          createdAt: now,
+          createdAt: admin.database.ServerValue.TIMESTAMP,
           read: false
         };
       });
@@ -1957,14 +2105,15 @@ exports.searchHashtags = functions.https.onCall(async (data, context) => {
 // COMPRESS UPLOADED VIDEOS - Storage Trigger
 // ══════════════════════════════════════════════════════════════════
 
-const ffmpeg = require('fluent-ffmpeg');
-const path = require('path');
-const os = require('os');
-const fs = require('fs');
-
 exports.compressUploadedVideo = functions.storage
   .object()
   .onFinalize(async (object) => {
+    // Lazy-loaded here (not at module top level) so the heavy fluent-ffmpeg dependency
+    // only costs cold-start time for THIS trigger, not every other function in this file.
+    const ffmpeg = require('fluent-ffmpeg');
+    const path = require('path');
+    const os = require('os');
+    const fs = require('fs');
     const bucket = admin.storage().bucket();
     const filePath = object.name;
 
@@ -2245,15 +2394,23 @@ exports.sendMessage = functions.https.onCall(async (data, context) => {
 
   const toUid = String(data.toUid || '');
   const text = String(data.text || '').trim().slice(0, 500);
+  const img = String(data.img || '').trim();
+  const isImg = !text && !!img;   // image message (no text) — routed here so direct writes can be locked
 
   if (!toUid || toUid === uid) {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid recipient');
   }
-  if (!text) {
-    throw new functions.https.HttpsError('invalid-argument', 'Message is empty');
-  }
-  if (hasHarmfulContent(text)) {
-    throw new functions.https.HttpsError('invalid-argument', 'Message contains inappropriate content');
+  if (isImg) {
+    if (img.length >= 600) {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid image');
+    }
+  } else {
+    if (!text) {
+      throw new functions.https.HttpsError('invalid-argument', 'Message is empty');
+    }
+    if (hasHarmfulContent(text)) {
+      throw new functions.https.HttpsError('invalid-argument', 'Message contains inappropriate content');
+    }
   }
 
   // Recipient must exist and must not have blocked the sender
@@ -2276,17 +2433,19 @@ exports.sendMessage = functions.https.onCall(async (data, context) => {
   const chatId = chatIdFor(uid, toUid);
   const msgRef = db.ref(`chats/${chatId}/messages`).push();
   const now = Date.now();
+  const msg = isImg ? { from: uid, img: img, at: now } : { from: uid, text: text, at: now };
+  const preview = isImg ? '📷' : text;
 
   const updates = {};
   updates[`chats/${chatId}/members/${uid}`] = true;
   updates[`chats/${chatId}/members/${toUid}`] = true;
-  updates[`chats/${chatId}/messages/${msgRef.key}`] = { from: uid, text: text, at: now };
+  updates[`chats/${chatId}/messages/${msgRef.key}`] = msg;
   updates[`chatMeta/${uid}/${chatId}`] = {
-    peerUid: toUid, peerName: targetSnap.val(), lastText: text, lastAt: now, unread: 0
+    peerUid: toUid, peerName: targetSnap.val(), lastText: preview, lastAt: now, unread: 0
   };
   updates[`chatMeta/${toUid}/${chatId}/peerUid`] = uid;
   updates[`chatMeta/${toUid}/${chatId}/peerName`] = sender.username || 'Player';
-  updates[`chatMeta/${toUid}/${chatId}/lastText`] = text;
+  updates[`chatMeta/${toUid}/${chatId}/lastText`] = preview;
   updates[`chatMeta/${toUid}/${chatId}/lastAt`] = now;
   updates[`chatMeta/${toUid}/${chatId}/unread`] = admin.database.ServerValue.increment(1);
 
@@ -2489,9 +2648,30 @@ exports.updateBio = functions.https.onCall(async (data, context) => {
 
 // Server-side ad reward: +50 pts, max 10/day (Israel time), keeps leaderboard in sync
 // ══════════════════════════════════════════════════════════════════
-// DAILY LOGIN REWARD — 7-day escalating cycle, resets if a day is missed.
+// DAILY LOGIN REWARD — streak with milestones.
+// The streak keeps counting past 7 days; it only resets (cleanly, to 1) when a
+// full day is missed. Days 1..30 come from the table below; from day 31 on it's
+// a flat daily cap, with a milestone every 30th day.
+// Milestone days: 7 (week), 14, 21, and every 30th day.
 // ══════════════════════════════════════════════════════════════════
-const DAILY_REWARDS = [20, 30, 40, 50, 60, 80, 150]; // day 1..7 of the cycle
+const DAILY_REWARDS = [
+  20, 25, 30, 35, 45, 55, 150,        // 1..7    — day 7 = one week
+  60, 65, 70, 72, 74, 76, 200,        // 8..14   — day 14 = two weeks
+  78, 80, 82, 84, 86, 88, 250,        // 15..21  — day 21 = three weeks
+  90, 91, 92, 94, 95, 96, 97, 98, 300 // 22..30  — day 30 = one month
+];
+const DAILY_CAP = 100;                // flat reward per day from day 31 on
+const DAILY_MILESTONE_REWARD = 300;   // every 30th day after that (60, 90, ...)
+
+function dailyRewardFor(day) {
+  if (day <= 0) return DAILY_REWARDS[0];
+  if (day <= DAILY_REWARDS.length) return DAILY_REWARDS[day - 1];
+  return (day % 30 === 0) ? DAILY_MILESTONE_REWARD : DAILY_CAP;
+}
+// The milestone day number (7/14/21/30/60/...), or 0 when this day isn't one.
+function dailyMilestoneFor(day) {
+  return (day === 7 || day === 14 || day === 21 || (day > 0 && day % 30 === 0)) ? day : 0;
+}
 
 exports.claimDailyReward = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
@@ -2505,21 +2685,27 @@ exports.claimDailyReward = functions.https.onCall(async (data, context) => {
   const yDate = new Date(Date.UTC(yParts[0], yParts[1] - 1, yParts[2]) - 86400000);
   const yStr = yDate.toISOString().slice(0, 10);
 
-  let reward = 0, dayInCycle = 1, abort = null;
+  let reward = 0, day = 1, milestone = 0, abort = null;
   const result = await db.ref(`users/${uid}`).transaction(u => {
     if (u === null) return u; // retry with real data
     abort = null;
     if (u.lastDailyClaim === today) { abort = 'CLAIMED'; return; }
-    // Consecutive day? (claimed yesterday) → continue the cycle, else restart at day 1
+    // Consecutive day? (claimed yesterday) → the streak keeps growing, with no 7-day
+    // wrap-around. Missed a full day → a clean reset to 1, no credit carried over.
+    // NOTE: dailyClaimStreak already meant "consecutive claim days" before this change,
+    // so existing streaks carry over untouched — only the streak→reward mapping moved.
     const claimStreak = (u.lastDailyClaim && u.lastDailyClaim === yStr)
       ? (u.dailyClaimStreak || 0) + 1
       : 1;
-    dayInCycle = ((claimStreak - 1) % 7) + 1;
-    reward = DAILY_REWARDS[dayInCycle - 1];
+    day = claimStreak;
+    reward = dailyRewardFor(day);
+    milestone = dailyMilestoneFor(day);
     u.pts = (u.pts || 0) + reward;
     u.seasonPts = (u.seasonPts || 0) + reward;
     u.lastDailyClaim = today;
     u.dailyClaimStreak = claimStreak;
+    // Personal best, kept separately so breaking a streak never erases the record.
+    u.longestDailyStreak = Math.max(u.longestDailyStreak || 0, claimStreak);
     return u;
   });
 
@@ -2533,7 +2719,24 @@ exports.claimDailyReward = functions.https.onCall(async (data, context) => {
   const u = result.snapshot.val();
   await db.ref(`leaderboard/${uid}`).update({ pts: u.pts || 0, seasonPts: u.seasonPts || 0 });
 
-  return { success: true, reward: reward, dayInCycle: dayInCycle, streak: u.dailyClaimStreak || 1, newPoints: u.pts || 0 };
+  // A milestone is a real event, so it gets a real inbox entry. The "streak in danger"
+  // reminder is deliberately NOT stored — the client renders it from today's state, so it
+  // self-clears on claim and never eats into MAX_NOTIFICATIONS.
+  // TODO(push): send a real push for the daily reward once the native layer ships.
+  if (milestone) {
+    await writeNotification(uid, 'streak_milestone', null, null, { day: milestone });
+  }
+
+  return {
+    success: true,
+    reward: reward,
+    day: day,
+    streak: u.dailyClaimStreak || 1,
+    longest: u.longestDailyStreak || day,
+    milestone: milestone,
+    dayInCycle: ((day - 1) % 7) + 1, // legacy field — older cached clients still read it
+    newPoints: u.pts || 0
+  };
 });
 
 // ══════════════════════════════════════════════════════════════════
@@ -2698,7 +2901,143 @@ exports.updateLanguage = functions.https.onCall(async (data, context) => {
   return { success: true };
 });
 
-exports.deleteAccount = functions.https.onCall(async (data, context) => {
+// ══════════════════════════════════════════════════════════════════
+// BUNNY VIDEO — create a video object + presigned TUS signature so the client
+// can upload the file DIRECTLY to Bunny without ever seeing the API key.
+// ══════════════════════════════════════════════════════════════════
+exports.createBunnyVideo = functions
+  .runWith({ secrets: [bunnyApiKey] })
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+    }
+    const apiKey = bunnyApiKey.value();
+    const title = (typeof data?.title === 'string' && data.title.trim() ? data.title.trim() : 'SideQuest video').slice(0, 200);
+
+    // 1) Create the video object in the library
+    const createRes = await fetch(`https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos`, {
+      method: 'POST',
+      headers: { AccessKey: apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ title }),
+    });
+    if (!createRes.ok) {
+      const txt = await createRes.text().catch(() => '');
+      throw new functions.https.HttpsError('internal', 'Bunny create failed: ' + createRes.status + ' ' + txt.slice(0, 200));
+    }
+    const created = await createRes.json();
+    const guid = created.guid;
+    if (!guid) throw new functions.https.HttpsError('internal', 'Bunny returned no guid');
+
+    // 2) Presigned TUS signature: sha256(libraryId + apiKey + expiration + videoId).
+    //    The client sends these as headers to https://video.bunnycdn.com/tusupload — the key stays here.
+    const expiration = Date.now() + 60 * 60 * 1000; // valid 1h (ms since epoch)
+    const signature = crypto.createHash('sha256')
+      .update('' + BUNNY_LIBRARY_ID + apiKey + expiration + guid)
+      .digest('hex');
+
+    return { guid, libraryId: BUNNY_LIBRARY_ID, cdnHost: BUNNY_CDN_HOST, expiration, signature };
+  });
+
+// Delete a Bunny video. Caller must be the post's author (feed/$postId/uid) or an admin.
+exports.deleteBunnyVideo = functions
+  .runWith({ secrets: [bunnyApiKey] })
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+    }
+    const uid = context.auth.uid;
+    const postId = typeof data?.postId === 'string' ? data.postId : '';
+    const email = (context.auth.token?.email || '').toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(email);
+
+    // Which guid may this caller delete? Admins may pass one directly (used by the feed-wipe). A
+    // non-admin's guid is NOT trusted — a caller could own post X yet pass someone else's guid Y. So
+    // for non-admins we read the guid straight from the post they own: you can only ever delete YOUR
+    // OWN video, never an arbitrary guid.
+    let guid = '';
+    if (isAdmin) {
+      guid = typeof data?.guid === 'string' ? data.guid : '';
+      if (!guid && postId) {
+        const s = await db.ref(`feed/${postId}/bunnyGuid`).once('value');
+        guid = s.val() || '';
+      }
+      if (!guid) throw new functions.https.HttpsError('invalid-argument', 'guid required');
+    } else {
+      if (!postId) throw new functions.https.HttpsError('permission-denied', 'Not allowed');
+      const snap = await db.ref(`feed/${postId}`).once('value');
+      const post = snap.val();
+      if (!post || post.uid !== uid) {
+        throw new functions.https.HttpsError('permission-denied', 'Not the post author');
+      }
+      guid = post.bunnyGuid || '';
+      if (!guid) return { success: true, skipped: true };   // image post / nothing on bunny
+    }
+
+    const ok = await bunnyDeleteVideo(guid, bunnyApiKey.value());
+    if (!ok) throw new functions.https.HttpsError('internal', 'Bunny delete failed');
+    return { success: true };
+  });
+
+// Admin-only: delete a single feed post AND free its bunny video + comments. Deleting from the main
+// feed removes the SOURCE (the video is no longer shown anywhere), so bunny is cleaned too — unlike a
+// room copy. Runs via Admin SDK so it works on any user's post (feed rules only allow self-deletes).
+exports.adminDeletePost = functions
+  .runWith({ secrets: [bunnyApiKey] })
+  .https.onCall(async (data, context) => {
+    requireAdmin(context);
+    const postId = typeof data?.postId === 'string' ? data.postId : '';
+    if (!postId) throw new functions.https.HttpsError('invalid-argument', 'postId required');
+
+    const snap = await db.ref(`feed/${postId}`).once('value');
+    const post = snap.val();
+    // best-effort bunny cleanup — a bunny hiccup must not block removing the post
+    if (post && post.bunnyGuid) {
+      await bunnyDeleteVideo(post.bunnyGuid, bunnyApiKey.value());
+    }
+    await db.ref(`feed/${postId}`).remove();
+    await db.ref(`comments/${postId}`).remove().catch(() => {});
+    return { success: true };
+  });
+
+// Admin-only: flip a user's premium flag manually (for testing the premium gating).
+// Call from an admin account: firebase.functions().httpsCallable('setPremium')({ uid, value:true })
+// TODO(premium-purchase): a REAL subscription purchase must set premium server-side, never from
+//   the client. When Play Billing / Stripe is wired, verify the purchase in a webhook/callable and
+//   run `db.ref('users/'+uid+'/premium').set(true)` from that server-verified context only.
+exports.setPremium = functions.https.onCall(async (data, context) => {
+  requireAdmin(context);
+  const uid = typeof data?.uid === 'string' ? data.uid.trim() : '';
+  if (!uid) throw new functions.https.HttpsError('invalid-argument', 'uid required');
+  const value = !!data?.value;
+  await db.ref(`users/${uid}/premium`).set(value);
+  return { success: true, uid, premium: value };
+});
+
+// Cancel premium. A signed-in user can cancel ONLY their own (we use context.auth.uid and ignore
+// any client-supplied uid). An admin may cancel anyone by passing { uid }.
+// TODO(premium-purchase): with real billing this must NOT be an instant removal. Standard subscription
+//   behaviour is: keep premium ACTIVE until the paid period ends, then stop it from renewing. So this
+//   should instead cancel the recurring Play Billing / Stripe subscription server-side here, and let a
+//   billing webhook flip users/$uid/premium to false only when the paid period actually expires. That
+//   prevents buy-cancel-rebuy abuse and refund farming.
+exports.cancelPremium = functions.https.onCall(async (data, context) => {
+  const callerUid = context.auth?.uid;
+  if (!callerUid) throw new functions.https.HttpsError('unauthenticated', 'Sign in required');
+  const requestedUid = typeof data?.uid === 'string' ? data.uid.trim() : '';
+  // Default target is the caller. Cancelling anyone else is admin-only — a normal user passing
+  // someone else's uid trips requireAdmin() and is rejected, so they can never affect other accounts.
+  let targetUid = callerUid;
+  if (requestedUid && requestedUid !== callerUid) {
+    requireAdmin(context);
+    targetUid = requestedUid;
+  }
+  await db.ref(`users/${targetUid}/premium`).set(false);
+  return { success: true, uid: targetUid, premium: false };
+});
+
+exports.deleteAccount = functions
+  .runWith({ secrets: [bunnyApiKey] })
+  .https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
 
   if (!uid) {
@@ -2730,12 +3069,23 @@ exports.deleteAccount = functions.https.onCall(async (data, context) => {
       .equalTo(uid)
       .once('value');
 
+    const bunnyGuids = [];
     feedSnap.forEach(child => {
       updates[`feed/${child.key}`] = null;
       updates[`comments/${child.key}`] = null;
+      const g = child.val() && child.val().bunnyGuid;
+      if (g) bunnyGuids.push(g);
     });
 
     await db.ref().update(updates);
+
+    // Remove the user's videos from Bunny Stream too (best-effort; DB already cleaned above).
+    // allSettled + the helper returning false (never throwing) guarantee that one failed video
+    // can NEVER abort the rest of the cleanup or fail the account deletion.
+    if (bunnyGuids.length) {
+      const key = bunnyApiKey.value();
+      await Promise.allSettled(bunnyGuids.map(g => bunnyDeleteVideo(g, key)));
+    }
 
     console.log(`[Delete] Account deleted for user ${uid}`);
 

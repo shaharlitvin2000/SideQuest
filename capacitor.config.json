@@ -1,0 +1,16 @@
+{
+  "appId": "com.sidequest.app",
+  "appName": "SideQuest",
+  "webDir": "www",
+  "server": {
+    "url": "https://flasharena-f35b1.web.app",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "FirebaseAuthentication": {
+      "skipNativeAuth": true,
+      "providers": ["google.com"]
+    }
+  }
+}

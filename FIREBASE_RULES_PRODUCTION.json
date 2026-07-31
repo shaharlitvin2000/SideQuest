@@ -4,6 +4,7 @@
     ".write": false,
 
     "users": {
+      ".indexOn": ["username"],
       "$uid": {
         ".read": "$uid === auth.uid || root.child('users').child($uid).child('public').exists()",
         ".write": "$uid === auth.uid",
@@ -14,6 +15,9 @@
         "missions": {".read": true, ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000"},
         "country": {".read": true, ".validate": "newData.isString() && newData.val().length <= 50"},
         "streak": {".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 365"},
+        "lastDailyClaim": {".write": false},
+        "dailyClaimStreak": {".write": false},
+        "longestDailyStreak": {".write": false},
         "verified": {".validate": "newData.isBoolean()"},
         "premium": {".read": true, ".write": false, ".validate": "newData.isBoolean()"},
         "blocked": {".validate": "newData.isBoolean()"},
@@ -76,8 +80,8 @@
         "timestamp": {".validate": "newData.isNumber()"},
         "status": {".validate": "newData.val() === 'verified' || newData.val() === 'pending' || newData.val() === 'rejected'"},
         "pts": {".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000 && (!data.exists() || newData.val() <= data.val() + 50000)"},
-        "likes": {".write": "auth !== null", ".validate": "newData.isNumber() && newData.val() >= 0 && (newData.val() === (data.exists() ? data.val() : 0) || newData.val() === (data.exists() ? data.val() : 0) + 1 || newData.val() === (data.exists() ? data.val() : 0) - 1)"},
-        "views": {".write": "auth !== null", ".validate": "newData.isNumber() && newData.val() >= 0 && (newData.val() === (data.exists() ? data.val() : 0) || newData.val() === (data.exists() ? data.val() : 0) + 1)"},
+        "likes": {".write": false, ".validate": "newData.isNumber() && newData.val() >= 0 && (newData.val() === (data.exists() ? data.val() : 0) || newData.val() === (data.exists() ? data.val() : 0) + 1 || newData.val() === (data.exists() ? data.val() : 0) - 1)"},
+        "views": {".write": false, ".validate": "newData.isNumber() && newData.val() >= 0 && (newData.val() === (data.exists() ? data.val() : 0) || newData.val() === (data.exists() ? data.val() : 0) + 1)"},
         "music": {".validate": "newData.isString() && newData.val().length <= 20"}
       }
     },
@@ -87,8 +91,9 @@
       ".indexOn": ["postId", "timestamp", "createdAt", "at", "replyCount"],
 
       "$postId": {
+        ".indexOn": ["at"],
         "$commentId": {
-          ".write": "auth !== null && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && data.child('uid').val() === auth.uid))",
+          ".write": "auth !== null && data.exists() && data.child('uid').val() === auth.uid",
           ".validate": "!newData.exists() || newData.hasChildren(['uid','text','at'])",
           "uid": {".validate": "newData.val() === auth.uid"},
           "username": {".validate": "newData.isString() && newData.val().length <= 30"},
@@ -177,7 +182,7 @@
       "$uid": {
         ".read": "$uid === auth.uid",
         ".write": "$uid === auth.uid",
-        ".indexOn": ["createdAt", "read"],
+        ".indexOn": ["createdAt", "read", "byUid"],
         "$nid": {
           ".write": "auth !== null && !data.exists()",
           ".validate": "newData.hasChildren(['type','createdAt']) && (newData.child('byUid').val() === auth.uid || $uid === auth.uid)"
@@ -290,7 +295,7 @@
         "messages": {
           ".indexOn": ["at"],
           "$msgId": {
-            ".write": "auth !== null && $chatId.contains(auth.uid) && !data.exists()",
+            ".write": false,
             ".validate": "newData.hasChildren(['from','at']) && (newData.hasChild('text') || newData.hasChild('img'))",
             "from": {".validate": "newData.val() === auth.uid"},
             "text": {".validate": "newData.isString() && newData.val().length <= 500"},
@@ -354,6 +359,13 @@
         "banned": {
           "$uid": {
             ".read": "auth != null",
+            ".write": "root.child('rooms').child($code).child('meta').child('host').val() === auth.uid || root.child('rooms').child($code).child('mods').child(auth.uid).val() === true",
+            ".validate": "newData.val() === true"
+          }
+        },
+        "mods": {
+          "$uid": {
+            ".read": "auth != null",
             ".write": "root.child('rooms').child($code).child('meta').child('host').val() === auth.uid",
             ".validate": "newData.val() === true"
           }
@@ -373,7 +385,7 @@
         "posts": {
           ".indexOn": ["at"],
           "$pid": {
-            ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid)",
+            ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid || ((root.child('rooms').child($code).child('meta').child('host').val() === auth.uid || root.child('rooms').child($code).child('mods').child(auth.uid).val() === true) && !newData.exists()))",
             ".validate": "newData.hasChildren(['uid','at'])",
             "uid": {".validate": "newData.val() === auth.uid"},
             "name": {".validate": "newData.isString() && newData.val().length <= 40"},

@@ -7,6 +7,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -585,11 +586,13 @@
     }
 
     function deletePost(postId) {
-      showModal('Delete Post', 'Are you sure you want to delete this post?', () => {
-        db.ref(`feed/${postId}`).remove().then(() => {
+      showModal('Delete Post', 'Are you sure you want to delete this post? This also removes its bunny video.', () => {
+        // Route through the admin Cloud Function: it frees the bunny video, then removes the post +
+        // comments via Admin SDK (the client can't delete other users' posts directly).
+        firebase.functions().httpsCallable('adminDeletePost')({ postId: postId }).then(() => {
           alert('Post deleted');
           loadPosts();
-        });
+        }).catch(e => { alert('Delete failed: ' + (e.message || e)); });
       });
     }
 
