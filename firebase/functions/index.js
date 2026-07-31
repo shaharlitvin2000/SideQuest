@@ -2469,6 +2469,168 @@ exports.markChatRead = functions.https.onCall(async (data, context) => {
 });
 
 // ══════════════════════════════════════════════════════════════════
+// STEP 2 (cont.) — server-side moderation for the remaining direct-write
+// paths: general feed uploads, room posts, room chat, room mission text.
+// Same shape as submitComment/sendMessage above: client uploads media
+// first (Bunny/Storage, already secured), then calls one of these to
+// write the DB record so hasHarmfulContent() runs server-side and can't
+// be bypassed. RTDB rules for feed/$postId, rooms/.../chat/$mid and
+// rooms/.../posts/$pid now require data.exists() (or .write:false for
+// chat), so clients can no longer create these directly.
+// ══════════════════════════════════════════════════════════════════
+
+exports.createFeedPost = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const caption = String(data.caption || '').trim();
+  const mediaURL = data.mediaURL ? String(data.mediaURL).slice(0, 600) : null;
+  const mediaType = (data.mediaType === 'image' || data.mediaType === 'video') ? data.mediaType : null;
+  const bunnyGuid = data.bunnyGuid ? String(data.bunnyGuid).slice(0, 100) : null;
+  const music = data.music ? String(data.music).slice(0, 20) : null;
+  const roomCode = data.roomCode ? String(data.roomCode).trim() : null;
+
+  if (!mediaURL || !mediaType) {
+    throw new functions.https.HttpsError('invalid-argument', 'Media is required');
+  }
+
+  if (checkAbuseScore(uid)) {
+    throw new functions.https.HttpsError('permission-denied', 'Too many uploads. Please wait a moment.');
+  }
+
+  if (hasHarmfulContent(caption)) {
+    throw new functions.https.HttpsError('permission-denied', 'Caption contains prohibited content');
+  }
+
+  addAbuseScore(uid, 3, 'feed_post');
+
+  const userSnap = await db.ref(`users/${uid}`).once('value');
+  const userData = userSnap.val();
+  if (!userData) {
+    throw new functions.https.HttpsError('not-found', 'User not found');
+  }
+
+  const postRef = db.ref('feed').push();
+  await postRef.set({
+    uid: uid,
+    username: userData.username || 'Player',
+    caption: caption,
+    mediaURL: mediaURL,
+    mediaType: mediaType,
+    bunnyGuid: bunnyGuid,
+    timestamp: admin.database.ServerValue.TIMESTAMP,
+    views: 0,
+    likes: 0,
+    status: 'pending',
+    isUserVideo: true,
+    music: music
+  });
+
+  if (roomCode) {
+    try {
+      await db.ref(`rooms/${roomCode}/posts`).push({
+        uid: uid,
+        name: userData.username || 'Player',
+        caption: caption,
+        mediaURL: mediaURL,
+        mediaType: mediaType,
+        at: admin.database.ServerValue.TIMESTAMP
+      });
+    } catch (e) { console.error('[createFeedPost] room cross-post failed', e); }
+  }
+
+  return { success: true, postId: postRef.key };
+});
+
+exports.sendRoomChat = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const roomCode = String(data.roomCode || '').trim();
+  const text = String(data.text || '').trim().slice(0, 300);
+
+  if (!roomCode) {
+    throw new functions.https.HttpsError('invalid-argument', 'Room code required');
+  }
+  if (!text) {
+    throw new functions.https.HttpsError('invalid-argument', 'Message is empty');
+  }
+  if (hasHarmfulContent(text)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Message contains prohibited content');
+  }
+
+  const [bannedSnap, userSnap] = await Promise.all([
+    db.ref(`rooms/${roomCode}/banned/${uid}`).once('value'),
+    db.ref(`users/${uid}`).once('value')
+  ]);
+  if (bannedSnap.val() === true) {
+    throw new functions.https.HttpsError('permission-denied', 'You are banned from this room');
+  }
+  const userData = userSnap.val();
+  if (!userData) {
+    throw new functions.https.HttpsError('not-found', 'User not found');
+  }
+
+  await db.ref(`rooms/${roomCode}/chat`).push({
+    uid: uid,
+    name: userData.username || 'Player',
+    text: text,
+    at: admin.database.ServerValue.TIMESTAMP
+  });
+
+  return { success: true };
+});
+
+exports.setRoomMission = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const roomCode = String(data.roomCode || '').trim();
+  const mission = String(data.mission || '').trim().slice(0, 140);
+
+  if (!roomCode || !mission) {
+    throw new functions.https.HttpsError('invalid-argument', 'Room code and mission required');
+  }
+  if (hasHarmfulContent(mission)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Mission text contains prohibited content');
+  }
+
+  const metaSnap = await db.ref(`rooms/${roomCode}/meta`).once('value');
+  const meta = metaSnap.val();
+  if (!meta) {
+    throw new functions.https.HttpsError('not-found', 'Room not found');
+  }
+  if (meta.host !== uid) {
+    throw new functions.https.HttpsError('permission-denied', 'Only the host can change the mission');
+  }
+
+  const changed = mission !== meta.mission;
+  await db.ref(`rooms/${roomCode}/meta/mission`).set(mission);
+
+  if (changed) {
+    const announceText = String(data.announceText || '').trim().slice(0, 300);
+    if (announceText && !hasHarmfulContent(announceText)) {
+      const userSnap = await db.ref(`users/${uid}`).once('value');
+      const userData = userSnap.val() || {};
+      await db.ref(`rooms/${roomCode}/chat`).push({
+        uid: uid,
+        name: userData.username || 'Player',
+        text: announceText,
+        at: admin.database.ServerValue.TIMESTAMP
+      });
+    }
+  }
+
+  return { success: true, changed: changed };
+});
+
+// ══════════════════════════════════════════════════════════════════
 // ADMIN PANEL
 // ══════════════════════════════════════════════════════════════════
 

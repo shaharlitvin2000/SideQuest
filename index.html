@@ -5523,11 +5523,12 @@ function roomMissionSave(){
   if(hasHarmfulContent(v)){ toast('🛡️ '+t('contentBlocked')); return; }
   var newMission=v.slice(0,140);
   var changed=(newMission!==_roomMission);
-  db.ref('rooms/'+_roomCode+'/meta/mission').set(newMission).catch(function(){});
-  // announce the change in the room chat (system-style line everyone sees)
-  if(changed && userUID){
-    db.ref('rooms/'+_roomCode+'/chat').push({ uid:userUID, name:myName(), text:'🔄 '+t('roomMissionChanged').replace('{m}',newMission), at:firebase.database.ServerValue.TIMESTAMP }).catch(function(){});
-  }
+  firebase.functions().httpsCallable('setRoomMission')({
+    roomCode:_roomCode,
+    mission:newMission,
+    // pre-localized system-chat line (server re-checks it before writing, since it embeds newMission)
+    announceText: changed ? ('🔄 '+t('roomMissionChanged').replace('{m}',newMission)) : ''
+  }).catch(function(){});
   roomSheetClose();
 }
 function roomPost(){
@@ -5638,9 +5639,10 @@ function roomChatSend(){
   var inp=document.getElementById('room-chat-input'); var txt=((inp&&inp.value)||'').trim();
   if(!txt) return;
   if(hasHarmfulContent(txt)){ toast('🛡️ '+t('contentBlocked')); return; }
+  var code=_roomCode;
   // clear + refocus immediately so the keyboard stays up and you can keep typing hands-free
   if(inp){ inp.value=''; try{inp.focus();}catch(e){} }
-  db.ref('rooms/'+_roomCode+'/chat').push({ uid:userUID, name:myName(), text:txt.slice(0,300), at:firebase.database.ServerValue.TIMESTAMP })
+  firebase.functions().httpsCallable('sendRoomChat')({roomCode:code, text:txt.slice(0,300)})
     .then(function(){ if(inp) try{inp.focus();}catch(e){} })
     .catch(function(){ toast('❌ '+t('chatSendFail')); if(inp) inp.value=txt; });
 }
@@ -8634,38 +8636,20 @@ async function submitUploadVideo(){
       console.log('[Upload] Got URL: '+url);
     }
 
-    // upload to Firebase
+    // upload to Firebase — the DB record (and moderation) is server-side now,
+    // the client only reaches Bunny/Storage directly above.
     console.log('[Upload] Saving to database...');
-    var post={
-      uid:userUID,
-      username:myName(),
+    await firebase.functions().httpsCallable('createFeedPost')({
       caption:caption||'',
       mediaURL:url||null,
       mediaType:type||null,
       bunnyGuid:bunnyGuid||null,   // bunny.net video guid (for playback + cleanup on delete)
-      timestamp:Date.now(),
-      views:0,
-      likes:0,
-      status:'pending', // pending verification
-      isUserVideo:true,
-      music:_pendingPostMusic||null   // chosen editor vibe (or null)
-    };
-    _pendingPostMusic='';
-
-    await db.ref('feed').push(post);
+      music:_pendingPostMusic||null,   // chosen editor vibe (or null)
+      roomCode:_uploadRoomTarget||null   // uploaded from inside a challenge room -> server also posts it into the room stream
+    });
     console.log('[Upload] Success!');
-
-    // uploaded from inside a challenge room -> also post it into the room stream
-    if(_uploadRoomTarget){
-      try{
-        await db.ref('rooms/'+_uploadRoomTarget+'/posts').push({
-          uid:userUID, name:myName(), caption:caption||'',
-          mediaURL:url||null, mediaType:type||null,
-          at:firebase.database.ServerValue.TIMESTAMP
-        });
-      }catch(e){}
-      _uploadRoomTarget='';
-    }
+    _pendingPostMusic='';
+    _uploadRoomTarget='';
 
     toast('✅ Video uploaded! Pending verification');
     document.getElementById('upload-video-bg').classList.remove('show');
@@ -8837,17 +8821,16 @@ try{captureReferral();}catch(e){}
 // cleanHatefulPosts() stays defined for optional one-off manual cleanup.
 //
 // ═══════════════════════════════════════════════════════════════════════════════════
-// TODO (STEP 2 — server-side content moderation for the DIRECT-WRITE paths):
-// completeMission (mission posts) is already server-moderated. Still bypassing the server:
-//   1. General video upload  — client does db.ref('feed').push(post) directly (~line 7922).
-//   2. Comments              — client writes comments/ directly, BYPASSING the existing
-//                              server submitComment() which already moderates.
-//   3. DM chat               — client writes chats/.../messages directly, bypassing the
-//                              existing server sendMessage() which already moderates.
-//   4. Room posts / chat     — direct writes, no server moderation.
-// Fix: route these writes through Cloud Functions (submitComment/sendMessage already exist;
-// add a createFeedPost fn) and tighten RTDB rules so clients can't create feed/comments/chat
-// directly — while KEEPING likes/views transactions and author self-delete working.
+// STEP 2 (server-side content moderation for the direct-write paths) — DONE.
+// completeMission/submitComment/sendMessage were already server-moderated. Since fixed:
+//   1. General video upload — routed through createFeedPost() (submitUploadVideo).
+//   2. Room posts            — same createFeedPost() call, via its roomCode param.
+//   3. Room chat              — routed through sendRoomChat() (roomChatSend).
+//   4. Room mission text     — routed through setRoomMission() (roomMissionSave).
+// RTDB rules for feed/$postId, rooms/.../posts/$pid (require data.exists()),
+// rooms/.../chat/$mid (.write:false) and rooms/.../meta (mission locked unless
+// unchanged) now block clients from creating/editing these directly — likes/views
+// transactions and author self-delete are untouched.
 // ═══════════════════════════════════════════════════════════════════════════════════
 
 document.addEventListener('visibilitychange',function(){
