@@ -2786,7 +2786,11 @@ exports.ensureUser = functions.https.onCall(async (data, context) => {
     missionsDate: getIsraelDate(),
     completedMissionsToday: {},
     verified: false,
-    blocked: false
+    blocked: false,
+    // The client's consent checkbox already gated the sign-in that got us here
+    // (doGoogle() has no equivalent to doRegister()'s own agreedToTerms/consentAt write).
+    agreedToTerms: true,
+    consentAt: admin.database.ServerValue.TIMESTAMP
   };
 
   const updates = {};

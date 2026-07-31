@@ -2988,13 +2988,21 @@ function doGoogle(){
         const cred=firebase.auth.GoogleAuthProvider.credential(idToken);
         return auth.signInWithCredential(cred);
       })
-      .then(cred=>{userUID=cred.user.uid;userName=cred.user.displayName||cred.user.email.split('@')[0]||'Player_'+userUID.slice(0,8);})
+      .then(cred=>{
+        userUID=cred.user.uid;userName=cred.user.displayName||cred.user.email.split('@')[0]||'Player_'+userUID.slice(0,8);
+        // Google has no equivalent to doRegister()'s record-creation — ensureUser creates it
+        // (no-ops if it already exists) and records the consent the checkbox above just required.
+        firebase.functions().httpsCallable('ensureUser')({}).catch(function(){});
+      })
       .catch(e=>{setAuthLoading(false);toast('⚠️ '+t('googleFailed'));console.error('[Auth] native google error:',e);});
     return;
   }
   const provider=new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider)
-    .then(cred=>{userUID=cred.user.uid;userName=cred.user.displayName||cred.user.email.split('@')[0]||'Player_'+userUID.slice(0,8);})
+    .then(cred=>{
+      userUID=cred.user.uid;userName=cred.user.displayName||cred.user.email.split('@')[0]||'Player_'+userUID.slice(0,8);
+      firebase.functions().httpsCallable('ensureUser')({}).catch(function(){});
+    })
     .catch(e=>{setAuthLoading(false);toast('⚠️ '+t('googleFailed'));console.error('[Auth] google error:',e);});
 }
 
