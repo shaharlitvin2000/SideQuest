@@ -93,7 +93,7 @@
       "$postId": {
         ".indexOn": ["at"],
         "$commentId": {
-          ".write": "auth !== null && data.exists() && data.child('uid').val() === auth.uid",
+          ".write": "auth !== null && data.exists() && data.child('uid').val() === auth.uid && !newData.exists()",
           ".validate": "!newData.exists() || newData.hasChildren(['uid','text','at'])",
           "uid": {".validate": "newData.val() === auth.uid"},
           "username": {".validate": "newData.isString() && newData.val().length <= 30"},

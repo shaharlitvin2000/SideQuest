@@ -8045,12 +8045,13 @@ function loadCommentCount(postId,el){
 
 function editComment(id){
   if(!db||!_cmtPostId||!id) return;
-  var ref=db.ref('comments/'+_cmtPostId+'/'+id);
-  ref.once('value').then(function(s){
+  var postId=_cmtPostId;
+  db.ref('comments/'+postId+'/'+id).once('value').then(function(s){
     var c=s.val(); if(!c||c.uid!==userUID) return;
     var nt=prompt(t('editComment'), c.text||''); if(nt===null) return; nt=nt.trim();
     if(!nt) return; if(nt.length>500) nt=nt.slice(0,500);
-    ref.update({text:nt,edited:true}).then(function(){ loadCommentsFull(_cmtPostId); }).catch(function(e){ toast('⚠️ '+((e&&e.message)||'')); });
+    firebase.functions().httpsCallable('editComment')({postId:postId, commentId:id, text:nt})
+      .then(function(){ loadCommentsFull(postId); }).catch(function(e){ toast('⚠️ '+((e&&e.message)||'')); });
   }).catch(function(){});
 }
 function deleteComment(id){

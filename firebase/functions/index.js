@@ -2666,6 +2666,36 @@ exports.editFeedCaption = functions.https.onCall(async (data, context) => {
   return { success: true };
 });
 
+exports.editComment = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const postId = String(data.postId || '').trim();
+  const commentId = String(data.commentId || '').trim();
+  const text = String(data.text || '').trim().slice(0, 500);
+
+  if (!postId || !commentId || !text) {
+    throw new functions.https.HttpsError('invalid-argument', 'Post ID, comment ID and text required');
+  }
+  if (hasHarmfulContent(text)) {
+    throw new functions.https.HttpsError('permission-denied', 'Comment contains prohibited content');
+  }
+
+  const commentSnap = await db.ref(`comments/${postId}/${commentId}`).once('value');
+  const comment = commentSnap.val();
+  if (!comment) {
+    throw new functions.https.HttpsError('not-found', 'Comment not found');
+  }
+  if (comment.uid !== uid) {
+    throw new functions.https.HttpsError('permission-denied', 'Not your comment');
+  }
+
+  await db.ref(`comments/${postId}/${commentId}`).update({ text: text, edited: true });
+  return { success: true };
+});
+
 // ══════════════════════════════════════════════════════════════════
 // ADMIN PANEL
 // ══════════════════════════════════════════════════════════════════
