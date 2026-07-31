@@ -3353,8 +3353,6 @@ function feedOpenProfile(uid,username,init){
   }
 
   Promise.all([
-    db.ref('leaderboard/'+uid).once('value').catch(function(){return null;}),
-    db.ref('feed').orderByChild('uid').equalTo(uid).once('value').catch(function(){return null;}),
     db.ref('followers/'+uid).once('value').catch(function(){return null;}),
     db.ref('follows/'+uid).once('value').catch(function(){return null;}),
     (!isMe&&userUID)?db.ref('follows/'+userUID+'/'+uid).once('value').catch(function(){return null;}):Promise.resolve(null),
@@ -3365,17 +3363,28 @@ function feedOpenProfile(uid,username,init){
     db.ref('users/'+uid+'/privacy').once('value').catch(function(){return null;}),
     db.ref('users/'+uid+'/premium').once('value').catch(function(){return null;})
   ]).then(function(results){
-    var privacyVal=results[9]?results[9].val():null;
+    var followersSnap=results[0],followingSnap=results[1],myFollowSnap=results[2];
+    var bioVal=results[3]?results[3].val():null;
+    var avURLVal=results[4]?results[4].val():null;
+    var avColorVal=results[5]?results[5].val():null;
+    var linkVal=isMe?myLink:(results[6]?results[6].val():null);
+    var privacyVal=results[7]?results[7].val():null;
     // premium badge next to the @username (isMe uses the live local flag); injected after applyAvatar below
-    var isPrem=isMe?myIsPremium:!!(results[10]&&results[10].val());
+    var isPrem=isMe?myIsPremium:!!(results[8]&&results[8].val());
     seedPremium(uid,isPrem);
     var isPrivate=!isMe && privacyVal && privacyVal.privateProfile;
-    var lbSnap=results[0],feedSnap=results[1],followersSnap=results[2],followingSnap=results[3],myFollowSnap=results[4];
+    // Posts + stats are only ever FETCHED for the owner or a non-private profile — a private
+    // profile isn't just hidden in the DOM, the feed query/leaderboard read never go out over
+    // the wire for anyone else, so there's nothing to see via devtools/network inspection either.
+    return (isPrivate
+      ? Promise.resolve([null,null])
+      : Promise.all([
+          db.ref('leaderboard/'+uid).once('value').catch(function(){return null;}),
+          db.ref('feed').orderByChild('uid').equalTo(uid).once('value').catch(function(){return null;})
+        ])
+    ).then(function(statsResults){
+    var lbSnap=statsResults[0],feedSnap=statsResults[1];
     var lbData=lbSnap?lbSnap.val():null;
-    var bioVal=results[5]?results[5].val():null;
-    var avURLVal=results[6]?results[6].val():null;
-    var avColorVal=results[7]?results[7].val():null;
-    var linkVal=isMe?myLink:(results[8]?results[8].val():null);
     // Build a public profile view: my own profile uses live local data; others use
     // the public leaderboard entry + individually-readable bio/avatar fields.
     var userData={
@@ -3427,6 +3436,7 @@ function feedOpenProfile(uid,username,init){
       ['fpp-s-pts','fpp-s-streak','fpp-s-missions','fpp-s-posts'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent='—';});
     }
     showContent();
+    });
   }).catch(function(){
     applyAvatar(null,null);
     document.getElementById('fpp-rank-badge').textContent='';
