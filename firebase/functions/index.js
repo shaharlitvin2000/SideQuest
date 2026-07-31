@@ -2413,17 +2413,24 @@ exports.sendMessage = functions.https.onCall(async (data, context) => {
     }
   }
 
-  // Recipient must exist and must not have blocked the sender
-  const [targetSnap, senderSnap, blockSnap] = await Promise.all([
+  // Recipient must exist and must not have blocked the sender. "DMs from people I follow
+  // only" was previously enforced only in the client's openChatWith() gate — that's a UX
+  // convenience, not a security boundary, so it's re-checked here too.
+  const [targetSnap, senderSnap, blockSnap, dmRestrictedSnap, targetFollowsSenderSnap] = await Promise.all([
     db.ref(`users/${toUid}/username`).once('value'),
     db.ref(`users/${uid}`).once('value'),
-    db.ref(`userBlocked/${toUid}/${uid}`).once('value')
+    db.ref(`userBlocked/${toUid}/${uid}`).once('value'),
+    db.ref(`users/${toUid}/privacy/dmFollowersOnly`).once('value'),
+    db.ref(`follows/${toUid}/${uid}`).once('value')
   ]);
   if (!targetSnap.exists()) {
     throw new functions.https.HttpsError('not-found', 'User not found');
   }
   if (blockSnap.exists()) {
     throw new functions.https.HttpsError('permission-denied', 'Cannot message this user');
+  }
+  if (dmRestrictedSnap.val() === true && !targetFollowsSenderSnap.exists()) {
+    throw new functions.https.HttpsError('permission-denied', 'This user only accepts messages from people they follow');
   }
   const sender = senderSnap.val() || {};
   if (sender.blocked === true) {

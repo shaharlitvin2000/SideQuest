@@ -7692,10 +7692,13 @@ async function _doAvatarUpload(file){
     const ext=(file.type.split('/')[1]||'jpg').replace('jpeg','jpg');
     const ref=storage.ref('avatars/'+userUID+'_'+Date.now()+'.'+ext);
     const url=await putWithTimeout(ref,file,25000);
+    // Await this write (was fire-and-forget) — a silent failure here left the local
+    // session showing the new photo while users/{uid}/avatarURL never actually changed,
+    // so anyone reading it elsewhere (leaderboard, other users' profile views) saw none.
+    if(db) await db.ref('users/'+userUID+'/avatarURL').set(url);
     myAvatarURL=url;
     const prev=document.getElementById('ep-avatar');
     if(prev){prev.style.backgroundImage='url('+url+')';prev.style.backgroundSize='cover';prev.style.backgroundPosition='center';prev.textContent='';}
-    if(db) db.ref('users/'+userUID+'/avatarURL').set(url).catch(function(){});
     // Derive ring color from the local file (no CORS needed) and persist it.
     extractDominantFromFile(file,function(hex){
       if(hex){ myAvatarColor=hex; if(db) db.ref('users/'+userUID+'/avatarColor').set(hex).catch(function(){}); }
