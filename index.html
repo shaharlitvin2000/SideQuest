@@ -4828,7 +4828,11 @@ function feedInitEvents(wrap){
     if(_fd.drag&&Math.abs(t.clientY-_fd.sy)<=TAP_SLOP&&Math.abs(t.clientX-_fd.sx)<=TAP_SLOP){
       e.preventDefault();
       var el=document.elementFromPoint(_fd.sx,_fd.sy);
-      if(el) el.click();
+      // dispatchEvent, not el.click() — the tap usually lands on an SVG icon (e.g. the heart's
+      // <path>), and SVGElement doesn't reliably implement the HTMLElement.click() shortcut on
+      // every engine (confirmed on-device: it silently no-ops/throws here). A real bubbling
+      // MouseEvent works on any Element and is what every existing listener already expects.
+      if(el) el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
     }
     onEnd(t.clientY);
   },{passive:false});
