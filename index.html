@@ -7739,11 +7739,14 @@ function saveProfile(){
   const age=parseInt(document.getElementById('ep-age').value||'');
   const country=(document.getElementById('ep-country').value||'').trim().slice(0,60);
   if(link&&!/^https?:\/\//i.test(link)){ toast('⚠️ Link must start with http:// or https://'); return; }
+  if(hasHarmfulContent(bio)){ toast('🛡️ '+t('contentBlocked')); return; }
   myBio=bio; myLink=link; myCountryName=country; myAge=(age>=13&&age<=120)?age:'';
   if(db&&userUID){
-    // Write all profile fields directly (allowed by rules) — works without Cloud Functions
-    const u={link:link,profileCountry:country,bio:bio}; if(myAge!=='') u.age=myAge;
+    // link/country/age: write directly (allowed by rules, no free-text moderation concern).
+    // bio: routed through updateBio (server-moderated) — bio/{uid} is no longer client-writable.
+    const u={link:link,profileCountry:country}; if(myAge!=='') u.age=myAge;
     db.ref('users/'+userUID).update(u).catch(function(){});
+    firebase.functions().httpsCallable('updateBio')({bio:bio}).catch(function(){});
     // Republish country to the public leaderboard entry so the Country tab works
     try{saveUserData();}catch(e){}
   }
