@@ -2696,6 +2696,37 @@ exports.editComment = functions.https.onCall(async (data, context) => {
   return { success: true };
 });
 
+exports.changeUsername = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const username = String(data.username || '').trim();
+  if (username.length < 3 || username.length > 30) {
+    throw new functions.https.HttpsError('invalid-argument', 'Username must be 3-30 characters');
+  }
+  if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Username can only contain letters, numbers, _ and -');
+  }
+  if (hasHarmfulContent(username)) {
+    throw new functions.https.HttpsError('permission-denied', 'Username contains prohibited content');
+  }
+
+  const dupSnap = await db.ref('users').orderByChild('username').equalTo(username).once('value');
+  let taken = false;
+  dupSnap.forEach(c => { if (c.key !== uid) taken = true; });
+  if (taken) {
+    throw new functions.https.HttpsError('already-exists', 'Username already taken');
+  }
+
+  const updates = {};
+  updates[`users/${uid}/username`] = username;
+  updates[`leaderboard/${uid}/username`] = username;
+  await db.ref().update(updates);
+  return { success: true, username: username };
+});
+
 // ══════════════════════════════════════════════════════════════════
 // ADMIN PANEL
 // ══════════════════════════════════════════════════════════════════

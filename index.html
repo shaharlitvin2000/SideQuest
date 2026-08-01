@@ -2920,16 +2920,19 @@ function submitAccountEdit(){
   if(type==='username'){
     if(val.length<3||val.length>30){ _acctErr(t('errNameLen')); return; }
     if(!/^[a-zA-Z0-9_-]+$/.test(val)){ _acctErr(t('errNameChars')); return; }
+    if(hasHarmfulContent(val)){ _acctErr(t('contentBlocked')); return; }
     if(val===userName){ closeAccountModal(); return; }
-    var apply=function(){
+    var sv0=document.getElementById('account-save'); if(sv0) sv0.disabled=true;
+    firebase.functions().httpsCallable('changeUsername')({username:val}).then(function(){
       userName=val;
-      if(db&&userUID){ db.ref('users/'+userUID+'/username').set(val).catch(function(){}); db.ref('leaderboard/'+userUID+'/username').set(val).catch(function(){}); }
       cur.updateProfile({displayName:val}).catch(function(){});
       try{saveUserData();applyTranslations();updateUI();renderProfileExtras();}catch(e){}
       toast('✅ '+t('saved')); closeAccountModal();
-    };
-    if(db) db.ref('users').orderByChild('username').equalTo(val).once('value').then(function(s){ if(s.exists()) _acctErr(t('errNameTaken')); else apply(); }).catch(function(){ apply(); });
-    else apply();
+    }).catch(function(e){
+      if(sv0) sv0.disabled=false;
+      var code=(e&&e.code)||'';
+      _acctErr(code==='functions/already-exists'?t('errNameTaken'):((e&&e.message)||'Error'));
+    });
     return;
   }
   var curPass=((document.getElementById('acct-cur')||{}).value||'');
