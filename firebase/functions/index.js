@@ -1225,6 +1225,47 @@ exports.unsavePost = functions.https.onCall(async (data, context) => {
 });
 
 // ══════════════════════════════════════════════════════════════════
+// FOR YOU — rolling window of each user's last 20 content interactions.
+// v1, deliberately simple: a fixed-size FIFO log per user (userInteractions/{uid}), fed by
+// likePost (strong positive) and recordView (fast skip = negative, near-full watch =
+// positive). feedCalculateEngagementScore (index.html) reads this back to nudge ranking
+// toward categories/vibes/media types the user has recently responded well to. Hashtags are
+// NOT used yet — they only exist as a reverse index (hashtags/{tag}/{postId}), there's no
+// forward field on the post itself to know a given post's tags without an extra lookup per
+// post, which didn't fit "simplest first pass."
+// ══════════════════════════════════════════════════════════════════
+
+const MAX_INTERACTIONS = 20;
+
+function getPostContentSignals(post) {
+  const category = (post.missionId != null && MISSIONS[post.missionId]) ? MISSIONS[post.missionId].category : null;
+  return {
+    category: category || null,
+    vibe: post.music || null,
+    mediaType: post.mediaType || null
+  };
+}
+
+async function logInteraction(uid, postId, type, signals) {
+  const ref = db.ref(`userInteractions/${uid}`);
+  await ref.push({
+    postId: postId,
+    type: type,
+    category: signals.category,
+    vibe: signals.vibe,
+    mediaType: signals.mediaType,
+    at: admin.database.ServerValue.TIMESTAMP
+  });
+  // Trim to the last MAX_INTERACTIONS — a plain FIFO, not exact under rare concurrent
+  // writes, but self-corrects on the next call. Good enough for a v1 preference signal.
+  const snap = await ref.orderByKey().limitToLast(MAX_INTERACTIONS + 1).once('value');
+  if (snap.numChildren() > MAX_INTERACTIONS) {
+    const oldestKey = Object.keys(snap.val())[0];
+    await ref.child(oldestKey).remove();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
 // LIKE POST - IDEMPOTENT WITH DEDUPLICATION & ABUSE TRACKING
 // ══════════════════════════════════════════════════════════════════
 
@@ -1271,6 +1312,9 @@ exports.likePost = functions.https.onCall(async (data, context) => {
 
   await userLikeRef.set(true);
   await postRef.child('likes').transaction(cur => (cur || 0) + 1);
+
+  // For You: a like is the strongest positive signal we have.
+  await logInteraction(uid, postId, 'like', getPostContentSignals(post)).catch(() => {});
 
   // Send notification to post author
   if (post && post.uid && post.uid !== uid) {
@@ -1579,32 +1623,12 @@ exports.batchVerifyPosts = functions
 exports.cleanupOldPosts = functions
   .runWith({ secrets: [bunnyApiKey] })
   .pubsub.schedule('0 3 * * 0').timeZone('Asia/Jerusalem').onRun(async (context) => {
-  const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-  const snap = await db.ref('feed').once('value');
-
-  const updates = {};
-  const bunnyGuids = [];
-  let deleted = 0;
-
-  snap.forEach(child => {
-    const post = child.val();
-    if (post && post.timestamp && post.timestamp < thirtyDaysAgo) {
-      updates[`feed/${child.key}`] = null;
-      if (post.bunnyGuid) bunnyGuids.push(post.bunnyGuid);
-      deleted++;
-    }
-  });
-
-  if (Object.keys(updates).length > 0) {
-    await db.ref().update(updates);
-    // free the deleted posts' bunny videos too (best-effort — never block the cleanup)
-    if (bunnyGuids.length) {
-      const key = bunnyApiKey.value();
-      await Promise.allSettled(bunnyGuids.map(g => bunnyDeleteVideo(g, key)));
-    }
-  }
-
-  console.log(`[Cleanup] Deleted ${deleted} old posts, Bunny cleaned: ${bunnyGuids.length}`);
+  // Disabled 2026-08-01 per explicit request: posts/videos are no longer auto-deleted after
+  // 30 days, neither from feed/ nor from Bunny. Left the weekly trigger and secret binding in
+  // place (harmless no-op) rather than removing the function, in case a different retention
+  // policy replaces this later.
+  const deleted = 0;
+  console.log('[Cleanup] Disabled — no posts deleted (auto-deletion turned off).');
   return { deleted };
 });
 
@@ -1881,8 +1905,10 @@ exports.recordView = functions.https.onCall(async (data, context) => {
   }
   const postId = String(data.postId || '');
   let watchMs = parseInt(data.watchMs || 0);
+  let completionRate = parseInt(data.completionRate || 0);
   if (!postId) throw new functions.https.HttpsError('invalid-argument', 'Missing postId');
   if (!(watchMs >= 0) || watchMs > 600000) watchMs = 0; // cap at 10 min to reject bad values
+  if (!(completionRate >= 0) || completionRate > 100) completionRate = 0;
 
   // Per-viewer record decides unique vs repeat
   let wasFirst = false;
@@ -1914,6 +1940,17 @@ exports.recordView = functions.https.onCall(async (data, context) => {
   }
   if (Object.keys(updates).length) {
     await db.ref(`feed/${postId}`).update(updates);
+  }
+
+  // For You: only log the clear cases (fast skip / near-full watch) — skip the ambiguous
+  // middle so the signal stays clean. Don't log the author's own views of their own post.
+  if (!isOwn) {
+    let type = null;
+    if (completionRate >= 75) type = 'complete';
+    else if (completionRate < 20) type = 'skip';
+    if (type) {
+      await logInteraction(uid, postId, type, getPostContentSignals(post)).catch(() => {});
+    }
   }
 
   return { success: true, unique: wasFirst };

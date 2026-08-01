@@ -3646,6 +3646,40 @@ function feedBuildUnseen(allPosts){
   return feedBuildBalanced(unseen);
 }
 
+// ── FOR YOU — v1, deliberately simple. Server (functions/index.js) logs each user's last 20
+// content interactions (userInteractions/{uid}: like=strongest positive, near-full watch=
+// positive, fast-skip=negative), each tagged with the post's category/vibe/mediaType at the
+// time. feedLoadPrefProfile() reads that rolling window back once per loadFeed() and turns it
+// into simple per-value tallies; feedCalculateEngagementScore below nudges ranking toward
+// whatever the user has recently responded well to. Hashtags aren't used yet — see the
+// server-side comment above logInteraction for why. ──
+var feedPrefProfile=null;
+function feedGetPostCategory(post){
+  return (post.missionId!=null && MISSIONS[post.missionId]) ? MISSIONS[post.missionId].tagKey : null;
+}
+function feedPrefBonus(post){
+  if(!feedPrefProfile) return 0;
+  var s=0;
+  var cat=feedGetPostCategory(post); if(cat) s+=(feedPrefProfile.category[cat]||0);
+  if(post.music) s+=(feedPrefProfile.vibe[post.music]||0);
+  if(post.mediaType) s+=(feedPrefProfile.mediaType[post.mediaType]||0)*0.3; // weak signal, mediaType alone says little
+  return s;
+}
+function feedLoadPrefProfile(){
+  if(!db||!userUID){ feedPrefProfile=null; return Promise.resolve(); }
+  return db.ref('userInteractions/'+userUID).once('value').then(function(snap){
+    var profile={category:{},vibe:{},mediaType:{}};
+    snap.forEach(function(c){
+      var v=c.val(); if(!v) return;
+      var weight=v.type==='skip'?-1:(v.type==='like'?2:1); // like > complete > skip(-1)
+      if(v.category) profile.category[v.category]=(profile.category[v.category]||0)+weight;
+      if(v.vibe) profile.vibe[v.vibe]=(profile.vibe[v.vibe]||0)+weight;
+      if(v.mediaType) profile.mediaType[v.mediaType]=(profile.mediaType[v.mediaType]||0)+weight;
+    });
+    feedPrefProfile=profile;
+  }).catch(function(){ feedPrefProfile=null; });
+}
+
 // Groups posts by mediaURL and interleaves them so no URL dominates.
 // e.g. if image A has 40 copies and B/C/D have 1 each:
 // result = [A,B,C,D, A,A,A,...] — the first 4 are all unique.
@@ -3658,8 +3692,9 @@ function feedCalculateEngagementScore(post){
   // Freshness: fresh posts get a boost that decays over a week (the "For You" recency factor)
   var ageH=(Date.now()-(post.timestamp||post.createdAt||0))/3600000;
   var recency=Math.max(0,1-ageH/168);
+  var prefBonus=feedPrefBonus(post); // nudge toward what this user has recently liked/finished
 
-  var score=(watchMinutes*0.4)+(completion*0.3)+(likes*0.2)+(followScore*0.1)+(recency*0.6);
+  var score=(watchMinutes*0.4)+(completion*0.3)+(likes*0.2)+(followScore*0.1)+(recency*0.6)+(prefBonus*2);
   feedEngagementScore[post.id]=score;
   return score;
 }
@@ -3855,9 +3890,11 @@ function loadFeed(isRefresh){
     return;
   }
 
-  // Load initial batch (first 20 posts; 21st probes for more)
+  // Load initial batch (first 20 posts; 21st probes for more) + this user's "For You"
+  // preference profile in parallel — feedBuildUnseen below scores using both.
   var query=db.ref('feed').orderByChild('timestamp').limitToLast(21);
-  query.once('value').then(function(snap){
+  Promise.all([query.once('value'), feedLoadPrefProfile()]).then(function(results){
+    var snap=results[0];
     feedAllPosts=[];
     snap.forEach(function(c){
       var p={id:c.key,...c.val()};
@@ -4478,10 +4515,13 @@ function feedRecordWatchTime(postId){
   if(!postId||!feedWatchTime[postId]) return;
   var elapsed=Date.now()-feedWatchTime[postId].start;
   feedWatchTime[postId].paused=(feedWatchTime[postId].paused||0)+elapsed;
-  // Report the view + watch time server-side (real unique/repeat/watch-time tracking)
-  if(elapsed>800 && db && userUID && firebase.functions){
+  // Report the view + watch time server-side (real unique/repeat/watch-time tracking).
+  // Lowered from 800ms so a genuine fast-skip (the "For You" negative signal) still gets
+  // reported — a near-instant swipe-past is exactly the case that used to be dropped here.
+  if(elapsed>150 && db && userUID && firebase.functions){
     var watchMs=Math.min(elapsed,600000);
-    firebase.functions().httpsCallable('recordView')({postId:postId,watchMs:watchMs}).catch(function(){});
+    var completionRate=feedCompletionRate[postId]||0;
+    firebase.functions().httpsCallable('recordView')({postId:postId,watchMs:watchMs,completionRate:completionRate}).catch(function(){});
   }
 }
 

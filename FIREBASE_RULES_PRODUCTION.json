@@ -317,6 +317,13 @@
       }
     },
 
+    "userInteractions": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": false
+      }
+    },
+
     "chatMeta": {
       "$uid": {
         ".read": "$uid === auth.uid",
