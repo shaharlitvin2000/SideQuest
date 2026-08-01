@@ -321,7 +321,7 @@ async function validateUsername(username) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// VALIDATE USERNAME
+// VALIDATE USERNAME — also unused from the client, see the note above registerUser below.
 // ══════════════════════════════════════════════════════════════════
 
 exports.validateUsername = functions.https.onCall(async (data, context) => {
@@ -387,6 +387,13 @@ function assessBotRisk(email, username, ip) {
   return riskScore;
 }
 
+// registerUser and validateUsername (below) are deployed but never called from the client —
+// the live signup path is doRegister() in index.html, which creates the Firebase Auth user
+// directly and claims the username via the usernames/ transaction, with none of the anti-bot
+// risk scoring or IP throttling these two implement. Left defined rather than deleted: this is
+// real, working anti-abuse logic that duplicates none of the moderation fixes made elsewhere
+// today, and could be wired up later without rewriting it. If genuinely not wanted, both are
+// safe to remove — nothing else calls exports.registerUser or exports.validateUsername.
 exports.registerUser = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
   const email = (data.email || '').trim().toLowerCase();
