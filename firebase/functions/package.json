@@ -1,6 +1,6 @@
 {
   "name": "flash-arena-functions",
-  "description": "Cloud Functions for Flash Arena",
+  "description": "Cloud Functions for Side Quest",
   "version": "1.0.0",
   "scripts": {
     "serve": "firebase emulators:start --only functions",

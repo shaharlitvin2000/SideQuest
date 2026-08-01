@@ -1,4 +1,4 @@
-# Flash Arena — Blaze Upgrade Checklist (do these in order)
+# Side Quest — Blaze Upgrade Checklist (do these in order)
 
 The app runs fine on the free Spark plan today, EXCEPT uploads (Storage was never
 enabled). Upgrading to Blaze unlocks Storage + push + secure server logic.

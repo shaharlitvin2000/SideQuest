@@ -1151,7 +1151,7 @@ async function sendPushNotification(targetUid, title, body, data) {
       },
       token: token,
       webpush: {
-        fcm_options: { link: 'https://flasharena.web.app/' },
+        fcm_options: { link: 'https://flasharena-f35b1.web.app/' },
         notification: {
           title: title,
           body: body,

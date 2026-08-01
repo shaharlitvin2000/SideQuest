@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Flash Arena - Production Deployment Script
+# Side Quest - Production Deployment Script
 # Version: 2.0
 # Date: 2026-06-04
 # Usage: bash DEPLOY.sh
@@ -8,7 +8,7 @@
 set -e  # Exit on error
 
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║         Flash Arena - Production Deployment                ║"
+echo "║         Side Quest - Production Deployment                 ║"
 echo "║                    Version 2.0 Final                       ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
