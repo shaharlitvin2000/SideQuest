@@ -509,7 +509,7 @@ img,video{max-width:100%}
 .search-row-name{font-size:14px;font-weight:600}
 .search-row-sub{font-size:12px;color:var(--muted)}
 .pf-mini-actions{display:flex;gap:8px;margin:10px auto 0;max-width:330px;width:100%;padding:0 20px;box-sizing:border-box}
-.pf-mini-btn{flex:1;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:9px 4px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:transform .12s,background .15s;box-shadow:none}
+.pf-mini-btn{flex:1;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:var(--r-full);padding:9px 4px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:transform .12s,background .15s;box-shadow:none}
 .pf-mini-btn:active{transform:scale(.96)}
 .pf-mini-btn:hover{background:var(--bg2);border-color:var(--accent)}
 .pf-mini-btn:active{transform:scale(.95)}
@@ -553,12 +553,12 @@ img,video{max-width:100%}
 .reward-cost{font-size:13px;color:var(--gold);font-weight:700}
 .reward-btn{background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:20px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer}
 .reward-btn:disabled{background:var(--bg3);color:var(--muted);cursor:default}
-.achievements-wrap{padding:14px 16px 0}
+.achievements-wrap{padding:var(--sp-4) var(--sp-4) 0}
 .achievements-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .achievements-icon{display:flex;align-items:center;justify-content:center}
-.achievements-title{font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--text)}
+.achievements-title{font-family:var(--font-display);font-size:var(--t-title);font-weight:600;color:var(--text)}
 .achievements-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.ach-count{flex-shrink:0;display:inline-flex;align-items:center;background:var(--accent-soft);border:1px solid rgba(255,91,57,.25);border-radius:20px;padding:6px 14px;font-family:var(--font);font-size:14px;font-weight:700;line-height:1}
+.ach-count{flex-shrink:0;display:inline-flex;align-items:center;background:var(--accent-soft);border:1px solid rgba(255,91,57,.25);border-radius:var(--r-full);padding:6px 14px;font-family:var(--font);font-size:14px;font-weight:700;line-height:1}
 .ach-count-num{color:var(--accent)}
 .ach-count-total{color:var(--muted);font-weight:600}
 .ach-cat{margin-bottom:18px}
@@ -758,23 +758,23 @@ img,video{max-width:100%}
 
 /* ── PROFILE ── */
 .pf-head{display:none}
-.pf-name{font-family:var(--font-display);font-size:18px;font-weight:600}
-.pf-level{display:inline-block;font-size:11px;font-weight:700;padding:4px 11px;border-radius:999px;background:var(--accent-soft);border:1px solid transparent;color:var(--accent)}
+.pf-name{font-family:var(--font-display);font-size:var(--t-title);font-weight:600}
+.pf-level{display:inline-block;font-size:11px;font-weight:700;padding:4px 11px;border-radius:var(--r-full);background:var(--accent-soft);border:1px solid transparent;color:var(--accent)}
 .pf-avatar{width:100%;height:100%;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:24px;font-weight:700;color:var(--accent)}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:none;border:none;border-radius:0;padding:0;margin:14px 16px 0}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:none;border:none;border-radius:0;padding:0;margin:var(--sp-4) var(--sp-4) 0}
 .stat{text-align:center;padding:4px 6px;position:relative;overflow:visible}
 .stat::before{display:none}
 .stat+.stat{border-inline-start:1px solid var(--line)}
 .stat-n{font-family:var(--font);font-size:16px;font-weight:700;line-height:1;color:var(--text);font-variant-numeric:tabular-nums}
 .stat-l{font-size:9px;color:var(--faint);margin-top:3px;font-weight:600}
-.rank-wrap{padding:12px 16px 0}
+.rank-wrap{padding:var(--sp-3) var(--sp-4) 0}
 .rank-box{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-lg);padding:13px 16px;box-shadow:var(--sh0)}
 .rank-lbl{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
 .rank-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .rank-name{font-family:var(--font);font-size:15px;font-weight:700}
 .rank-next{font-size:11px;color:var(--muted)}
-.ptrack{height:6px;background:var(--bg3);border-radius:999px;overflow:hidden}
-.pfill{height:100%;background:var(--grad);border-radius:999px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.ptrack{height:6px;background:var(--bg3);border-radius:var(--r-full);overflow:hidden}
+.pfill{height:100%;background:var(--grad);border-radius:var(--r-full);transition:width .6s cubic-bezier(.4,0,.2,1)}
 .ptrack-lbl{font-size:11px;color:var(--muted);margin-top:7px}
 .settings-list{padding:16px 16px 0;display:flex;flex-direction:column;gap:0}
 .setting-row{background:var(--bg2);border:none;border-bottom:1px solid var(--line);border-radius:0;padding:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .15s}
@@ -1255,7 +1255,7 @@ svg.ic-lg{width:19px;height:19px}
 .liked-empty-sub{font-size:12px;color:var(--muted);max-width:210px;line-height:1.55}
 
 /* ───── MY PROFILE HERO ───── */
-.my-hero{padding:16px 16px 12px;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;overflow:hidden}
+.my-hero{padding:var(--sp-4) var(--sp-4) var(--sp-3);display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;overflow:hidden}
 .my-hero-bg{position:absolute;inset:0;pointer-events:none;opacity:.65}
 .my-hero-ring{width:78px;height:78px;border-radius:50%;padding:3px;margin-bottom:9px;flex-shrink:0;z-index:1;position:relative;box-shadow:0 4px 18px rgba(0,0,0,.16)}
 .my-hero-gap{width:100%;height:100%;border-radius:50%;background:var(--bg2);padding:3px;box-sizing:border-box}
