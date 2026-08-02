@@ -196,7 +196,7 @@ img,video{max-width:100%}
 .si-streak-sub{text-align:center;font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
 .si-freezes-title{font-size:12px;font-weight:700;color:#7DD8FF;text-align:center;margin-top:18px}
 .si-freezes{display:flex;justify-content:center;gap:10px;margin:12px 0 6px}
-.si-freeze{width:52px;height:52px;border-radius:14px;background:rgba(125,216,255,.12);border:1px solid rgba(125,216,255,.35);display:flex;align-items:center;justify-content:center;font-size:24px}
+.si-freeze{width:52px;height:52px;border-radius:var(--r-lg);background:rgba(125,216,255,.12);border:1px solid rgba(125,216,255,.35);display:flex;align-items:center;justify-content:center;font-size:24px}
 .si-freeze.off{opacity:.22;filter:grayscale(1)}
 .si-explain{font-size:12.5px;color:var(--muted);line-height:1.6;text-align:center;margin-top:10px}
 .rank-pill{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--accent);background:var(--bg2);border:none;border-radius:11px;padding:5px 11px;cursor:pointer;transition:transform .12s;white-space:nowrap}
@@ -208,7 +208,7 @@ img,video{max-width:100%}
 .premium-badge svg{width:1em;height:1em;display:block}
 .pbadge-slot{display:inline-flex;vertical-align:middle}
 .ranks-list{display:flex;flex-direction:column;gap:8px;margin:16px 0}
-.rank-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;opacity:.6;transition:all .2s}
+.rank-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);opacity:.6;transition:all .2s}
 .rank-item.reached{opacity:1}
 .rank-item.current{opacity:1;border-color:var(--accent);background:var(--accent-soft)}
 .rank-item-emoji{font-size:26px;line-height:1}
@@ -253,12 +253,12 @@ img,video{max-width:100%}
 .ann-overlay.show{display:flex}
 .ann-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-xl);max-width:380px;width:100%;padding:28px 22px 20px;text-align:center;position:relative;animation:pop .28s cubic-bezier(.34,1.3,.5,1);max-height:88vh;display:flex;flex-direction:column}
 .ann-icon{font-size:48px;line-height:1;margin-bottom:12px;flex-shrink:0}
-.ann-title{font-family:var(--font-display);font-size:20px;font-weight:600;margin-bottom:14px;flex-shrink:0}
+.ann-title{font-family:var(--font-display);font-size:var(--t-title);font-weight:600;margin-bottom:14px;flex-shrink:0}
 .ann-body{flex:1;min-height:0;overflow-y:auto;text-align:start;margin-bottom:16px;-webkit-overflow-scrolling:touch}
 .ann-line{font-size:14px;color:var(--text);line-height:1.55;margin-bottom:11px;display:flex;gap:9px}
 .ann-line::before{content:'•';color:var(--accent);font-weight:700;flex-shrink:0}
 .ann-gift{margin-top:14px;background:var(--bg3);border:1px dashed var(--gold);border-radius:12px;padding:14px;font-size:13.5px;font-weight:600;color:var(--text);text-align:center;line-height:1.5}
-.ann-claim{flex-shrink:0;width:100%;background:var(--grad);color:#fff;border:1px solid transparent;box-shadow:var(--shadow-cta);border-radius:14px;padding:15px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .12s;box-shadow:none}
+.ann-claim{flex-shrink:0;width:100%;background:var(--grad);color:#fff;border:1px solid transparent;border-radius:var(--r-lg);padding:15px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .12s;box-shadow:none}
 .ann-claim:disabled{opacity:.4;cursor:default;box-shadow:none}
 .ann-claim:not(:disabled):active{transform:scale(.97)}
 .ann-skip{flex-shrink:0;background:none;border:none;color:var(--muted);font-family:var(--font);font-size:13px;cursor:pointer;margin-top:10px;padding:4px}
@@ -278,7 +278,7 @@ img,video{max-width:100%}
 /* ───── SAFETY ───── */
 .safety-rules{display:flex;flex-direction:column;gap:13px;margin:8px 0 20px}
 .safety-rule{display:flex;align-items:flex-start;gap:11px;font-size:13.5px;line-height:1.45;color:var(--text)}
-.safety-ic{font-size:18px;flex-shrink:0;line-height:1.3}
+.safety-ic{font-size:14px;font-weight:700;color:var(--green);flex-shrink:0;line-height:1.45}
 .m-safety{display:flex;align-items:flex-start;gap:9px;background:rgba(240,86,110,.1);border:1px solid rgba(240,86,110,.32);border-radius:var(--r);padding:11px 13px;margin:12px 0 4px;font-size:12.5px;line-height:1.45;color:var(--text)}
 .m-safety-ic{font-size:16px;flex-shrink:0}
 
@@ -409,7 +409,7 @@ img,video{max-width:100%}
 .onb-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-xl);max-width:360px;width:100%;padding:34px 24px 24px;text-align:center;position:relative;animation:pop .25s cubic-bezier(.34,1.3,.5,1)}
 .onb-skip{position:absolute;top:14px;inset-inline-end:16px;background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:var(--font)}
 .onb-emoji{font-size:54px;margin-bottom:16px;line-height:1}
-.onb-title{font-family:var(--font);font-size:21px;font-weight:600;margin-bottom:10px}
+.onb-title{font-family:var(--font);font-size:var(--t-title);font-weight:600;margin-bottom:10px}
 .onb-text{font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:22px}
 .onb-dots{display:flex;gap:7px;justify-content:center;margin-bottom:20px}
 .onb-dot{width:7px;height:7px;border-radius:50%;background:var(--bg3);transition:all .2s}
@@ -437,7 +437,7 @@ img,video{max-width:100%}
 .blocked-unbtn{background:var(--accent-soft);border:1px solid rgba(255,91,57,.3);color:var(--accent);font-family:var(--font);font-size:12px;font-weight:600;padding:7px 14px;border-radius:10px;cursor:pointer}
 .blocked-unbtn:active{transform:scale(.95)}
 .report-reasons{display:flex;flex-direction:column;gap:8px;margin:16px 0}
-.report-reason{text-align:start;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s}
+.report-reason{text-align:start;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);font-family:var(--font);font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s}
 .report-reason:active{transform:scale(.98)}
 .report-reason .rr-ic{display:inline-flex;vertical-align:-3px;margin-inline-end:6px}
 .report-reason .rr-ic svg,.upload-draft-btn .rr-ic svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
@@ -485,7 +485,7 @@ img,video{max-width:100%}
 .daily-streak-line{font-size:15px;font-weight:700;color:var(--text);margin-top:10px}
 .daily-ms-line{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:3px}
 .share-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
-.share-opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;font-family:var(--font);font-size:11px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s}
+.share-opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);font-family:var(--font);font-size:11px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s}
 .share-opt:active{transform:scale(.95)}
 .share-ic{font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center;height:26px}
 .share-ic svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -1011,7 +1011,8 @@ svg.ic-lg{width:19px;height:19px}
 .check-box{background:var(--bg2);border:1px solid rgba(255,91,57,.18);border-radius:var(--r-lg);padding:16px;margin-bottom:16px}
 .check-title{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:12px}
 .check-item{font-size:13px;color:var(--text);padding:6px 0;line-height:1.5;padding-inline-start:24px;position:relative}
-.check-item::before{content:attr(data-icon);position:absolute;inset-inline-start:0;font-size:14px}
+.check-item::before{content:attr(data-icon);position:absolute;inset-inline-start:0;font-size:14px;color:var(--green)}
+.check-item[data-icon="✕"]::before{color:var(--accent)}
 .check-item:nth-child(2)::before{content:'✓'}
 .check-item:nth-child(3)::before{content:'✓'}
 .check-item:nth-child(4)::before{content:'✓'}
@@ -1915,10 +1916,10 @@ svg.ic-lg{width:19px;height:19px}
 
     <div class="check-box">
       <div class="check-title" data-i="checkTitle">What we look for:</div>
-      <div class="check-item" data-i="check1">Does the image/video show a genuine attempt?</div>
-      <div class="check-item" data-i="check2">Is the person actually doing what the mission asks?</div>
-      <div class="check-item" data-i="check3">Can we see clear evidence (person, action, location)?</div>
-      <div class="check-item" data-i="check4">Fake, blurry, or completely unrelated photos = rejected</div>
+      <div class="check-item" data-icon="✓" data-i="check1">Does the image/video show a genuine attempt?</div>
+      <div class="check-item" data-icon="✓" data-i="check2">Is the person actually doing what the mission asks?</div>
+      <div class="check-item" data-icon="✓" data-i="check3">Can we see clear evidence (person, action, location)?</div>
+      <div class="check-item" data-icon="✕" data-i="check4">Fake, blurry, or completely unrelated photos = rejected</div>
     </div>
 
     <div class="upload-zone">
@@ -9126,12 +9127,12 @@ window.addEventListener('beforeunload',function(){
     <div class="modal-title"><svg class="ic ic-lg" viewBox="0 0 24 24" style="vertical-align:-3px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span data-i="safetyTitle">Community &amp; Safety</span></div>
     <div class="modal-desc" data-i="safetyIntro">Side Quest is about fun, real-life missions — let's keep everyone safe.</div>
     <div class="safety-rules">
-      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule1">Never do anything dangerous, illegal, or that could hurt you or others.</span></div>
-      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule2">No dangerous dares, violence, hate, nudity or self-harm.</span></div>
-      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule3">Respect others — no harassment or bullying.</span></div>
-      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule4">Be age-appropriate. You must be 13 or older.</span></div>
-      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule5">You are responsible for your own safety — don't trespass or break the law.</span></div>
-      <div class="safety-rule"><span class="safety-ic"><span data-i="safetyRule6">Report anything harmful — we review every report.</span></div>
+      <div class="safety-rule"><span class="safety-ic">✓</span><span data-i="safetyRule1">Never do anything dangerous, illegal, or that could hurt you or others.</span></div>
+      <div class="safety-rule"><span class="safety-ic">✓</span><span data-i="safetyRule2">No dangerous dares, violence, hate, nudity or self-harm.</span></div>
+      <div class="safety-rule"><span class="safety-ic">✓</span><span data-i="safetyRule3">Respect others — no harassment or bullying.</span></div>
+      <div class="safety-rule"><span class="safety-ic">✓</span><span data-i="safetyRule4">Be age-appropriate. You must be 13 or older.</span></div>
+      <div class="safety-rule"><span class="safety-ic">✓</span><span data-i="safetyRule5">You are responsible for your own safety — don't trespass or break the law.</span></div>
+      <div class="safety-rule"><span class="safety-ic">✓</span><span data-i="safetyRule6">Report anything harmful — we review every report.</span></div>
     </div>
     <button class="modal-cta" onclick="acknowledgeSafety()" data-i="safetyAgree">I understand</button>
   </div>
