@@ -279,7 +279,7 @@ img,video{max-width:100%}
 .safety-rules{display:flex;flex-direction:column;gap:13px;margin:8px 0 20px}
 .safety-rule{display:flex;align-items:flex-start;gap:11px;font-size:13.5px;line-height:1.45;color:var(--text)}
 .safety-ic{font-size:18px;flex-shrink:0;line-height:1.3}
-.m-safety{display:flex;align-items:flex-start;gap:9px;background:rgba(240,86,110,.1);border:1px solid rgba(240,86,110,.32);border-radius:12px;padding:11px 13px;margin:12px 0 4px;font-size:12.5px;line-height:1.45;color:var(--text)}
+.m-safety{display:flex;align-items:flex-start;gap:9px;background:rgba(240,86,110,.1);border:1px solid rgba(240,86,110,.32);border-radius:var(--r);padding:11px 13px;margin:12px 0 4px;font-size:12.5px;line-height:1.45;color:var(--text)}
 .m-safety-ic{font-size:16px;flex-shrink:0}
 
 /* ───── IN-APP CAMERA ───── */
@@ -997,7 +997,7 @@ svg.ic-lg{width:19px;height:19px}
 .modal{background:var(--bg2);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:24px;width:100%;max-width:480px;animation:up .25s cubic-bezier(.4,0,.2,1);max-height:90vh;overflow-y:auto;box-shadow:0 -12px 48px rgba(0,0,0,.14);border-top:1px solid var(--line)}
 @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:36px;height:4px;background:var(--muted);opacity:.2;border-radius:2px;margin:0 auto 20px}
-.modal-badge-d{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 11px;border-radius:20px;display:inline-block;margin-bottom:9px}
+.modal-badge-d{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 11px;border-radius:var(--r-full);display:inline-block;margin-bottom:9px}
 .modal-title{font-family:var(--font-display);font-size:var(--t-title);font-weight:700;line-height:1.3;margin-bottom:8px}
 .modal-desc{font-size:var(--t-body);color:var(--muted);line-height:1.65;margin-bottom:18px}
 .modal-meta{display:flex;gap:10px;margin-bottom:18px}
@@ -1022,26 +1022,26 @@ svg.ic-lg{width:19px;height:19px}
 .upload-sub{font-size:12px;color:var(--muted);margin-top:5px}
 /* TikTok-style upload sheet: compact, thumbnail + caption */
 .uv-modal{padding-bottom:14px}
-.uv-title{font-family:var(--font-display);font-size:17px;font-weight:700;text-align:center;margin-bottom:2px}
-.uv-sources{display:flex;gap:10px;margin-top:14px}
-.uv-source{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 8px;background:var(--bg3);border:1px solid var(--border2);border-radius:16px;color:var(--text);font-family:var(--font);font-weight:700;font-size:14px;cursor:pointer;transition:transform .12s,border-color .15s}
+.uv-title{font-family:var(--font-display);font-size:var(--t-title);font-weight:700;text-align:center;margin-bottom:2px}
+.uv-sources{display:flex;gap:10px;margin-top:var(--sp-4)}
+.uv-source{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 8px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-lg);color:var(--text);font-family:var(--font);font-weight:700;font-size:14px;cursor:pointer;transition:transform .12s,border-color .15s}
 .uv-source:active{transform:scale(.96)}
 .uv-source svg{width:26px;height:26px}
 .uv-source-cam{background:var(--accent-soft);border-color:rgba(255,91,57,.32);color:var(--accent)}
-.uv-compose{display:flex;gap:12px;margin-top:14px;align-items:stretch}
-.uv-thumb{position:relative;flex-shrink:0;width:96px;aspect-ratio:3/4;border-radius:14px;overflow:hidden;background:#000;border:none;padding:0;cursor:pointer}
+.uv-compose{display:flex;gap:12px;margin-top:var(--sp-4);align-items:stretch}
+.uv-thumb{position:relative;flex-shrink:0;width:96px;aspect-ratio:3/4;border-radius:var(--r-lg);overflow:hidden;background:#000;border:none;padding:0;cursor:pointer}
 .uv-thumb video,.uv-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .uv-thumb-edit{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.62);color:#fff;font-size:10px;font-weight:700;padding:4px;text-align:center;letter-spacing:.3px}
-.uv-caption{flex:1;min-width:0;min-height:128px;resize:none;background:var(--bg3);border:1px solid var(--border2);border-radius:14px;padding:12px 13px;color:var(--text);font-family:var(--font);font-size:14px;line-height:1.45}
+.uv-caption{flex:1;min-width:0;min-height:128px;resize:none;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-lg);padding:12px 13px;color:var(--text);font-family:var(--font);font-size:14px;line-height:1.45}
 .uv-caption:focus{outline:none;border-color:var(--accent)}
-.uv-post{margin-top:14px}
-.uv-secondary{display:flex;gap:8px;margin-top:12px}
-.uv-chip{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;color:var(--muted);font-family:var(--font);font-weight:600;font-size:12.5px;cursor:pointer;transition:transform .12s}
+.uv-post{margin-top:var(--sp-4)}
+.uv-secondary{display:flex;gap:8px;margin-top:var(--sp-3)}
+.uv-chip{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--muted);font-family:var(--font);font-weight:600;font-size:12.5px;cursor:pointer;transition:transform .12s}
 .uv-chip:active{transform:scale(.97)}
 .uv-chip svg{width:16px;height:16px}
 .upload-choices{display:flex;gap:10px;margin-top:16px}
 .upload-choices.uvc{margin-top:4px;margin-bottom:14px}
-.upload-choice{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:14px;padding:14px 8px;font-family:var(--font);font-weight:600;font-size:13px;cursor:pointer;transition:transform .12s,border-color .2s,background .2s}
+.upload-choice{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:var(--r-lg);padding:14px 8px;font-family:var(--font);font-weight:600;font-size:13px;cursor:pointer;transition:transform .12s,border-color .2s,background .2s}
 .upload-choice .uc-ic{font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center}
 .upload-choice:active{transform:scale(.95)}
 .upload-choice.uc-record{background:var(--bg3);border-color:var(--line);color:var(--text)}
