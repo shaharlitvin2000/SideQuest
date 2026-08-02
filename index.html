@@ -525,7 +525,7 @@ img,video{max-width:100%}
 .chat-overlay{position:fixed;top:0;bottom:0;left:0;right:0;height:100%;height:100dvh;background:var(--bg);z-index:400;display:none;flex-direction:column;max-width:480px;margin:0 auto}
 .chat-overlay.show{display:flex}
 .chat-window{display:flex;flex-direction:column;height:100%;width:100%;min-height:0}
-.chat-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.chat-header{display:flex;align-items:center;gap:12px;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 14px;border-bottom:1px solid var(--border);background:var(--bg2)}
 .chat-back{background:none;border:none;color:var(--text);font-size:22px;cursor:pointer}
 .chat-peer-name{font-size:16px;font-weight:600}
 .chat-messages{flex:1 1 auto;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
@@ -864,7 +864,7 @@ img,video{max-width:100%}
 .mv-scroll::-webkit-scrollbar{display:none}
 .mv-slide{position:relative;height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;background:#000}
 .mv-slide video,.mv-slide img{width:100%;height:100%;object-fit:contain;position:relative;z-index:1}
-/* landscape photos: fill the empty bars with a blurred copy of the image instead of black */
+/* landscape photos/videos: fill the empty bars with a blurred copy of the frame instead of black */
 .mv-blur-bg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;filter:blur(26px) brightness(.5);transform:scale(1.15);pointer-events:none}
 .mv-info{position:absolute;left:0;right:0;bottom:0;padding:22px 16px calc(30px + env(safe-area-inset-bottom, 0px));background:linear-gradient(180deg,transparent,rgba(0,0,0,.82));color:#fff;pointer-events:none}
 .mv-author{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;font-size:15px;color:#fff;pointer-events:auto;text-shadow:0 1px 4px rgba(0,0,0,.6)}
@@ -1067,7 +1067,7 @@ svg.ic-lg{width:19px;height:19px}
 @keyframes pulse{0%{opacity:.8}50%{opacity:1}100%{opacity:.8}}
 
 /* ── TOAST ── */
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-90px);background:rgba(18,21,13,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:#fff;font-size:13px;font-weight:600;padding:12px 20px;border-radius:40px;z-index:10500;transition:transform .3s cubic-bezier(.4,0,.2,1);white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12)}
+.toast{position:fixed;top:calc(20px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%) translateY(-90px);background:rgba(18,21,13,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:#fff;font-size:13px;font-weight:600;padding:12px 20px;border-radius:40px;z-index:10500;transition:transform .3s cubic-bezier(.4,0,.2,1);white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12)}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
 /* ── FEED ── */
@@ -1121,12 +1121,12 @@ svg.ic-lg{width:19px;height:19px}
 @keyframes heartBurst{0%{transform:translate(-50%,-50%) scale(0);opacity:1}40%{transform:translate(-50%,-50%) scale(1.45);opacity:1}70%{transform:translate(-50%,-50%) scale(1.15);opacity:.85}100%{transform:translate(-50%,-50%) scale(1.3);opacity:0}}
 .feed-progress{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,.15);z-index:4;pointer-events:none}
 .feed-progress-fill{height:100%;background:rgba(255,255,255,.85);width:0%;transition:width .25s linear}
-.feed-mute-btn{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:5;border:1px solid rgba(255,255,255,.1);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.feed-mute-btn{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;z-index:5;border:1px solid rgba(255,255,255,.1);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .feed-mute-btn svg{width:18px;height:18px;display:block;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 .feed-pause-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:56px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:3;filter:drop-shadow(0 2px 8px rgba(0,0,0,.6))}
 .feed-pause-icon svg{width:56px;height:56px;display:block}
 .feed-pause-icon.show{opacity:1}
-.feed-top-bar{position:absolute;top:0;left:0;right:0;z-index:20;pointer-events:auto;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent)}
+.feed-top-bar{position:absolute;top:0;left:0;right:0;z-index:20;pointer-events:auto;padding-top:env(safe-area-inset-top,0px);background:linear-gradient(180deg,rgba(0,0,0,.55),transparent)}
 .feed-tabs{display:flex;align-items:center;height:50px;padding:0 20px;gap:24px}
 .feed-tab{font-size:14px;font-weight:600;color:rgba(255,255,255,.65);text-shadow:0 1px 4px rgba(0,0,0,.7);cursor:pointer;padding:12px 0;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
 .feed-tab.active{color:#fff;border-bottom-color:var(--accent)}
@@ -1173,7 +1173,7 @@ svg.ic-lg{width:19px;height:19px}
 .fpv-overlay{position:fixed!important;inset:0!important;z-index:10200!important;max-width:480px;margin:0 auto;background:#000;display:none}
 .fpv-overlay.show{display:block;animation:fpvIn .25s cubic-bezier(.4,0,.2,1)}
 @keyframes fpvIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.fpv-topbar{position:absolute;top:0;left:0;right:0;height:58px;display:flex;align-items:center;padding:0 14px;gap:10px;z-index:20;background:linear-gradient(rgba(0,0,0,.5),transparent);pointer-events:none;direction:ltr}
+.fpv-topbar{position:absolute;top:0;left:0;right:0;height:58px;display:flex;align-items:center;padding:env(safe-area-inset-top,0px) 14px 0;gap:10px;z-index:20;background:linear-gradient(rgba(0,0,0,.5),transparent);pointer-events:none;direction:ltr}
 .fpv-back{background:none;border:none;font-size:22px;cursor:pointer;color:#fff;line-height:1;padding:8px;text-shadow:0 1px 6px rgba(0,0,0,.7);pointer-events:all;touch-action:manipulation}
 .fpv-htitle{font-family:var(--font);font-size:14px;font-weight:600;color:#fff;letter-spacing:.3px;text-shadow:0 1px 6px rgba(0,0,0,.5)}
 .fpv-body{position:absolute;inset:0;overflow:hidden;touch-action:none}
@@ -5421,7 +5421,7 @@ function openMediaViewer(posts,idx){
     var col=(typeof getUserColor==='function')?getUserColor(nm||uid||'?'):'var(--accent)';
     var cap=p.caption||p.missionTitle||'';
     var media=(p.mediaType==='video')
-      ? '<video src="'+escHtml(p.mediaURL)+'#t=0.1" poster="'+escHtml(bunnyThumb(p.mediaURL))+'" playsinline loop preload="metadata"></video>'
+      ? '<div class="mv-blur-bg" style="background-image:url(\''+escHtml(bunnyThumb(p.mediaURL))+'\')"></div><video src="'+escHtml(p.mediaURL)+'#t=0.1" poster="'+escHtml(bunnyThumb(p.mediaURL))+'" playsinline loop preload="metadata"></video>'
       : '<div class="mv-blur-bg" style="background-image:url(\''+escHtml(p.mediaURL)+'\')"></div><img src="'+escHtml(p.mediaURL)+'" alt="">';
     return '<div class="mv-slide">'+media
       +'<div class="mv-pause"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>'
