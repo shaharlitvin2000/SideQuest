@@ -467,17 +467,18 @@ img,video{max-width:100%}
 .daily-cta:hover{border-color:rgba(232,169,59,.5)}
 .daily-cta:active{transform:scale(.98)}
 .daily-cta-tag{background:var(--gold-soft);color:var(--gold);font-weight:700;border-radius:11px;min-width:22px;height:22px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
-.daily-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
-.daily-day{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.daily-grid{display:flex;gap:8px;margin:18px 0;overflow-x:auto;padding:3px 2px 6px;scroll-snap-type:x proximity;scrollbar-width:none;-ms-overflow-style:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 16px,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(to right,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
+.daily-grid::-webkit-scrollbar{display:none}
+.daily-day{flex:0 0 56px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;scroll-snap-align:center;transition:transform .15s}
 .daily-day-lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:capitalize}
-.daily-day{position:relative}
-.daily-day.claimed{background:var(--accent-soft);border-color:rgba(255,91,57,.3);opacity:.9}
-.daily-day.claimed .daily-day-pts{color:var(--accent)}
+.daily-day.claimed{opacity:.5}
+.daily-day.claimed .daily-day-pts{color:var(--muted)}
 .daily-day-chk{position:absolute;top:3px;inset-inline-end:5px;font-size:10px;font-weight:700;color:var(--accent)}
-.daily-day.next{border:1.5px dashed var(--accent)}
+.daily-day.next{border-color:var(--accent)}
 .daily-day.next .daily-day-lbl{color:var(--accent);font-weight:700}
 .daily-day-pts{font-size:13px;font-weight:700;color:var(--text)}
-.daily-day.today{border-color:rgba(232,169,59,.45);background:rgba(232,169,59,.08)}
+.daily-day.today{border:1.5px solid var(--accent);background:var(--accent-soft);transform:scale(1.1);box-shadow:0 4px 14px -6px rgba(255,91,57,.45)}
+.daily-day.today .daily-day-lbl{color:var(--accent);font-weight:700}
 .daily-day.milestone{border-color:var(--gold-ic);background:var(--gold-soft)}
 .daily-day.milestone .daily-day-pts{color:var(--gold)}
 .daily-day-ms{font-size:8px;font-weight:700;color:var(--gold);letter-spacing:.2px;text-transform:uppercase}
@@ -657,10 +658,9 @@ img,video{max-width:100%}
 .mcard:hover{border-color:#DCD9E3}
 .mcard.cat-social,.mcard.cat-dare,.mcard.cat-explore{background:var(--bg2)}
 /* category-coloured top edge — makes each quest card feel distinct & intentional */
-
-
-
-
+.mcard.cat-social{border-top:3px solid #5C7FB5}
+.mcard.cat-dare{border-top:3px solid #B04E36}
+.mcard.cat-explore{border-top:3px solid #3F7D62}
 .mcard:nth-child(1){grid-column:1/-1}
 .mcard:nth-child(2){animation-delay:.06s}
 .mcard:nth-child(3){animation-delay:.12s}
@@ -7168,10 +7168,13 @@ function openDailyReward(){
     const ms=dailyMilestoneFor(d);
     const isClaimed=d<day||(d===day&&!claimable);
     const isToday=claimable&&d===day;
-    const isNext=!isClaimed&&!isToday&&d===day+1;
+    // "next" only matters as a focal point when today's already been claimed —
+    // otherwise it competes with .today for attention and it's unclear which is "now".
+    const isNext=!isClaimed&&!isToday&&d===day+1&&!claimable;
+    const isFocus=isToday||isNext;
     var cls='daily-day'+(isToday?' today':'')+(isClaimed?' claimed':'')+(isNext?' next':'')+(ms?' milestone':'');
     var lbl=isNext?t('tomorrow'):(t('day')+' '+d);
-    return '<div class="'+cls+'"><div class="daily-day-lbl">'+lbl+'</div>'
+    return '<div class="'+cls+'"'+(isFocus?' data-focus="1"':'')+'><div class="daily-day-lbl">'+lbl+'</div>'
       +'<div class="daily-day-pts">★'+dailyRewardFor(d)+'</div>'
       +(ms?'<div class="daily-day-ms">'+t('dailyMsLbl')+'</div>':'')
       +(isClaimed?'<div class="daily-day-chk">✓</div>':'')+'</div>';
@@ -7191,6 +7194,10 @@ function openDailyReward(){
   const btn=document.getElementById('daily-claim-btn');
   if(btn){ btn.disabled=!claimable; btn.textContent=claimable?t('dailyClaim'):t('dailyClaimed'); }
   document.getElementById('daily-modal').classList.add('show');
+  requestAnimationFrame(function(){
+    var anchor=grid&&grid.querySelector('[data-focus]');
+    if(anchor) anchor.scrollIntoView({inline:'center',block:'nearest'});
+  });
 }
 var _dailyInFlight=false;
 async function claimDaily(){
