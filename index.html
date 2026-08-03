@@ -3939,7 +3939,11 @@ function loadFeed(isRefresh){
     feedAllPosts=[];
     snap.forEach(function(c){
       var p={id:c.key,...c.val()};
-      if(isSafePost(p) && !_blockedSet.has(p.uid) && !_mutedSet.has(p.uid)) feedAllPosts.push(p);
+      // forYouEligible is a server-decided freshness gate (firebase/functions/index.js:
+      // refreshForYouFreshness) -- it only applies to the For You tab. Following still shows
+      // everything from people you follow regardless of how stale/quiet a post has gone.
+      var forYouOk=(feedMode!=='foryou')||(p.forYouEligible!==false);
+      if(isSafePost(p) && !_blockedSet.has(p.uid) && !_mutedSet.has(p.uid) && forYouOk) feedAllPosts.push(p);
     });
     feedAllPosts.reverse();
 

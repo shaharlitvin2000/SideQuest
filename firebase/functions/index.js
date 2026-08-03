@@ -1633,6 +1633,73 @@ exports.cleanupOldPosts = functions
 });
 
 // ══════════════════════════════════════════════════════════════════
+// FOR YOU FRESHNESS DECAY - SCHEDULED DAILY
+//
+// This is a separate layer from the per-user "For You" personalization (userInteractions/
+// logInteraction above) -- it decides which posts are even IN the For You candidate pool,
+// regardless of who's looking. It never deletes or hides a post anywhere else (profile grid,
+// saved, direct links, Following feed all still show it) -- it only sets feed/{postId}/
+// forYouEligible, which loadFeed() on the client filters on for the For You tab specifically.
+//
+// Rule: once a post turns ~28 days old, and every ~30 days after that (so a 1-year-old post
+// has been re-checked roughly a dozen times by then), count how many distinct viewers watched
+// it in the last 7 days (postViews/{postId}/*/lastAt). Below FRESHNESS_MIN_RECENT_VIEWS ->
+// dropped from For You. At/above it -> (re)included, so a post that goes viral again a year
+// later can come back. There is no real production traffic yet to calibrate the threshold
+// against, so treat the number below as a starting point, not gospel.
+// ══════════════════════════════════════════════════════════════════
+const FRESHNESS_MIN_AGE_MS = 28 * 24 * 60 * 60 * 1000;  // first check once a post turns ~28 days old
+const FRESHNESS_RECHECK_MS = 30 * 24 * 60 * 60 * 1000;  // then re-check every ~30 days, indefinitely
+const FRESHNESS_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;    // "recent" = last 7 days
+const FRESHNESS_MIN_RECENT_VIEWS = 5;                    // tune once there's real traffic data
+const FRESHNESS_BATCH_LIMIT = 500;                       // cap per run so one invocation can't run long/expensive
+
+// Exported so it can be unit-tested directly against the RTDB emulator without needing the
+// scheduler or a live Cloud Functions environment (see firebase/functions/test-freshness.js).
+async function runForYouFreshnessCheck(now) {
+  now = now || Date.now();
+  const feedSnap = await db.ref('feed').orderByChild('timestamp')
+    .endAt(now - FRESHNESS_MIN_AGE_MS).limitToFirst(FRESHNESS_BATCH_LIMIT).once('value');
+
+  const updates = {};
+  let checked = 0, madeEligible = 0, madeIneligible = 0;
+  const tasks = [];
+
+  feedSnap.forEach(child => {
+    const post = child.val();
+    const postId = child.key;
+    const lastChecked = post.freshnessCheckedAt || 0;
+    if (now - lastChecked < FRESHNESS_RECHECK_MS) return; // not due for a (re)check yet
+
+    tasks.push((async () => {
+      const viewsSnap = await db.ref(`postViews/${postId}`).once('value');
+      let recentViews = 0;
+      viewsSnap.forEach(v => {
+        const rec = v.val();
+        if (rec && rec.lastAt && (now - rec.lastAt) <= FRESHNESS_WINDOW_MS) recentViews++;
+      });
+      const eligible = recentViews >= FRESHNESS_MIN_RECENT_VIEWS;
+      updates[`feed/${postId}/forYouEligible`] = eligible;
+      updates[`feed/${postId}/freshnessCheckedAt`] = now;
+      checked++;
+      if (eligible) madeEligible++; else madeIneligible++;
+    })());
+  });
+
+  await Promise.all(tasks);
+  if (Object.keys(updates).length) await db.ref().update(updates);
+  return { checked, madeEligible, madeIneligible };
+}
+
+exports.refreshForYouFreshness = functions
+  .pubsub.schedule('0 4 * * *').timeZone('Asia/Jerusalem').onRun(async (context) => {
+  const result = await runForYouFreshnessCheck();
+  console.log(`[Freshness] Checked ${result.checked} posts — ${result.madeEligible} eligible, ${result.madeIneligible} ineligible`);
+  return result;
+});
+exports.runForYouFreshnessCheck = runForYouFreshnessCheck; // exposed for the emulator test script only
+
+// ══════════════════════════════════════════════════════════════════
 // SYNC FOLLOW CREATED
 // ══════════════════════════════════════════════════════════════════
 
