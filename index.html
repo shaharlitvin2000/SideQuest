@@ -1395,7 +1395,7 @@ svg.ic-lg{width:19px;height:19px}
 <!-- ═══════════════ AUTH ═══════════════ -->
 <div class="page" id="p-auth">
 <div class="auth-inner">
-  <div class="auth-back" onclick="showPage('p-lang')">← <span id="auth-back-txt">Back</span></div>
+  <div class="auth-back" id="auth-back" onclick="showPage('p-lang')">← <span id="auth-back-txt">Back</span></div>
   <div class="auth-logo">Side<span>Quest</span></div>
   <div class="auth-title" id="auth-title" data-i="createAccountTitle">Create account</div>
   <div class="auth-sub" id="auth-sub" data-i="authSub">Start completing missions and climbing the ranks</div>
@@ -2781,6 +2781,10 @@ function switchAuthTab(tab){
   document.getElementById('tab-reg').classList.toggle('active',tab==='reg');
   document.getElementById('tab-log').classList.toggle('active',tab==='log');
   document.getElementById('auth-title').textContent=tab==='reg'?t('createAccountTitle'):t('loginTitle');
+  // Changing language pre-login only makes sense for a brand-new account -- loadUserData()
+  // overwrites curLang with the account's saved lang the moment an existing user logs in,
+  // silently discarding whatever was picked here. So only offer it on the Sign Up tab.
+  var ab=document.getElementById('auth-back'); if(ab) ab.style.display=tab==='reg'?'inline-flex':'none';
 }
 
 function setAuthLoading(on){
