@@ -32,6 +32,41 @@ async function bunnyDeleteVideo(guid, apiKey) {
   }
 }
 
+// Best-effort delete of a Firebase-Storage-hosted file given its public download URL (the shape
+// compressUploadedVideo writes to mediaURL/thumbnailURL for mission "proof" uploads). Silently
+// no-ops for non-Storage URLs (e.g. Bunny-hosted videos, cleaned up separately above) so it's
+// safe to call unconditionally on any post's mediaURL/thumbnailURL.
+async function deleteFirebaseStorageUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  const m = url.match(/firebasestorage\.googleapis\.com\/v0\/b\/[^/]+\/o\/([^?]+)/);
+  if (!m) return false;
+  try {
+    await admin.storage().bucket().file(decodeURIComponent(m[1])).delete();
+    return true;
+  } catch (e) {
+    if (e.code !== 404) console.error('[Storage] delete error', url, e.message);
+    return false;
+  }
+}
+
+// Room codes (_roomGenCode() client-side) are 5 uppercase letters/digits, but roomCode is taken
+// as free-form client input and interpolated straight into `rooms/${roomCode}/...` RTDB paths
+// via the Admin SDK, which bypasses security rules entirely -- a `/` (or `.`, `#`, `$`, `[`, `]`)
+// in roomCode would redirect the read/write to an unintended location. Alphanumeric-only blocks
+// all of those while still accepting every code the app actually generates.
+function isValidRoomCode(code) {
+  return typeof code === 'string' && /^[A-Za-z0-9]{1,20}$/.test(code);
+}
+
+// Guest browsing signs guests in via Anonymous Auth so `context.auth`/`auth != null` DB rules
+// keep working unmodified -- but that also means a guest's context.auth.uid is real and passes
+// every plain "!uid" check below. Interactive actions (like, follow, rate, comment, post, room
+// actions, watch ads) are meant to prompt sign-up instead, and the client already does that --
+// this is the server-side half, since a client-side redirect alone isn't real enforcement.
+function isAnonymousCaller(context) {
+  return context.auth?.token?.firebase?.sign_in_provider === 'anonymous';
+}
+
 // ══════════════════════════════════════════════════════════════════
 // RATE LIMITING & ABUSE DETECTION
 // ══════════════════════════════════════════════════════════════════
@@ -325,6 +360,9 @@ async function validateUsername(username) {
 // ══════════════════════════════════════════════════════════════════
 
 exports.validateUsername = functions.https.onCall(async (data, context) => {
+  if (!context.auth?.uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
   const username = (data.username || '').trim();
 
   if (!username) {
@@ -399,6 +437,10 @@ exports.registerUser = functions.https.onCall(async (data, context) => {
   const email = (data.email || '').trim().toLowerCase();
   const username = (data.username || '').trim();
   const ip = context.rawRequest?.ip || 'unknown';
+
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
 
   if (!email || !username) {
     throw new functions.https.HttpsError(
@@ -504,7 +546,7 @@ exports.completeMission = functions.https.onCall(async (data, context) => {
   const missionId = data.missionId;
   const missionTitle = data.missionTitle || '';
 
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
@@ -707,9 +749,16 @@ exports.followUser = functions.https.onCall(async (data, context) => {
     );
   }
 
-  const targetSnap = await db.ref(`users/${targetUid}`).once('value');
+  const [targetSnap, blockedByTargetSnap, blockedByMeSnap] = await Promise.all([
+    db.ref(`users/${targetUid}`).once('value'),
+    db.ref(`userBlocked/${targetUid}/${uid}`).once('value'),
+    db.ref(`userBlocked/${uid}/${targetUid}`).once('value')
+  ]);
   if (!targetSnap.exists()) {
     throw new functions.https.HttpsError('not-found', 'User not found');
+  }
+  if (blockedByTargetSnap.exists() || blockedByMeSnap.exists()) {
+    throw new functions.https.HttpsError('permission-denied', 'Cannot follow this user');
   }
 
   const userSnap = await db.ref(`users/${uid}`).once('value');
@@ -772,8 +821,9 @@ exports.reportUser = functions.https.onCall(async (data, context) => {
   const reportedUid = data.reportedUid;
   const reason = data.reason;  // 'harassment', 'spam', 'abuse', 'inappropriate'
   const details = (data.details || '').trim().substring(0, 500);
+  const postId = data.postId ? String(data.postId).slice(0, 60) : null;
 
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
@@ -781,7 +831,7 @@ exports.reportUser = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('invalid-argument', 'Cannot report yourself');
   }
 
-  const validReasons = ['harassment', 'spam', 'abuse', 'inappropriate', 'hate_speech', 'scam'];
+  const validReasons = ['harassment', 'spam', 'abuse', 'inappropriate', 'hate_speech', 'scam', 'nudity', 'violence'];
   if (!validReasons.includes(reason)) {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid reason');
   }
@@ -817,14 +867,16 @@ exports.reportUser = functions.https.onCall(async (data, context) => {
 
   // Create report
   const reportRef = db.ref('reports').push();
-  await reportRef.set({
+  const reportData = {
     byUid: uid,
     reportedUid: reportedUid,
     reason: reason,
     details: details,
     createdAt: admin.database.ServerValue.TIMESTAMP,
     status: 'pending'
-  });
+  };
+  if (postId) reportData.postId = postId;
+  await reportRef.set(reportData);
 
   console.log(`[Report] ${uid} reported ${reportedUid} for ${reason}`);
   return { success: true, reportId: reportRef.key };
@@ -837,8 +889,9 @@ exports.reportUser = functions.https.onCall(async (data, context) => {
 exports.blockUser = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
   const blockedUid = data.blockedUid;
+  const blockedUsername = data.blockedUsername ? String(data.blockedUsername).slice(0, 30) : 'Player';
 
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
@@ -846,8 +899,10 @@ exports.blockUser = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('invalid-argument', 'Cannot block yourself');
   }
 
-  // Add to blocked list
+  // Add to blocked list (name kept alongside timestamp so the client's blocked-list UI can show
+  // who this is without a separate lookup)
   await db.ref(`userBlocked/${uid}/${blockedUid}`).set({
+    name: blockedUsername,
     timestamp: admin.database.ServerValue.TIMESTAMP
   });
 
@@ -867,7 +922,7 @@ exports.unblockUser = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
   const blockedUid = data.blockedUid;
 
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
@@ -949,32 +1004,13 @@ exports.redeemPoints = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid redemption option');
   }
 
-  // Check for duplicate redemptions in last 24 hours (early check to fail fast)
-  const recentRedemptions = await db.ref('redemptions')
-    .orderByChild('byUid')
-    .equalTo(uid)
-    .once('value');
-
-  let hasDuplicate = false;
-  recentRedemptions.forEach(child => {
-    const redemption = child.val();
-    if (redemption.redeemId === redeemId &&
-        Date.now() - redemption.createdAt < 86400000) {  // 24 hours
-      hasDuplicate = true;
-    }
-  });
-
-  if (hasDuplicate) {
-    throw new functions.https.HttpsError(
-      'already-exists',
-      'You can only redeem this reward once per 24 hours'
-    );
-  }
-
   // Generate unique code
   const code = 'FLASH-' + Math.random().toString(36).substr(2, 9).toUpperCase();
 
-  // Atomically check points and deduct in one transaction
+  // Duplicate-check and point deduction happen in the SAME atomic transaction (both keyed off
+  // users/{uid}/redeemedRecently), so two near-simultaneous requests for the same reward can no
+  // longer both pass the duplicate check before either's deduction lands — only one can win.
+  const now = Date.now();
   let txnAbortReason = null;
   const txn = await db.ref(`users/${uid}`).transaction(user => {
     // RTDB may first run with null even when data exists — return unchanged so Firebase retries with real data
@@ -984,6 +1020,12 @@ exports.redeemPoints = functions.https.onCall(async (data, context) => {
 
     txnAbortReason = null;
 
+    const lastRedeemedAt = user.redeemedRecently && user.redeemedRecently[redeemId];
+    if (lastRedeemedAt && (now - lastRedeemedAt) < 86400000) {  // 24 hours
+      txnAbortReason = 'DUPLICATE';
+      return;  // abort
+    }
+
     const currentPts = user.pts || 0;
     if (currentPts < option.pts) {
       txnAbortReason = 'INSUFFICIENT';
@@ -992,10 +1034,18 @@ exports.redeemPoints = functions.https.onCall(async (data, context) => {
 
     // Deduct points
     user.pts = currentPts - option.pts;
+    if (!user.redeemedRecently) user.redeemedRecently = {};
+    user.redeemedRecently[redeemId] = now;
     return user;
   });
 
   if (!txn.committed || !txn.snapshot.exists()) {
+    if (txnAbortReason === 'DUPLICATE') {
+      throw new functions.https.HttpsError(
+        'already-exists',
+        'You can only redeem this reward once per 24 hours'
+      );
+    }
     if (txnAbortReason === 'INSUFFICIENT') {
       const currentPts = txn.snapshot.exists() ? (txn.snapshot.val().pts || 0) : 0;
       throw new functions.https.HttpsError(
@@ -1027,7 +1077,14 @@ exports.redeemPoints = functions.https.onCall(async (data, context) => {
     console.error(`[Redeem] record write failed for ${uid} (${redeemId}) — refunding ${option.pts} pts`, recErr);
     let restored = newPts + option.pts;
     try {
-      const rf = await db.ref(`users/${uid}`).transaction(u => { if (u) u.pts = (u.pts || 0) + option.pts; return u; });
+      const rf = await db.ref(`users/${uid}`).transaction(u => {
+        if (u) {
+          u.pts = (u.pts || 0) + option.pts;
+          // Undo the duplicate-guard marker too — a refunded redemption must not block a retry for 24h.
+          if (u.redeemedRecently) delete u.redeemedRecently[redeemId];
+        }
+        return u;
+      });
       if (rf.committed && rf.snapshot.exists()) restored = rf.snapshot.val().pts || restored;
     } catch (e) {
       console.error(`[Redeem] REFUND FAILED for ${uid} — ${option.pts} pts owed, needs manual fix`, e);
@@ -1248,14 +1305,16 @@ function getPostContentSignals(post) {
 
 async function logInteraction(uid, postId, type, signals) {
   const ref = db.ref(`userInteractions/${uid}`);
-  await ref.push({
+  const entry = {
     postId: postId,
     type: type,
     category: signals.category,
     vibe: signals.vibe,
     mediaType: signals.mediaType,
     at: admin.database.ServerValue.TIMESTAMP
-  });
+  };
+  if (signals.stars != null) entry.stars = signals.stars;
+  await ref.push(entry);
   // Trim to the last MAX_INTERACTIONS — a plain FIFO, not exact under rare concurrent
   // writes, but self-corrects on the next call. Good enough for a v1 preference signal.
   const snap = await ref.orderByKey().limitToLast(MAX_INTERACTIONS + 1).once('value');
@@ -1276,7 +1335,7 @@ exports.likePost = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
   const postId = data.postId;
 
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
@@ -1342,7 +1401,7 @@ exports.unlikePost = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
   const postId = data.postId;
 
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
@@ -1376,6 +1435,90 @@ exports.unlikePost = functions.https.onCall(async (data, context) => {
 });
 
 // ══════════════════════════════════════════════════════════════════
+// RATE VIDEO - 5-STAR QUALITY/COMPLETION RATING
+// Pure ranking signal, no pts awarded. Upserts the rater's own star (userRatings/{uid}/{postId})
+// and keeps a running ratingSum/ratingCount/ratingAvg on the post, feeding both the For You
+// preference profile (via logInteraction) and feedCalculateEngagementScore's post-popularity
+// term on the client. A pile-up of 1-star ratings auto-files into the existing `reports` queue
+// for manual review — same queue and admin panel as user-submitted reports.
+// ══════════════════════════════════════════════════════════════════
+
+const RATING_FLAG_MIN_COUNT = 5;
+const RATING_FLAG_MAX_AVG = 1.5;
+
+async function rateVideoImpl(uid, postId, stars) {
+  if (!postId || !Number.isInteger(stars) || stars < 1 || stars > 5) {
+    throw new functions.https.HttpsError('invalid-argument', 'Invalid rating');
+  }
+
+  if (checkAbuseScore(uid)) {
+    throw new functions.https.HttpsError(
+      'permission-denied',
+      'Too many ratings. Please wait a moment.'
+    );
+  }
+
+  const postRef = db.ref(`feed/${postId}`);
+  const postSnap = await postRef.once('value');
+  const post = postSnap.val();
+
+  if (!post) {
+    throw new functions.https.HttpsError('not-found', 'Post not found');
+  }
+  if (post.uid === uid) {
+    throw new functions.https.HttpsError('invalid-argument', 'Cannot rate your own video');
+  }
+
+  addAbuseScore(uid, 2, 'rate');
+
+  const userRatingRef = db.ref(`userRatings/${uid}/${postId}`);
+  const priorSnap = await userRatingRef.once('value');
+  const prior = priorSnap.val();
+  const delta = prior ? (stars - prior.stars) : stars;
+
+  await userRatingRef.set({ stars: stars, ratedAt: admin.database.ServerValue.TIMESTAMP });
+
+  const sumTx = await postRef.child('ratingSum').transaction(cur => (cur || 0) + delta);
+  if (!prior) {
+    await postRef.child('ratingCount').transaction(cur => (cur || 0) + 1);
+  }
+  const countSnap = await postRef.child('ratingCount').once('value');
+  const newSum = sumTx.snapshot.val() || 0;
+  const newCount = countSnap.val() || 0;
+  const newAvg = newCount > 0 ? newSum / newCount : 0;
+  await postRef.child('ratingAvg').set(newAvg);
+
+  // For You: nudge the rater's preference profile toward/away from this content's category/vibe.
+  await logInteraction(uid, postId, 'rate', Object.assign(getPostContentSignals(post), { stars: stars })).catch(() => {});
+
+  // Quality/abuse net: enough consistent 1-2-star ratings queues the video for manual review,
+  // same `reports` collection + admin panel as user-submitted reports. Fires once per post.
+  if (newCount >= RATING_FLAG_MIN_COUNT && newAvg <= RATING_FLAG_MAX_AVG && !post.moderationFlaggedAt) {
+    const reportRef = db.ref('reports').push();
+    await reportRef.set({
+      byUid: 'system',
+      reportedUid: post.uid,
+      postId: postId,
+      reason: 'auto_low_rating',
+      status: 'pending',
+      createdAt: admin.database.ServerValue.TIMESTAMP
+    });
+    await postRef.child('moderationFlaggedAt').set(admin.database.ServerValue.TIMESTAMP);
+  }
+
+  return { success: true, ratingCount: newCount, ratingAvg: newAvg };
+}
+
+exports.rateVideo = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid || isAnonymousCaller(context)) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+  return rateVideoImpl(uid, data.postId, Number(data.stars));
+});
+exports.rateVideoImpl = rateVideoImpl; // exposed only for the test script, not a real deployable trigger
+
+// ══════════════════════════════════════════════════════════════════
 // SUBMIT COMMENT - WITH CONTENT VERIFICATION & RATE LIMITING
 // ══════════════════════════════════════════════════════════════════
 
@@ -1385,7 +1528,7 @@ exports.submitComment = functions.https.onCall(async (data, context) => {
   const text = (data.text || '').trim();
   const parentId = data.parentId || null;  // For replies (client schema)
 
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
@@ -1422,11 +1565,25 @@ exports.submitComment = functions.https.onCall(async (data, context) => {
   // Track abuse
   addAbuseScore(uid, 2, 'comment');
 
-  const userSnap = await db.ref(`users/${uid}`).once('value');
+  const [userSnap, postSnap] = await Promise.all([
+    db.ref(`users/${uid}`).once('value'),
+    db.ref(`feed/${postId}`).once('value')
+  ]);
   const userData = userSnap.val();
 
   if (!userData) {
     throw new functions.https.HttpsError('not-found', 'User not found');
+  }
+
+  const post = postSnap.val();
+  if (!post) {
+    throw new functions.https.HttpsError('not-found', 'Post not found');
+  }
+  if (post.uid !== uid) {
+    const blockSnap = await db.ref(`userBlocked/${post.uid}/${uid}`).once('value');
+    if (blockSnap.exists()) {
+      throw new functions.https.HttpsError('permission-denied', 'Cannot comment on this post');
+    }
   }
 
   const commentRef = db.ref(`comments/${postId}`).push();
@@ -1459,9 +1616,7 @@ exports.submitComment = functions.https.onCall(async (data, context) => {
     }
   } else {
     // Top-level comment — notify the post author
-    const postSnap = await db.ref(`feed/${postId}`).once('value');
-    const post = postSnap.val();
-    if (post && post.uid && post.uid !== uid) {
+    if (post.uid && post.uid !== uid) {
       await writeNotification(post.uid, 'comment', uid, userData.username, { inPost: postId });
       await sendPushNotification(
         post.uid,
@@ -1484,7 +1639,7 @@ exports.likeComment = functions.https.onCall(async (data, context) => {
   const postId = data.postId;
   const commentId = data.commentId;
 
-  if (!uid || !postId || !commentId) {
+  if (!uid || isAnonymousCaller(context) || !postId || !commentId) {
     throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
   }
 
@@ -1520,7 +1675,7 @@ exports.unlikeComment = functions.https.onCall(async (data, context) => {
   const postId = data.postId;
   const commentId = data.commentId;
 
-  if (!uid || !postId || !commentId) {
+  if (!uid || isAnonymousCaller(context) || !postId || !commentId) {
     throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
   }
 
@@ -1544,12 +1699,16 @@ exports.unlikeComment = functions.https.onCall(async (data, context) => {
 
 exports.updatePostMedia = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
-  const postId = data.postId;
-  const mediaUrl = data.mediaUrl;
-  const mediaType = data.mediaType;
+  const postId = typeof data.postId === 'string' ? data.postId : '';
+  const mediaUrl = data.mediaUrl ? String(data.mediaUrl).slice(0, 600) : null;
+  const mediaType = (data.mediaType === 'image' || data.mediaType === 'video') ? data.mediaType : null;
+  const bunnyGuid = data.bunnyGuid ? String(data.bunnyGuid).slice(0, 100) : null;
 
   if (!uid) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+  if (!postId || !mediaUrl || !mediaType) {
+    throw new functions.https.HttpsError('invalid-argument', 'Media is required');
   }
 
   const postSnap = await db.ref(`feed/${postId}`).once('value');
@@ -1559,10 +1718,17 @@ exports.updatePostMedia = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('permission-denied', 'Cannot update this post');
   }
 
-  await db.ref(`feed/${postId}`).update({
+  // Attaching real media here (e.g. mission "proof" video/photo added after the post already
+  // exists) is exactly as unmoderated as a fresh upload -- route it through the same
+  // admin-approval gate createFeedPost posts get, rather than letting it go public unreviewed.
+  const updates = {
     mediaURL: mediaUrl,
-    mediaType: mediaType
-  });
+    mediaType: mediaType,
+    isUserVideo: true,
+    approved: false
+  };
+  if (bunnyGuid) updates.bunnyGuid = bunnyGuid;
+  await db.ref(`feed/${postId}`).update(updates);
 
   return { success: true };
 });
@@ -1579,6 +1745,7 @@ exports.batchVerifyPosts = functions
 
   const updates = {};
   const bunnyGuids = [];
+  const storageUrls = [];
 
   snap.forEach(child => {
     const post = child.val();
@@ -1588,6 +1755,8 @@ exports.batchVerifyPosts = functions
     if (hasHarmfulContent(checkText)) {
       updates[`feed/${child.key}`] = null;
       if (post.bunnyGuid) bunnyGuids.push(post.bunnyGuid);
+      if (post.mediaURL) storageUrls.push(post.mediaURL);
+      if (post.thumbnailURL) storageUrls.push(post.thumbnailURL);
       rejected++;
 
       const uid = post.uid;
@@ -1605,10 +1774,13 @@ exports.batchVerifyPosts = functions
 
   if (Object.keys(updates).length > 0) {
     await db.ref().update(updates);
-    // free the deleted posts' bunny videos too (best-effort — never block the batch)
+    // free the deleted posts' hosted media too (best-effort — never block the batch)
     if (bunnyGuids.length) {
       const key = bunnyApiKey.value();
       await Promise.allSettled(bunnyGuids.map(g => bunnyDeleteVideo(g, key)));
+    }
+    if (storageUrls.length) {
+      await Promise.allSettled(storageUrls.map(u => deleteFirebaseStorageUrl(u)));
     }
   }
 
@@ -1955,8 +2127,13 @@ exports.trackPostView = functions.database
 
     if (!post) return;
 
-    // Initialize view count if not exists
-    if (!post.views) {
+    // Initialize view count if the field is genuinely missing (legacy posts created before
+    // `views` existed). Checking `post.views === undefined` instead of the previous `!post.views`
+    // matters: `views` is 0 (falsy) for every post from the moment it's created, so `!post.views`
+    // stayed true after the "initializing" write too -- that write is itself a write to this
+    // trigger's own path, re-firing onWrite, which saw `views:0` as falsy again and rewrote it
+    // again, on every single future write to the post (likes, comments, anything), forever.
+    if (post.views === undefined) {
       await change.after.ref.update({ views: 0 });
     }
   });
@@ -1990,23 +2167,23 @@ exports.recordView = functions.https.onCall(async (data, context) => {
     return v;
   });
 
-  // Aggregate counters on the post itself (don't count the author's own views as unique)
+  // Aggregate counters on the post itself (don't count the author's own views as unique). Each
+  // field uses its own transaction rather than a read-then-.update() on a separately-fetched
+  // snapshot -- concurrent viewers of the same popular post would otherwise race and lose
+  // increments, same bug class already fixed for redeemPoints.
   const postSnap = await db.ref(`feed/${postId}`).once('value');
   const post = postSnap.val();
   if (!post) return { success: true };
   const isOwn = post.uid === uid;
+  const postRef = db.ref(`feed/${postId}`);
 
-  const updates = {};
   if (wasFirst && !isOwn) {
-    updates.views = (post.views || 0) + 1;
+    await postRef.child('views').transaction(cur => (cur || 0) + 1);
   } else if (!wasFirst) {
-    updates.repeatViews = (post.repeatViews || 0) + 1;
+    await postRef.child('repeatViews').transaction(cur => (cur || 0) + 1);
   }
   if (watchMs > 0) {
-    updates.watchMs = (post.watchMs || 0) + watchMs;
-  }
-  if (Object.keys(updates).length) {
-    await db.ref(`feed/${postId}`).update(updates);
+    await postRef.child('watchMs').transaction(cur => (cur || 0) + watchMs);
   }
 
   // For You: only log the clear cases (fast skip / near-full watch) — skip the ambiguous
@@ -2114,6 +2291,15 @@ exports.getTrendingPosts = functions.https.onCall(async (data, context) => {
 // ══════════════════════════════════════════════════════════════════
 
 exports.searchUsers = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+  if (checkAbuseScore(uid)) {
+    throw new functions.https.HttpsError('permission-denied', 'Too many searches. Please wait a moment.');
+  }
+  addAbuseScore(uid, 1, 'search');
+
   const query = (data.query || '').trim().toLowerCase().substring(0, 50);
 
   if (!query || query.length < 2) {
@@ -2148,6 +2334,15 @@ exports.searchUsers = functions.https.onCall(async (data, context) => {
 });
 
 exports.searchVideos = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+  if (checkAbuseScore(uid)) {
+    throw new functions.https.HttpsError('permission-denied', 'Too many searches. Please wait a moment.');
+  }
+  addAbuseScore(uid, 1, 'search');
+
   const query = (data.query || '').trim().toLowerCase().substring(0, 50);
 
   if (!query || query.length < 2) {
@@ -2181,6 +2376,15 @@ exports.searchVideos = functions.https.onCall(async (data, context) => {
 });
 
 exports.searchHashtags = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+  if (checkAbuseScore(uid)) {
+    throw new functions.https.HttpsError('permission-denied', 'Too many searches. Please wait a moment.');
+  }
+  addAbuseScore(uid, 1, 'search');
+
   const query = (data.query || '').trim().toLowerCase().substring(0, 50);
 
   if (!query || query.length < 1) {
@@ -2354,6 +2558,10 @@ exports.compressUploadedVideo = functions.storage
       if (fs.existsSync(compressedPath)) fs.unlinkSync(compressedPath);
       if (fs.existsSync(thumbnailPath)) fs.unlinkSync(thumbnailPath);
 
+      // The original pre-compression upload is superseded by the compressed copy the post now
+      // points at -- nothing ever reads it again, so keeping it in Storage was pure waste.
+      await bucket.file(filePath).delete().catch(() => {});
+
       console.log(`[Compress] Complete: ${fileName} - Original: ${object.size} bytes`);
 
     } catch (error) {
@@ -2499,7 +2707,7 @@ function chatIdFor(a, b) {
 
 exports.sendMessage = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
@@ -2599,7 +2807,7 @@ exports.markChatRead = functions.https.onCall(async (data, context) => {
 
 exports.createFeedPost = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
@@ -2608,7 +2816,8 @@ exports.createFeedPost = functions.https.onCall(async (data, context) => {
   const mediaType = (data.mediaType === 'image' || data.mediaType === 'video') ? data.mediaType : null;
   const bunnyGuid = data.bunnyGuid ? String(data.bunnyGuid).slice(0, 100) : null;
   const music = data.music ? String(data.music).slice(0, 20) : null;
-  const roomCode = data.roomCode ? String(data.roomCode).trim() : null;
+  const roomCodeRaw = data.roomCode ? String(data.roomCode).trim() : null;
+  const roomCode = (roomCodeRaw && isValidRoomCode(roomCodeRaw)) ? roomCodeRaw : null;
 
   if (!mediaURL || !mediaType) {
     throw new functions.https.HttpsError('invalid-argument', 'Media is required');
@@ -2629,6 +2838,9 @@ exports.createFeedPost = functions.https.onCall(async (data, context) => {
   if (!userData) {
     throw new functions.https.HttpsError('not-found', 'User not found');
   }
+  if (userData.blocked === true) {
+    throw new functions.https.HttpsError('permission-denied', 'Account blocked');
+  }
 
   const postRef = db.ref('feed').push();
   await postRef.set({
@@ -2643,19 +2855,25 @@ exports.createFeedPost = functions.https.onCall(async (data, context) => {
     likes: 0,
     status: 'pending',
     isUserVideo: true,
+    approved: false,
     music: music
   });
 
   if (roomCode) {
     try {
-      await db.ref(`rooms/${roomCode}/posts`).push({
-        uid: uid,
-        name: userData.username || 'Player',
-        caption: caption,
-        mediaURL: mediaURL,
-        mediaType: mediaType,
-        at: admin.database.ServerValue.TIMESTAMP
-      });
+      // The main feed post above already succeeded regardless -- a room ban only blocks the
+      // cross-post into that specific room, same as sendRoomChat, not the upload itself.
+      const bannedSnap = await db.ref(`rooms/${roomCode}/banned/${uid}`).once('value');
+      if (bannedSnap.val() !== true) {
+        await db.ref(`rooms/${roomCode}/posts`).push({
+          uid: uid,
+          name: userData.username || 'Player',
+          caption: caption,
+          mediaURL: mediaURL,
+          mediaType: mediaType,
+          at: admin.database.ServerValue.TIMESTAMP
+        });
+      }
     } catch (e) { console.error('[createFeedPost] room cross-post failed', e); }
   }
 
@@ -2664,14 +2882,14 @@ exports.createFeedPost = functions.https.onCall(async (data, context) => {
 
 exports.sendRoomChat = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
   const roomCode = String(data.roomCode || '').trim();
   const text = String(data.text || '').trim().slice(0, 300);
 
-  if (!roomCode) {
+  if (!roomCode || !isValidRoomCode(roomCode)) {
     throw new functions.https.HttpsError('invalid-argument', 'Room code required');
   }
   if (!text) {
@@ -2712,7 +2930,7 @@ exports.setRoomMission = functions.https.onCall(async (data, context) => {
   const roomCode = String(data.roomCode || '').trim();
   const mission = String(data.mission || '').trim().slice(0, 140);
 
-  if (!roomCode || !mission) {
+  if (!roomCode || !mission || !isValidRoomCode(roomCode)) {
     throw new functions.https.HttpsError('invalid-argument', 'Room code and mission required');
   }
   if (hasHarmfulContent(mission)) {
@@ -2746,6 +2964,39 @@ exports.setRoomMission = functions.https.onCall(async (data, context) => {
   }
 
   return { success: true, changed: changed };
+});
+
+// Powers the "Popular rooms" quick-join list on the Missions tab. Reads the whole rooms/ tree
+// server-side (Admin SDK) so the client never has to -- rooms/ is readable by any authenticated
+// user today, but pulling the entire tree just to rank three rows client-side doesn't scale and
+// leaks every room's roster to every viewer. Open to guests too (browsing, not joining, is fine
+// for anonymous sessions -- the actual join still goes through roomJoinByCode() -> requireRealAccount()
+// client-side and the existing rooms/$code/members write rule server-side).
+exports.getTopRooms = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  // Rooms are fully off-limits to guests now -- including just browsing which ones are active.
+  if (!uid || isAnonymousCaller(context)) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const snap = await db.ref('rooms').once('value');
+  const rooms = snap.val() || {};
+
+  const list = Object.keys(rooms).map(code => {
+    const r = rooms[code] || {};
+    const meta = r.meta || {};
+    const memberCount = r.members ? Object.keys(r.members).length : 0;
+    return {
+      code: code,
+      mission: String(meta.mission || '').slice(0, 140),
+      hostName: String(meta.hostName || '').slice(0, 40),
+      memberCount: memberCount
+    };
+  }).filter(r => r.memberCount > 0)
+    .sort((a, b) => b.memberCount - a.memberCount)
+    .slice(0, 3);
+
+  return { rooms: list };
 });
 
 exports.editFeedCaption = functions.https.onCall(async (data, context) => {
@@ -2831,10 +3082,34 @@ exports.changeUsername = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('already-exists', 'Username already taken');
   }
 
+  const oldUsernameSnap = await db.ref(`users/${uid}/username`).once('value');
+  const oldUsername = oldUsernameSnap.val();
+  const renaming = (oldUsername || '').toLowerCase() !== username.toLowerCase();
+
+  // Claim the new name in the same forward registry doRegister's uniqueness transaction uses
+  // (usernames/{name} -> uid), so a rename can't collide with a name someone else claims between
+  // the dupSnap check above and this write.
+  if (renaming) {
+    const claimResult = await db.ref(`usernames/${username.toLowerCase()}`).transaction(cur => cur === null ? uid : undefined);
+    if (!claimResult.committed) {
+      throw new functions.https.HttpsError('already-exists', 'Username already taken');
+    }
+  }
+
   const updates = {};
   updates[`users/${uid}/username`] = username;
   updates[`leaderboard/${uid}/username`] = username;
+  // usernames/{uid} is the reverse index (uid -> name) processMentionsInComment relies on to
+  // resolve @mentions -- without updating it, mentions of the new name never resolved.
+  updates[`usernames/${uid}`] = username.toLowerCase();
   await db.ref().update(updates);
+
+  // Release the old forward reservation now that the new one is claimed, so the old name becomes
+  // available again instead of staying permanently reserved.
+  if (renaming && oldUsername) {
+    await db.ref(`usernames/${oldUsername.toLowerCase()}`).remove().catch(() => {});
+  }
+
   return { success: true, username: username };
 });
 
@@ -2910,6 +3185,24 @@ exports.adminUpdateReport = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid id or status');
   }
   await db.ref(`reports/${id}/status`).set(status);
+  if (status === 'reviewed' || status === 'actioned') {
+    const reportSnap = await db.ref(`reports/${id}`).once('value');
+    const report = reportSnap.val();
+    if (report) {
+      // Resolving an auto-flagged-for-low-ratings report (the admin looked and decided the video
+      // is fine) restores its visibility -- otherwise a flagged post would stay hidden forever
+      // even after being cleared, since nothing else ever unsets moderationFlaggedAt.
+      if (report.reason === 'auto_low_rating' && report.postId) {
+        await db.ref(`feed/${report.postId}/moderationFlaggedAt`).remove();
+      }
+      // Let the reporter know their report was looked at -- previously the only feedback was a
+      // generic "thanks" toast at submission time, with no signal that anything happened after.
+      // No fromUid/fromUsername: this is a system/admin action, not attributable to another user.
+      if (report.byUid && report.byUid !== 'system') {
+        await writeNotification(report.byUid, 'report_resolved', null, null, {});
+      }
+    }
+  }
   return { success: true };
 });
 
@@ -3006,7 +3299,7 @@ exports.ensureUser = functions.https.onCall(async (data, context) => {
 
 exports.updateBio = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
   const bio = String(data.bio || '').trim().slice(0, 120);
@@ -3049,7 +3342,7 @@ function dailyMilestoneFor(day) {
 
 exports.claimDailyReward = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
@@ -3121,7 +3414,7 @@ const REFERRAL_REWARD = 200;
 
 exports.claimReferral = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
   const refUid = String(data.refUid || '');
@@ -3180,13 +3473,24 @@ exports.claimReferral = functions.https.onCall(async (data, context) => {
   return { success: true, reward: REFERRAL_REWARD, newPoints: meVal.pts || 0 };
 });
 
+// NOTE: this still trusts the client's word that an ad actually played — there is no AdMob/ad-network
+// server-side-verification callback wired up yet (see the TODO at the watchAd call site in index.html).
+// MIN_AD_INTERVAL_MS and the abuse-score charge below only raise the cost of naive scripted looping
+// (can't claim faster than a real rewarded video would take, and repeated abuse burns the same hourly
+// abuse budget as every other action); neither actually proves a real ad was shown. Closing this for
+// real needs SSV from the ad network (or a signed reward token it hands back) checked here server-side.
+const MIN_AD_INTERVAL_MS = 20000;
+
 exports.watchAd = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
   if (!context.auth.token.email_verified) {
     throw new functions.https.HttpsError('permission-denied', 'Please verify your email first');
+  }
+  if (checkAbuseScore(uid)) {
+    throw new functions.https.HttpsError('permission-denied', 'Suspicious activity detected. Please try again later.');
   }
 
   const today = getIsraelDate();
@@ -3196,13 +3500,17 @@ exports.watchAd = functions.https.onCall(async (data, context) => {
     if (u === null) return u; // first run may be null — let Firebase retry
     abortReason = null;
     if (u.blocked === true) { abortReason = 'BLOCKED'; return; }
+    if (u.lastAdClaimAt && (Date.now() - u.lastAdClaimAt) < MIN_AD_INTERVAL_MS) { abortReason = 'TOO_SOON'; return; }
     if (u.adsDate !== today) { u.adsDate = today; u.adsWatched = 0; }
     if ((u.adsWatched || 0) >= 10) { abortReason = 'LIMIT'; return; }
     u.adsWatched = (u.adsWatched || 0) + 1;
+    u.lastAdClaimAt = Date.now();
     u.pts = (u.pts || 0) + 50;
     u.seasonPts = (u.seasonPts || 0) + 50;  // monthly season score (reset by rolloverSeason)
     return u;
   });
+
+  addAbuseScore(uid, 5, 'watch_ad');
 
   if (!result.committed) {
     if (abortReason === 'LIMIT') {
@@ -3210,6 +3518,9 @@ exports.watchAd = functions.https.onCall(async (data, context) => {
     }
     if (abortReason === 'BLOCKED') {
       throw new functions.https.HttpsError('permission-denied', 'Account blocked');
+    }
+    if (abortReason === 'TOO_SOON') {
+      throw new functions.https.HttpsError('failed-precondition', 'Please wait before claiming another ad reward');
     }
     throw new functions.https.HttpsError('internal', 'Transaction failed');
   }
@@ -3364,14 +3675,29 @@ exports.adminDeletePost = functions
 
     const snap = await db.ref(`feed/${postId}`).once('value');
     const post = snap.val();
-    // best-effort bunny cleanup — a bunny hiccup must not block removing the post
+    // best-effort media cleanup — a hiccup on either side must not block removing the post
     if (post && post.bunnyGuid) {
       await bunnyDeleteVideo(post.bunnyGuid, bunnyApiKey.value());
+    }
+    if (post) {
+      await Promise.allSettled([deleteFirebaseStorageUrl(post.mediaURL), deleteFirebaseStorageUrl(post.thumbnailURL)]);
     }
     await db.ref(`feed/${postId}`).remove();
     await db.ref(`comments/${postId}`).remove().catch(() => {});
     return { success: true };
   });
+
+// Admin-only: approve a pending user upload so it becomes visible in the public feed.
+// User-uploaded videos have no automated content-moderation check (no image/video analysis) —
+// until one exists, every upload stays invisible to other users (approved:false, checked by the
+// client's isSafePost()) until an admin looks at it here and flips this.
+exports.adminApprovePost = functions.https.onCall(async (data, context) => {
+  requireAdmin(context);
+  const postId = typeof data?.postId === 'string' ? data.postId : '';
+  if (!postId) throw new functions.https.HttpsError('invalid-argument', 'postId required');
+  await db.ref(`feed/${postId}/approved`).set(true);
+  return { success: true };
+});
 
 // Admin-only: flip a user's premium flag manually (for testing the premium gating).
 // Call from an admin account: firebase.functions().httpsCallable('setPremium')({ uid, value:true })
@@ -3417,13 +3743,10 @@ exports.deleteAccount = functions
   if (!uid) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
-
-  if (!context.auth.token.email_verified) {
-    throw new functions.https.HttpsError(
-      'permission-denied',
-      'Please verify your email before deleting account'
-    );
-  }
+  // No email_verified gate here (there used to be one): email verification isn't otherwise
+  // enforced anywhere in the app, so requiring it just for deletion would silently block most
+  // real users from ever being able to delete their own account -- the opposite of what this
+  // endpoint is for.
 
   console.log(`[Delete] User ${uid} requesting account deletion`);
 
@@ -3438,27 +3761,71 @@ exports.deleteAccount = functions
     updates[`usernames/${uid}`] = null;
     updates[`notifications/${uid}`] = null;
 
+    // Release the actual username reservation too (usernames/{uid} above is a separate reverse
+    // index, uid -> name; the forward registry that doRegister's uniqueness transaction and
+    // signup's duplicate-check use is usernames/{name} -> uid). Without this the chosen username
+    // stays permanently squatted even after the account is gone.
+    const userSnap = await db.ref(`users/${uid}`).once('value');
+    const username = userSnap.val() && userSnap.val().username;
+    if (username) updates[`usernames/${String(username).toLowerCase()}`] = null;
+
     const feedSnap = await db.ref('feed')
       .orderByChild('uid')
       .equalTo(uid)
       .once('value');
 
     const bunnyGuids = [];
+    const storageUrls = [];
     feedSnap.forEach(child => {
       updates[`feed/${child.key}`] = null;
       updates[`comments/${child.key}`] = null;
-      const g = child.val() && child.val().bunnyGuid;
-      if (g) bunnyGuids.push(g);
+      const p = child.val();
+      if (p && p.bunnyGuid) bunnyGuids.push(p.bunnyGuid);
+      if (p && p.mediaURL) storageUrls.push(p.mediaURL);
+      if (p && p.thumbnailURL) storageUrls.push(p.thumbnailURL);
     });
+
+    // Comments this user left on OTHER people's posts (the feedSnap loop above only wipes
+    // comment threads on the user's OWN posts). No index exists for "comments by uid" -- same
+    // full-scan tradeoff exportMyData already makes for the same reason.
+    const allCommentsSnap = await db.ref('comments').once('value');
+    allCommentsSnap.forEach(postComments => {
+      postComments.forEach(c => {
+        const v = c.val();
+        if (v && v.uid === uid) updates[`comments/${postComments.key}/${c.key}`] = null;
+      });
+    });
+
+    // Chats this user is party to -- delete the shared thread entirely (both sides' history)
+    // rather than leaving the other participant with a conversation from a ghost account.
+    const chatMetaSnap = await db.ref(`chatMeta/${uid}`).once('value');
+    chatMetaSnap.forEach(c => {
+      const chatId = c.key;
+      updates[`chats/${chatId}`] = null;
+      const otherUid = chatId.split('_').find(u => u !== uid);
+      if (otherUid) updates[`chatMeta/${otherUid}/${chatId}`] = null;
+    });
+    updates[`chatMeta/${uid}`] = null;
 
     await db.ref().update(updates);
 
-    // Remove the user's videos from Bunny Stream too (best-effort; DB already cleaned above).
-    // allSettled + the helper returning false (never throwing) guarantee that one failed video
-    // can NEVER abort the rest of the cleanup or fail the account deletion.
+    // Remove the user's hosted media too (best-effort; DB already cleaned above). allSettled +
+    // the helpers returning false/never throwing guarantee that one failed video/file can NEVER
+    // abort the rest of the cleanup or fail the account deletion.
     if (bunnyGuids.length) {
       const key = bunnyApiKey.value();
       await Promise.allSettled(bunnyGuids.map(g => bunnyDeleteVideo(g, key)));
+    }
+    if (storageUrls.length) {
+      await Promise.allSettled(storageUrls.map(u => deleteFirebaseStorageUrl(u)));
+    }
+
+    // Delete the Firebase Auth record itself -- without this, the account "deletion" only ever
+    // wiped the database, and the same credentials could sign straight back in afterward.
+    try {
+      await admin.auth().deleteUser(uid);
+    } catch (authError) {
+      if (authError.code !== 'auth/user-not-found') throw authError;
     }
 
     console.log(`[Delete] Account deleted for user ${uid}`);
