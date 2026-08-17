@@ -147,6 +147,7 @@ img,video{max-width:100%}
 .auth-back{font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:22px;display:inline-flex;align-items:center;gap:5px}
 .auth-skip{position:absolute;top:calc(14px + env(safe-area-inset-top, 0px));right:14px;z-index:5;width:38px;height:38px;border-radius:50%;background:var(--bg2);border:1px solid var(--line);cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;touch-action:manipulation;line-height:1}
 .auth-skip svg{width:16px;height:16px}
+[dir="rtl"] .auth-skip{right:auto;left:14px}
 /* Overlay mode: shown by requireRealAccount() over whatever screen the guest was already on
    (sheet-over-content, TikTok-style), instead of the full-page boot presentation. #p-auth's own
    ID keeps this selector above the plain .page/.page.active rules regardless of class order. */
@@ -630,7 +631,7 @@ img,video{max-width:100%}
 
 /* SCREENS inside app */
 .app-body{flex:1;overflow:hidden;position:relative}
-.screen{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:76px}
+.screen{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(76px + env(safe-area-inset-bottom, 0px))}
 .screen.active{display:block}
 #s-feed.active{display:flex}
 
@@ -1107,7 +1108,7 @@ svg.ic-lg{width:19px;height:19px}
 @keyframes pulse{0%{opacity:.8}50%{opacity:1}100%{opacity:.8}}
 
 /* ── TOAST ── */
-.toast{position:fixed;top:calc(20px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%) translateY(-90px);background:rgba(18,21,13,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:#fff;font-size:13px;font-weight:600;padding:12px 20px;border-radius:40px;z-index:10500;transition:transform .3s cubic-bezier(.4,0,.2,1);white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12)}
+.toast{position:fixed;top:calc(20px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%) translateY(calc(-90px - env(safe-area-inset-top,0px)));background:rgba(18,21,13,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:#fff;font-size:13px;font-weight:600;padding:12px 20px;border-radius:40px;z-index:10500;transition:transform .3s cubic-bezier(.4,0,.2,1);white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12)}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
 /* ── FEED ── */
