@@ -7,11 +7,11 @@ browser, screen by screen, using a mix of actual screenshots (device) and precis
 measurement (`getBoundingClientRect()` overlap checks — more reliable than eyeballing a screenshot,
 and used throughout to *confirm* anything that looked suspicious rather than reporting on sight alone).
 
-**One item below was fixed immediately rather than just logged** — a raw-SVG-as-text regression from
-my own star-icon fix earlier this session. It was actively showing broken code on screen to real users
-right now, not a "rough edge," so it didn't make sense to leave live while compiling a backlog. Deployed
-and verified; noted below for the record. Everything else is reported only, per the "don't fix yet"
-instruction.
+**Status: all 4 items below are now fixed, deployed, and live-verified.** One (the raw-SVG-as-text
+regression) was fixed immediately on discovery, mid-sweep, since it was actively showing broken code to
+real users right now, not a "rough edge" — deployed ahead of the rest of this document being written.
+The other 3 were originally reported only, per a "don't fix yet" instruction, and fixed in a later pass
+once asked for.
 
 ---
 
@@ -40,52 +40,62 @@ Deployed: hosting only, byte-for-byte verified against production after deploy.
 
 ---
 
-## Found, not fixed — for triage
+## Fixed (originally left open for triage, now resolved)
 
-### 1. The sign-up screen's X (dismiss) button overlaps whatever sits at its corner in RTL/Hebrew mode
-`.auth-skip` (the X button) is positioned with a hardcoded `right:14px` — it doesn't account for RTL
+### 1. The sign-up screen's X (dismiss) button overlapped whatever sits at its corner in RTL/Hebrew mode — ✅ Fixed
+`.auth-skip` (the X button) was positioned with a hardcoded `right:14px` — it didn't account for RTL
 layout, where the elements that are supposed to occupy that same visual corner shift to also want the
-right side. Confirmed two distinct manifestations of the same root cause, both via
-`getBoundingClientRect()` overlap checks (not just visual impression):
-- **Full-page boot screen** (first thing shown on app open): the X button overlaps the "← Back" link
-  to the language picker. `backRect.right` (360) > `skipRect.left` (332), with vertical overlap too —
-  confirmed colliding, not just close together.
-- **Gated-action overlay sheet** (triggered by `requireRealAccount()` — the sheet built earlier this
-  session): `.auth-back` is correctly hidden here, but the X button now instead overlaps the
-  "SideQuest" logo/title text itself. Same confirmed-overlap check, same result.
+right side. Two distinct manifestations of the same root cause, both confirmed via
+`getBoundingClientRect()` overlap checks:
+- **Full-page boot screen**: the X button overlapped the "← Back" link to the language picker.
+- **Gated-action overlay sheet** (`requireRealAccount()`): `.auth-back` is hidden there, but the X
+  button instead overlapped the "SideQuest" logo/title text.
 
-Reproduced identically on both the real device and desktop browser, so this isn't device-specific —
-it's a plain RTL layout bug. Likely fix shape (not applied): use logical CSS positioning
-(`inset-inline-end` instead of `right`) or explicitly offset `.auth-back`/`.auth-logo`'s max-width to
-leave room for the button in RTL — but that's a design/layout call worth making deliberately, not
-something to guess at while compiling a find-list.
+**Fix:** added `[dir="rtl"] .auth-skip{right:auto;left:14px}`, matching the app's existing
+`[dir="rtl"]` override pattern used for `.chevron`/`.ad-cta svg`/`.ann-card-arrow` elsewhere in the
+file — the button now floats to the opposite physical corner in RTL instead of colliding with content
+that's also shifted to the right.
+**Verified live on the real device** (fresh app-data clear, real relaunch, Hebrew selected): measuring
+the actual rendered glyphs (not just the outer flex box, which — discovered while verifying — stretches
+to the full row width in both cases since it's a `column`-direction flex child with default
+`align-items:stretch`, so a raw bounding-box check alone would have kept reporting a false-positive
+overlap) — the back-link's chevron+text render at x:314–360, the skip button now sits at x:14–52, no
+overlap. Same result for the overlay sheet: the logo text renders at x:256–360 (via `Range.
+getBoundingClientRect()` on the text node), skip button at x:14–52. Deployed and byte-verified live.
 
-### 2. The "missions ready" toast never fully hides on devices with a non-zero top safe-area inset
-`.toast`'s hidden resting state relies on `transform: translateY(-90px)` from a base
-`top: calc(20px + env(safe-area-inset-top))` to push it off-screen when not showing. On the real device
-(which has a non-trivial safe-area-inset-top — status bar / edge-to-edge rendering, same category of
-issue as the `.lang-btn` and `.room-chat-screen` safe-area bugs fixed earlier in this whole engagement),
-the base `top` is large enough that the `-90px` offset isn't enough to fully clear the viewport: measured
-resting position was `top:-34px, bottom:+8px` — meaning roughly 8px of the toast pill's rounded bottom
-edge is **permanently visible**, poking down from the very top of the screen, on every single screen,
-at all times, whether or not a toast is actively showing. Confirmed present on both the Feed and
-Missions tabs (i.e., it's not tied to any specific screen — `#toast` is a single global element).
-**Not reproduced on desktop** — desktop has no safe-area-inset-top, so the same `-90px` offset is more
-than enough there, confirming this is specifically a real-device/notched-screen issue, not a general one.
+### 2. The "missions ready" toast never fully hid on devices with a non-zero top safe-area inset — ✅ Fixed
+`.toast`'s hidden resting state relied on a flat `translateY(-90px)` on top of a base
+`top: calc(20px + env(safe-area-inset-top))` — on a device with a real inset, the fixed -90px offset
+wasn't enough to clear the now-taller base position, leaving ~8px of the pill permanently visible at
+the top of every screen.
 
-### 3. The floating "+" (create) nav button can visually collide with scrolled page content
-On the Profile screen's empty "Videos" tab, scrolling to a certain position lands the "Upload your
-first video" button directly under the fixed bottom-nav "+" button, partially covering its text.
-Confirmed via `getBoundingClientRect()`: `navRect` (710–753px) and `ctaRect` (679–719px) genuinely
-overlapping at that scroll offset. **This is scroll-position-dependent, not a permanent overlap** —
-retested at the desktop browser's natural rest scroll position and the two elements did *not* overlap
-there (CTA landed much lower on the page). Since the "+" button is `position:fixed` and this CTA (and
-presumably other content) scrolls underneath it, there will always be *some* scroll position where
-whatever's currently at that fixed button's screen coordinates gets covered — the open question for
-triage is whether that's acceptable (transient, self-resolves as you keep scrolling) or worth a
-permanent fix (e.g., extra bottom padding/margin reserved under any button-like element so it can never
-rest at exactly that height). Flagging as a *pattern* to consider, not just this one button — same
-mechanism could affect other tabs with substantial scrollable content and the same fixed nav bar.
+**Fix:** made the hidden-state offset scale with the same inset instead of being a flat number —
+`transform:translateX(-50%) translateY(calc(-90px - env(safe-area-inset-top,0px)))`. The inset now
+cancels out of the resting position algebraically regardless of its size (base `top` adds it, the
+transform subtracts it), reproducing desktop's already-correct behavior on any device.
+**Verified live on the real device**: resting `top`/`bottom` went from `-34px / +8.13px` (visibly
+poking through) to `-70px / -27.87px` (fully off-screen), matching desktop's own measurement almost
+exactly. Deployed and byte-verified live.
+
+### 3. The floating "+" (create) nav button could visually collide with scrolled page content — ✅ Fixed
+The "+" button (`.nav-create`) pokes 20px above the bottom nav bar's own box via a negative top margin
+(`margin:-20px 8px 0`) to get its floating look. `.screen` (the scroll container shared by Home,
+Ranks, and Profile) reserved a flat `padding-bottom:76px` to keep content clear of the nav bar — sized
+for the bar's own height, but not for that extra 20px poke, and not scaling with
+`env(safe-area-inset-bottom)` the way the bar's own padding does. On a device with a large gesture-nav
+inset, the bar (and the button's poke zone above it) grows taller than the flat 76px reservation,
+letting scrolled-to-bottom content (e.g. Profile's empty-state "Upload your first video" CTA) land
+underneath the button.
+
+**Fix:** `padding-bottom:calc(76px + env(safe-area-inset-bottom, 0px))` on `.screen` — since 76px
+already comfortably exceeds the bar's base height plus the 20px poke (by the same margin the original
+flat value had on a zero-inset device), adding the inset on top keeps that same margin at any inset
+size instead of only at zero. Fixes the pattern for every `.screen`-based tab (Home, Ranks, Profile),
+not just this one CTA.
+**Verified live on the real device** (a device with a 48px safe-area-inset-bottom — computed
+`padding-bottom` now correctly reads `124px`): scrolled Profile's empty state to its natural rest
+position, CTA bottom edge at y:530, nav button top edge at y:710 — a clear ~180px gap, no overlap.
+Deployed and byte-verified live.
 
 ---
 
