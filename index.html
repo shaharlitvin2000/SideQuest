@@ -1032,7 +1032,7 @@ svg.ic-lg{width:19px;height:19px}
 #daily-modal{z-index:10600!important}
 .overlay.show{display:flex;animation:ovFade .22s ease}
 @keyframes ovFade{from{opacity:0}to{opacity:1}}
-.modal{background:var(--bg2);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:24px;width:100%;max-width:480px;animation:up .25s cubic-bezier(.4,0,.2,1);max-height:90vh;overflow-y:auto;box-shadow:0 -12px 48px rgba(0,0,0,.14);border-top:1px solid var(--line)}
+.modal{background:var(--bg2);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:24px 24px calc(24px + env(safe-area-inset-bottom, 0px)) 24px;width:100%;max-width:480px;animation:up .25s cubic-bezier(.4,0,.2,1);max-height:90vh;overflow-y:auto;box-shadow:0 -12px 48px rgba(0,0,0,.14);border-top:1px solid var(--line)}
 @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:36px;height:4px;background:var(--muted);opacity:.2;border-radius:2px;margin:0 auto 20px}
 .modal-badge-d{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 11px;border-radius:var(--r-full);display:inline-block;margin-bottom:9px}
@@ -2403,6 +2403,11 @@ function applyTranslations(){
   if(ct) ct.innerHTML=t('consentPre')+' <a href="/terms.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+t('termsLink')+'</a> '+t('consentAnd')+' <a href="/privacy.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+t('privacyLink')+'</a>';
   var ln=document.getElementById('auth-legal-note');
   if(ln) ln.innerHTML=t('consentNote').replace(t('termsLink'),'<a href="/terms.html" target="_blank" rel="noopener">'+t('termsLink')+'</a>').replace(t('privacyLink'),'<a href="/privacy.html" target="_blank" rel="noopener">'+t('privacyLink')+'</a>');
+  // Cookie/privacy + terms note inside the safety modal -- folded in so accepting the safety
+  // guidelines and the privacy/cookie notice is a single tap instead of two separate screens
+  // (see acknowledgeSafety()/maybeShowSafety()).
+  var sln=document.getElementById('safety-legal-note');
+  if(sln) sln.innerHTML=t('gdprPre')+' <a href="/privacy.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+t('privacyLink')+'</a> '+t('gdprAnd')+' <a href="/terms.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+t('termsLink')+'</a>.';
   if(userName){
     const g=id=>document.getElementById(id);
     const av=userName[0].toUpperCase();
@@ -2848,7 +2853,10 @@ function finishLoad(){
   try{updateUI();}catch(e){console.error('[finishLoad] updateUI',e);}
   try{updateAdBanner();}catch(e){console.error('[finishLoad] adBanner',e);}
   try{restoreCompletedCards();}catch(e){console.error('[finishLoad] restoreCards',e);}
-  try{showGDPRNotice();}catch(e){console.error('[finishLoad] gdpr',e);}
+  // First-run consent is a single combined screen (safety guidelines + cookie/privacy notice,
+  // one accept button) — see maybeShowSafety()/acknowledgeSafety(). The onboarding tutorial no
+  // longer auto-shows here (its code is still in the file, just not called automatically).
+  try{maybeShowSafety();}catch(e){console.error('[finishLoad] safety',e);}
   hideLoading();
   showPage('p-app');
   // Brand-new opens land on the Feed tab, same as every open after it — the static markup's
@@ -2870,7 +2878,6 @@ function finishLoad(){
   try{maybeClaimReferral();}catch(e){}
   setTimeout(function(){try{animateStreakCountUp(streak);}catch(e){};},400);
   if(_freezeJustUsed){ _freezeJustUsed=false; setTimeout(function(){ toast('🧊 '+t('freezeUsed').replace('{n}',streak)); },1200); }
-  try{ if(!maybeShowOnboarding()) maybeShowSafety(); }catch(e){}
   try{ maybeDailyReminder(); }catch(e){}
   // Quietly prefetch the Following feed in the background so the FIRST tap on the Following tab
   // is an instant local mount (feedMountFollowing) instead of a visible skeleton + network wait
@@ -7626,11 +7633,26 @@ function maybeShowOnboarding(){
   var o=document.getElementById('onboarding-overlay'); if(o) o.classList.add('show');
   return true;
 }
-// ══════════ SAFETY GUIDELINES ══════════
+// ══════════ SAFETY GUIDELINES (also the single first-run consent screen -- covers safety
+// rules + the cookie/privacy notice + terms in one modal with one accept button, see
+// maybeShowSafety()) ══════════
 function openSafety(){ var m=document.getElementById('safety-modal'); if(m){ try{applyTranslations();}catch(e){} m.classList.add('show'); } }
 function closeSafety(){ var m=document.getElementById('safety-modal'); if(m) m.classList.remove('show'); }
-function acknowledgeSafety(){ try{localStorage.setItem('fa_safety_ack','1');}catch(e){} closeSafety(); }
-function maybeShowSafety(){ var ack=null; try{ack=localStorage.getItem('fa_safety_ack');}catch(e){} if(!ack){ setTimeout(openSafety,500); return true; } return false; }
+// One tap here covers both consents at once: safety-guidelines acknowledgment AND cookie/privacy
+// consent (the modal shows both). Safe to call again later (e.g. re-opened from Settings) --
+// setItem is idempotent.
+function acknowledgeSafety(){ try{localStorage.setItem('fa_safety_ack','1');localStorage.setItem('gdpr-accepted-v1','true');}catch(e){} closeSafety(); }
+// Fires on first run only, but also catches an existing user who has one flag set without the
+// other (e.g. someone who saw the old separate safety modal before this merge, but never got a
+// chance to accept/decline the old separate GDPR banner) -- shown once more, combined, rather
+// than silently treating a partial old state as fully consented.
+function maybeShowSafety(){
+  var safetyAck=null, gdprHandled=null;
+  try{ safetyAck=localStorage.getItem('fa_safety_ack'); }catch(e){}
+  try{ gdprHandled=localStorage.getItem('gdpr-accepted-v1')||localStorage.getItem('gdpr-declined-v1'); }catch(e){}
+  if(!safetyAck||!gdprHandled){ setTimeout(openSafety,500); return true; }
+  return false;
+}
 // Daily "your missions are ready" nudge (in-app; real scheduled push when on Blaze).
 function maybeDailyReminder(){
   try{
@@ -9966,6 +9988,7 @@ function _handleAndroidBack(){
       <div class="safety-rule"><span class="safety-ic">✓</span><span data-i="safetyRule5">You are responsible for your own safety — don't trespass or break the law.</span></div>
       <div class="safety-rule"><span class="safety-ic">✓</span><span data-i="safetyRule6">Report anything harmful — we review every report.</span></div>
     </div>
+    <div class="modal-desc" id="safety-legal-note" style="font-size:12px;margin-top:-8px"></div>
     <button class="modal-cta" onclick="acknowledgeSafety()" data-i="safetyAgree">I understand</button>
   </div>
 </div>
