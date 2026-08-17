@@ -2,15 +2,33 @@ package com.sidequest.app;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import androidx.activity.OnBackPressedCallback;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
+    // Exposed to the web layer as window.AndroidExit -- used only by the first-run consent
+    // screen's Decline path (confirmDeclineConsent() in index.html) to actually leave the app,
+    // since there's no Capacitor plugin installed that provides this and a WebView can't close
+    // its own host Activity via any web API.
+    private class ExitBridge {
+        @JavascriptInterface
+        public void exitApp() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    finishAndRemoveTask();
+                }
+            });
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getBridge().getWebView().addJavascriptInterface(new ExitBridge(), "AndroidExit");
         try {
             String versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
             WebSettings settings = getBridge().getWebView().getSettings();
