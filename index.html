@@ -2271,6 +2271,10 @@ function hasHarmfulContent(text) {
 let auth=null, db=null, storage=null;
 let selectedFile=null;
 let curLang='en', selLang='en';
+// True only for the very first boot of a genuinely fresh install (no language ever saved) --
+// set in bootToAuth(), consumed once by confirmLang() to skip straight to guest browsing instead
+// of the sign-up screen, then cleared so it never fires again for this install.
+let freshInstallBoot=false;
 let userName='', userUID='';
 // True while the current Firebase Auth session is an anonymous "guest browsing" session
 // (see continueAsGuest()) rather than a real email/Google account — userUID is still set in
@@ -2448,6 +2452,7 @@ function confirmLang(){
   try{if(window._lbList)renderLb();}catch(e){}
   try{if(typeof updateUI==='function')updateUI();}catch(e){}
   if(userUID){if(db) saveUserData(); showPage('p-app'); return;}
+  if(freshInstallBoot){ freshInstallBoot=false; continueAsGuest(); return; }
   showPage('p-auth');
 }
 
@@ -2520,6 +2525,7 @@ function bootToAuth(){
   // A genuinely fresh install (no language chosen yet) sees the language picker first -- that's
   // what it's for. Every other bootToAuth() call (logout, session fallback, etc.) already has a
   // saved language at this point and goes straight to the auth screen, same as before.
+  freshInstallBoot=!hadSavedLang;
   showPage(hadSavedLang?'p-auth':'p-lang');
 }
 
@@ -2845,15 +2851,8 @@ function finishLoad(){
   try{showGDPRNotice();}catch(e){console.error('[finishLoad] gdpr',e);}
   hideLoading();
   showPage('p-app');
-  // Land brand-new opens on Missions/Home (the static markup otherwise always defaults to the
-  // Feed tab). One-time only — every open after this one leaves whichever tab is already active
-  // alone, no forced redirect.
-  try{
-    if(!localStorage.getItem('fa_everOpened')){
-      localStorage.setItem('fa_everOpened','1');
-      go('home',document.getElementById('nav-home'));
-    }
-  }catch(e){}
+  // Brand-new opens land on the Feed tab, same as every open after it — the static markup's
+  // default active tab is already Feed, so no redirect is needed here.
   try{loadLeaderboard();}catch(e){console.error('[finishLoad] lb',e);}
   try{loadTopRooms();}catch(e){console.error('[finishLoad] topRooms',e);}
   try{loadFeed();}catch(e){console.error('[finishLoad] feed',e);}
