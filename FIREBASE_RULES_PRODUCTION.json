@@ -6,8 +6,8 @@
     "users": {
       ".indexOn": ["username"],
       "$uid": {
-        ".read": "$uid === auth.uid || root.child('users').child($uid).child('public').exists()",
-        ".write": "$uid === auth.uid && (!data.exists() || (newData.child('premium').val() === data.child('premium').val() && newData.child('email').val() === data.child('email').val() && newData.child('blocked').val() === data.child('blocked').val() && newData.child('verified').val() === data.child('verified').val() && newData.child('lastDailyClaim').val() === data.child('lastDailyClaim').val() && newData.child('dailyClaimStreak').val() === data.child('dailyClaimStreak').val() && newData.child('longestDailyStreak').val() === data.child('longestDailyStreak').val() && newData.child('bio').val() === data.child('bio').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('badUploads').val() === data.child('badUploads').val() && newData.child('username').val() === data.child('username').val() && (!data.child('completedMissionsToday').child('0').exists() || newData.child('completedMissionsToday').child('0').exists()) && (!data.child('completedMissionsToday').child('1').exists() || newData.child('completedMissionsToday').child('1').exists()) && (!data.child('completedMissionsToday').child('2').exists() || newData.child('completedMissionsToday').child('2').exists())))",
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous' && (!data.exists() || (newData.child('premium').val() === data.child('premium').val() && newData.child('email').val() === data.child('email').val() && newData.child('blocked').val() === data.child('blocked').val() && newData.child('verified').val() === data.child('verified').val() && newData.child('lastDailyClaim').val() === data.child('lastDailyClaim').val() && newData.child('dailyClaimStreak').val() === data.child('dailyClaimStreak').val() && newData.child('longestDailyStreak').val() === data.child('longestDailyStreak').val() && newData.child('bio').val() === data.child('bio').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('badUploads').val() === data.child('badUploads').val() && newData.child('username').val() === data.child('username').val() && (!data.child('completedMissionsToday').child('0').exists() || newData.child('completedMissionsToday').child('0').exists()) && (!data.child('completedMissionsToday').child('1').exists() || newData.child('completedMissionsToday').child('1').exists()) && (!data.child('completedMissionsToday').child('2').exists() || newData.child('completedMissionsToday').child('2').exists())))",
 
         "username": {".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 30"},
         "pts": {".read": true, ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() === data.val()"},
@@ -37,13 +37,13 @@
           "$other": {".validate": false}
         },
 
-        "avatarURL": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 600"},
-        "avatarColor": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 9"},
+        "avatarURL": {".read": true, ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous'", ".validate": "newData.isString() && newData.val().length <= 600"},
+        "avatarColor": {".read": true, ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous'", ".validate": "newData.isString() && newData.val().length <= 9"},
         "bio": {".read": true, ".write": false, ".validate": "newData.isString() && newData.val().length <= 300"},
-        "title": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 30"},
-        "link": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 200"},
-        "age": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isNumber() && newData.val() >= 13 && newData.val() <= 120"},
-        "profileCountry": {".read": true, ".write": "$uid === auth.uid", ".validate": "newData.isString() && newData.val().length <= 60"},
+        "title": {".read": true, ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous'", ".validate": "newData.isString() && newData.val().length <= 30"},
+        "link": {".read": true, ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous'", ".validate": "newData.isString() && newData.val().length <= 200"},
+        "age": {".read": true, ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous'", ".validate": "newData.isNumber() && newData.val() >= 13 && newData.val() <= 120"},
+        "profileCountry": {".read": true, ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous'", ".validate": "newData.isString() && newData.val().length <= 60"},
 
         "completedMissionsToday": {
           ".read": "$uid === auth.uid",
@@ -82,7 +82,13 @@
         "pts": {".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000 && (!data.exists() || newData.val() <= data.val() + 50000)"},
         "likes": {".write": false, ".validate": "newData.isNumber() && newData.val() >= 0 && (newData.val() === (data.exists() ? data.val() : 0) || newData.val() === (data.exists() ? data.val() : 0) + 1 || newData.val() === (data.exists() ? data.val() : 0) - 1)"},
         "views": {".write": false, ".validate": "newData.isNumber() && newData.val() >= 0 && (newData.val() === (data.exists() ? data.val() : 0) || newData.val() === (data.exists() ? data.val() : 0) + 1)"},
-        "music": {".validate": "newData.isString() && newData.val().length <= 20"}
+        "music": {".validate": "newData.isString() && newData.val().length <= 20"},
+        "ratingSum": {".write": false, ".validate": "newData.isNumber() && newData.val() >= 0"},
+        "ratingCount": {".write": false, ".validate": "newData.isNumber() && newData.val() >= 0"},
+        "ratingAvg": {".write": false, ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5"},
+        "moderationFlaggedAt": {".write": false, ".validate": "newData.isNumber()"},
+        "isUserVideo": {".write": false, ".validate": "newData.isBoolean()"},
+        "approved": {".write": false, ".validate": "newData.isBoolean()"}
       }
     },
 
@@ -132,10 +138,23 @@
       }
     },
 
-    "userSaves": {
+    "userRatings": {
       "$uid": {
         ".read": "$uid === auth.uid",
         ".write": "$uid === auth.uid",
+
+        "$postId": {
+          ".validate": "newData.hasChildren(['stars','ratedAt']) || newData.val() === null",
+          "stars": {".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 5"},
+          "ratedAt": {".validate": "newData.isNumber()"}
+        }
+      }
+    },
+
+    "userSaves": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous'",
 
         "$postId": {
           ".validate": "newData.hasChildren(['timestamp']) || newData.val() === null",
@@ -147,9 +166,11 @@
     "follows": {
       "$uid": {
         ".read": true,
-        ".write": "$uid === auth.uid",
         ".indexOn": ["timestamp"],
-        "$target": { ".validate": "newData.val() === true || newData.val() === null || newData.hasChildren()" }
+        "$target": {
+          ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous' && (!newData.exists() || (!root.child('userBlocked/'+$target+'/'+auth.uid).exists() && !root.child('userBlocked/'+auth.uid+'/'+$target).exists()))",
+          ".validate": "newData.val() === true || newData.val() === null || newData.hasChildren()"
+        }
       }
     },
 
@@ -157,7 +178,7 @@
       "$uid": {
         ".read": true,
         "$follower": {
-          ".write": "$follower === auth.uid",
+          ".write": "$follower === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous' && (!newData.exists() || (!root.child('userBlocked/'+$uid+'/'+$follower).exists() && !root.child('userBlocked/'+$follower+'/'+$uid).exists()))",
           ".validate": "newData.val() === true || newData.val() === null || newData.hasChildren()"
         }
       }
@@ -200,14 +221,14 @@
     "userBlocked": {
       "$uid": {
         ".read": "$uid === auth.uid",
-        ".write": "$uid === auth.uid"
+        ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous'"
       }
     },
 
     "userMuted": {
       "$uid": {
         ".read": "$uid === auth.uid",
-        ".write": "$uid === auth.uid"
+        ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous'"
       }
     },
 
@@ -232,13 +253,13 @@
 
     "reports": {
       ".read": "auth !== null && auth.token.email === 'shahar070510@gmail.com'",
-      ".write": "auth !== null",
+      ".write": false,
       ".indexOn": ["createdAt", "status"],
       "$reportId": {
         ".validate": "newData.hasChildren(['byUid','reportedUid','reason','createdAt'])",
         "byUid": {".validate": "newData.val() === auth.uid || auth.token.email === 'shahar070510@gmail.com'"},
-        "reason": {".validate": "newData.val() === 'harassment' || newData.val() === 'spam' || newData.val() === 'abuse' || newData.val() === 'inappropriate' || newData.val() === 'hate_speech' || newData.val() === 'scam'"},
-        "status": {".validate": "newData.val() === 'pending' || newData.val() === 'reviewed' || newData.val() === 'actioned'"}
+        "reason": {".validate": "newData.val() === 'harassment' || newData.val() === 'spam' || newData.val() === 'abuse' || newData.val() === 'inappropriate' || newData.val() === 'hate_speech' || newData.val() === 'scam' || newData.val() === 'auto_low_rating' || newData.val() === 'nudity' || newData.val() === 'violence'"},
+        "status": {".validate": "(newData.val() === 'pending' || newData.val() === 'reviewed' || newData.val() === 'actioned') && (auth.token.email === 'shahar070510@gmail.com' || !data.exists())"}
       }
     },
 
@@ -342,11 +363,11 @@
     },
 
     "rooms": {
-      ".read": "auth != null",
+      ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous'",
       "$code": {
-        ".write": "auth != null && !newData.exists() && !data.child('members').exists()",
+        ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && !newData.exists() && !data.child('members').exists()",
         "meta": {
-          ".write": "auth != null && (!data.exists() || (data.child('host').val() === auth.uid && newData.child('mission').val() === data.child('mission').val()))",
+          ".write": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous' && (!data.exists() || (data.child('host').val() === auth.uid && newData.child('mission').val() === data.child('mission').val()))",
           ".validate": "newData.hasChildren(['host'])",
           "host": {".validate": "newData.val() === auth.uid || data.exists()"},
           "hostName": {".validate": "newData.isString() && newData.val().length <= 40"},
@@ -356,7 +377,7 @@
         },
         "members": {
           "$uid": {
-            ".write": "($uid === auth.uid && !root.child('rooms').child($code).child('banned').child(auth.uid).exists()) || (root.child('rooms').child($code).child('meta').child('host').val() === auth.uid && !newData.exists())",
+            ".write": "($uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous' && !root.child('rooms').child($code).child('banned').child(auth.uid).exists()) || (root.child('rooms').child($code).child('meta').child('host').val() === auth.uid && !newData.exists())",
             ".validate": "newData.hasChildren(['name','at'])",
             "name": {".validate": "newData.isString() && newData.val().length <= 40"},
             "at": {".validate": "newData.isNumber()"},
@@ -365,14 +386,14 @@
         },
         "banned": {
           "$uid": {
-            ".read": "auth != null",
+            ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous'",
             ".write": "root.child('rooms').child($code).child('meta').child('host').val() === auth.uid || root.child('rooms').child($code).child('mods').child(auth.uid).val() === true",
             ".validate": "newData.val() === true"
           }
         },
         "mods": {
           "$uid": {
-            ".read": "auth != null",
+            ".read": "auth != null && auth.token.firebase.sign_in_provider !== 'anonymous'",
             ".write": "root.child('rooms').child($code).child('meta').child('host').val() === auth.uid",
             ".validate": "newData.val() === true"
           }
