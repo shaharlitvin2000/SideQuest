@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "208737763122",
+    "firebase_url": "https://flasharena-f35b1-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "flasharena-f35b1",
+    "storage_bucket": "flasharena-f35b1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:208737763122:android:046a4d6ee580af3611612b",
+        "android_client_info": {
+          "package_name": "com.sidequest.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "208737763122-khh7fp1o1rnrpmfhhst9s0cs2a33hup1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sidequest.app",
+            "certificate_hash": "2d05ff1b7354fd8f02c876b286ffe4bc5ab1df94"
+          }
+        },
+        {
+          "client_id": "208737763122-12gaud3r0jt40r5s1bvtun4m8mvkl6ph.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjFfehtXR4tBt9nsY3vTQSg9V6B4o7A7c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "208737763122-12gaud3r0jt40r5s1bvtun4m8mvkl6ph.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
