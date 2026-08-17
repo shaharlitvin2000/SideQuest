@@ -7,6 +7,36 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <!-- App is dark theme only (no light mode) — status/nav bar backgrounds match the app's
+             own background color, with light (white) system icons for contrast against it.
+             windowLightStatusBar needs API 23+ and windowLightNavigationBar needs API 27+; both
+             are safely ignored on any lower API without a separate values-vNN override since
+             minSdk here is 24. -->
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+        <item name="android:navigationBarColor">@color/colorPrimaryDark</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <!-- API 29+: with edge-to-edge, the OS by default draws its OWN translucent contrast
+             scrim over a transparent nav/status bar whenever it judges one is needed for icon
+             legibility — a layer that sits on top of navigationBarColor/statusBarColor and isn't
+             fully bound by them, and whose exact color is partly OS/OEM-determined rather than
+             ours to set directly. Since Capacitor's runtime SystemBars plugin (setStyle: "dark" in
+             capacitor.config.json) already asks for light icons on a dark bar every launch, that
+             system-drawn scrim is redundant for us — disabling it removes a second, less
+             predictable source of "what color is actually behind the icons" instead of trying to
+             out-guess its color. Safely ignored below API 29 (minSdk 24) with no values-vNN split
+             needed, same as the API 23/27 items above. -->
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+        <!-- The base parent theme (Theme.AppCompat.Light.*) has a light windowBackground we never
+             overrode — that's the Activity's root background, and it's what shows through in any
+             area the WebView doesn't paint over (most visibly the bottom system-bar inset area).
+             targetSdk here is 36 (Android 16): API 35+ enforces edge-to-edge and the OS treats
+             navigationBarColor as largely advisory once that kicks in, so the actual color behind
+             a transparent nav bar is just whatever's drawn there — windowBackground is the real
+             fallback that has to be dark, not just the (still-correct, still-worth-keeping)
+             navigationBarColor item above. -->
+        <item name="android:windowBackground">@color/colorPrimaryDark</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">

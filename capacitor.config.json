@@ -2,6 +2,7 @@
   "appId": "com.sidequest.app",
   "appName": "SideQuest",
   "webDir": "www",
+  "backgroundColor": "#0D0D10",
   "server": {
     "url": "https://flasharena-f35b1.web.app",
     "cleartext": false,
@@ -11,6 +12,9 @@
     "FirebaseAuthentication": {
       "skipNativeAuth": true,
       "providers": ["google.com"]
+    },
+    "SystemBars": {
+      "style": "dark"
     }
   }
 }

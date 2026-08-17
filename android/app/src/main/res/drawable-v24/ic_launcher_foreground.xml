@@ -1,10 +1,26 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportHeight="108"
-    android:viewportWidth="108">
-    <path
-        android:fillColor="#D66B4E"
-        android:fillType="evenOdd"
-        android:pathData="M54,24 C39,24 28,35.5 28,49.5 C28,65.5 54,84 54,84 C54,84 80,65.5 80,49.5 C80,35.5 69,24 54,24 Z M57,35 L45,52 L53,52 L50,67 L65,48 L56,48 Z" />
+    android:viewportHeight="512"
+    android:viewportWidth="512">
+    <group
+        android:name="glyph"
+        android:pivotX="0"
+        android:pivotY="0"
+        android:rotation="-35"
+        android:scaleX="0.63"
+        android:scaleY="0.63"
+        android:translateX="273"
+        android:translateY="273">
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#E84A6B"
+            android:strokeWidth="30"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M -55,-70 A 55 55 0 1 1 55,-70 L 8,26" />
+        <path
+            android:fillColor="#E84A6B"
+            android:pathData="M -2,68 m -16,0 a 16,16 0 1,0 32,0 a 16,16 0 1,0 -32,0" />
+    </group>
 </vector>
