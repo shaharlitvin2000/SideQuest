@@ -139,7 +139,7 @@ img,video{max-width:100%}
 .lang-opt:active{transform:scale(0.92)}
 .lang-opt.sel{border-color:var(--accent-border-soft);background:var(--accent-soft);box-shadow:none}
 .lang-name{font-size:15px;font-weight:700;font-family:var(--font);line-height:1.3}
-.lang-btn{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:calc(100% - 48px);max-width:432px;margin:0;background:var(--grad);color:#fff;border:none;box-shadow:var(--shadow-cta);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom, 0px)) 18px;font-family:var(--font);font-size:15px;font-weight:600;letter-spacing:.2px;cursor:pointer;z-index:50}
+.lang-btn{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom, 0px));left:50%;transform:translateX(-50%);width:calc(100% - 48px);max-width:432px;margin:0;background:var(--grad);color:#fff;border:none;box-shadow:var(--shadow-cta);border-radius:var(--r-lg);padding:18px;font-family:var(--font);font-size:15px;font-weight:600;letter-spacing:.2px;cursor:pointer;z-index:50}
 
 /* ───── AUTH ───── */
 #p-auth{background:var(--bg);padding:0}
@@ -2607,6 +2607,11 @@ function setupAuthListener(){
       // (Email-verification nag removed — the verification email is still sent at sign-up;
       //  enforcement can be added when on Blaze.)
     } else {
+      // Belt-and-suspenders reset: the known sign-out call sites already clear these themselves,
+      // but this is the one place Firebase itself confirms there's genuinely no user, so it's the
+      // real backstop against a stale userUID surviving into a screen (like the language picker's
+      // back-button handling) that trusts it as an is-authenticated check.
+      userUID='';isGuestUser=false;
       hideLoading();
       bootToAuth();
       stopSessionTimeout();  // Clear timeout
@@ -3176,6 +3181,7 @@ function _handleGoogleSignIn(cred,consentGiven){
     const u=cred.user;
     Promise.resolve(u&&u.delete?u.delete():null).catch(function(){}).then(function(){
       try{auth.signOut();}catch(e){}
+      userUID='';isGuestUser=false;
       switchAuthTab('reg');
       const errConsent=document.getElementById('err-consent');
       if(errConsent) errConsent.style.display='block';
@@ -3373,7 +3379,7 @@ function _performAccountDeletion(){
   // client-side auth.currentUser.delete() call used to run into.
   return firebase.functions().httpsCallable('deleteAccount')({}).then(()=>{
     toast('✅ '+t('accountDeleted'));
-    return auth.signOut().then(()=>bootToAuth());
+    return auth.signOut().then(()=>{ userUID='';isGuestUser=false; bootToAuth(); });
   }).catch(err=>{
     console.error('[Delete]',err);
     toast('❌ '+t('deletionFailed')+': '+((err&&err.message)||''));
@@ -9863,6 +9869,16 @@ function _handleAndroidBack(){
         go('home',document.getElementById('nav-home'));
         return true;
       }
+    }
+    // Language picker is the very first screen -- there's nothing behind it to go back to, and
+    // guest browsing means there's no auth wall left to escape back out of either. Treat back the
+    // same as tapping Continue: proceed with whatever language is currently highlighted (confirmLang()
+    // itself already routes correctly from here -- guest browsing for a fresh install, back to
+    // auth if reached via its own Back link, or back to the app if reached from Settings).
+    var langPage=document.getElementById('p-lang');
+    if(langPage && langPage.classList.contains('active')){
+      confirmLang();
+      return true;
     }
   }catch(e){ console.error('[Back]',e); }
   return false; // nothing left to close/navigate -- let the native side background the app
