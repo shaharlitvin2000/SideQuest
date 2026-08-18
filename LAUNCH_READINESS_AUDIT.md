@@ -7,9 +7,10 @@ are explicitly out of scope (deferred separately).
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` fixed & verified
 
 **All 8 blockers + all 11 High-severity + all 18 Medium-severity items fixed and deployed**
-(hosting + database rules + Cloud Functions, all verified byte-for-byte/live). 11 of 12 Low
-severity items are fixed; L9 remains explicitly flagged for a design-confirmation decision rather
-than guessed at, same as M9's unbounded-query remainder.
+(hosting + database rules + Cloud Functions, all verified byte-for-byte/live). All 12 Low
+severity items are resolved (fixed, or explicitly confirmed as intentional rather than guessed
+at). M9's unbounded-query remainder (`calculateCreatorAnalytics`/`calculateTrending`/
+`adminGetDashboard`) is the only item still open.
 
 ---
 
@@ -342,10 +343,9 @@ than guessed at, same as M9's unbounded-query remainder.
   (`index.html:6566`). Other spots (`7896`, `8925`) use the OS default locale instead — a
   Hebrew-selected user on an English-locale device sees English-formatted dates/times.
 
-- [~] **L9 — Some UI regions pinned to a fixed physical side regardless of RTL.** *(flagged, not fixed — the room-chat panel and feed action column (like/comment/share) both explicitly stay on the same physical side regardless of language, which reads as deliberate (the feed actions column even has `direction:ltr` explicitly set). This matches a common short-video-app convention (TikTok/Reels keep the action rail on the same side too), so "fixing" it without confirmation risks breaking an intentional design choice. Left as-is pending an explicit call either way.)*
-  `index.html:840` (`.room-chat-screen{right:10px}`) and `index.html:1140`
-  (`.feed-actions{left:12px;direction:ltr}`) never mirror. May be an intentional design choice
-  (common video-app convention) — worth an explicit confirm either way rather than assuming.
+- [x] **L9 — Some UI regions pinned to a fixed physical side regardless of RTL.** *(confirmed intentional, no code change — asked directly rather than guessing either direction, since this affects real Hebrew/Arabic users and both outcomes were defensible: explicit decision was to keep both pinned as-is, matching the TikTok/Instagram Reels/YouTube Shorts convention of keeping the action rail on a fixed physical side regardless of language, even for RTL audiences.)*
+  `index.html` `.room-chat-screen{right:10px}` and `.feed-actions{left:12px;direction:ltr}` —
+  confirmed as designed, not an oversight.
 
 - [x] **L10 — Small touch targets on some dismiss/delete controls.** *(fixed: bumped padding on `.recent-x`/`.reply-cancel`/`.draft-del` to 10px, meaningfully closer to the ~44px guideline without risking the layout shifts a strict `min-width/height:44px` could cause in their tight list-row contexts — a judgment call given no live browser to visually verify the alternative.)*
   `index.html:1350` (`.reply-cancel{padding:2px 6px}`), `439` (`.recent-x{padding:6px}`), `1364`
