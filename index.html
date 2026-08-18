@@ -4959,6 +4959,7 @@ function feedSlide(direction){
         var ns=feedGetOrRenderSlot(neighborPost,advancing?'fsl-prev':'fsl-next');
         ns.style.cssText='position:absolute;inset:0;transform:translateY('+(advancing?'-100%':'100%')+');will-change:transform;backface-visibility:hidden';
         wrap.appendChild(ns);
+        feedPrimeNeighborVideo(ns);
       }
       refreshFeedSlotFollowState();
       // Deferred one frame: feedPreloadAhead builds full DOM (incl. a <video> + .load() call) for
@@ -5069,6 +5070,22 @@ function feedRecordWatchTime(postId){
   }
 }
 
+// A neighbor (.fsl-prev/.fsl-next) slot's video already has a poster + CSS background-image
+// fallback so it isn't blank while unloaded -- but once the element buffers enough data
+// (readyState reaches HAVE_CURRENT_DATA or higher, which preload="auto" alone will eventually
+// reach just by sitting there), browsers stop falling back to the poster and composite the
+// video's own render surface instead. Nothing has forced an actual frame decode onto that
+// surface at that point, so it paints solid black -- exactly the gap revealed by a partial drag
+// toward that neighbor. A brief muted play-then-pause forces one real frame to decode, so the
+// surface always has something other than black to show, whether the drag ever completes or not.
+function feedPrimeNeighborVideo(slotEl){
+  var v=slotEl&&slotEl.querySelector('video');
+  if(!v||!v.paused) return;
+  v.muted=true;
+  var p=v.play();
+  if(p&&p.then) p.then(function(){ try{v.pause();}catch(e){} }).catch(function(){});
+  else { try{v.pause();}catch(e){} }
+}
 function feedPreloadVideo(post){
   if(!post||feedSlotCache.has(post.id)) return;
   if(post.mediaType!=='video'||!post.mediaURL) return;
@@ -5263,6 +5280,7 @@ function feedMountFollowing(){
     sp.style.cssText='position:absolute;inset:0;transform:translateY(-100%);will-change:transform;backface-visibility:hidden';
     feedRenderPost(prevPost,sp);
     wrap.appendChild(sp);
+    feedPrimeNeighborVideo(sp);
   }
   if(nextPost&&!wrap.querySelector('.fsl-next')){
     var sn=document.createElement('div');
@@ -5270,6 +5288,7 @@ function feedMountFollowing(){
     sn.style.cssText='position:absolute;inset:0;transform:translateY(100%);will-change:transform;backface-visibility:hidden';
     feedRenderPost(nextPost,sn);
     wrap.appendChild(sn);
+    feedPrimeNeighborVideo(sn);
   }
 
   // Update follow state for current post
@@ -5296,6 +5315,7 @@ function feedMountPosts(){
     sp.style.cssText='position:absolute;inset:0;transform:translateY(-100%);will-change:transform;backface-visibility:hidden';
     feedRenderPost(prevPost,sp);
     wrap.appendChild(sp);
+    feedPrimeNeighborVideo(sp);
   }
   var sc=document.createElement('div');
   sc.id='feed-slot';
@@ -5317,6 +5337,7 @@ function feedMountPosts(){
     sn.style.cssText='position:absolute;inset:0;transform:translateY(100%);will-change:transform;backface-visibility:hidden';
     feedRenderPost(nextPost,sn);
     wrap.appendChild(sn);
+    feedPrimeNeighborVideo(sn);
   }
   refreshFeedSlotFollowState();
 }
@@ -5330,10 +5351,16 @@ function feedApplyDrag(wrap,dy){
   var prev=wrap.querySelector('.fsl-prev');
   var curr=wrap.querySelector('#feed-slot');
   var next=wrap.querySelector('.fsl-next');
+  // Must be the wrap's own height (offsetHeight), not window.innerHeight -- the wrap sits below
+  // the top tab bar and above the bottom nav, so it's shorter than the full viewport. Using the
+  // viewport height here left a permanent gap (the mismatch amount) between the current slot and
+  // its neighbor at any drag distance, showing as a black band since nothing else paints behind
+  // the feed wrap. feedGetH()/feedSnapBack() already use offsetHeight for the same reason.
+  var h=wrap.offsetHeight;
   // Use simpler transforms for GPU acceleration
-  if(prev) prev.style.transform='translate3d(0,'+(adj-window.innerHeight)+'px,0)';
+  if(prev) prev.style.transform='translate3d(0,'+(adj-h)+'px,0)';
   if(curr) curr.style.transform='translate3d(0,'+adj+'px,0)';
-  if(next) next.style.transform='translate3d(0,'+(adj+window.innerHeight)+'px,0)';
+  if(next) next.style.transform='translate3d(0,'+(adj+h)+'px,0)';
 }
 
 function feedSnapBack(){
@@ -5343,10 +5370,14 @@ function feedSnapBack(){
   var prev=wrap.querySelector('.fsl-prev');
   var curr=wrap.querySelector('#feed-slot');
   var next=wrap.querySelector('.fsl-next');
-  var h=window.innerHeight;
+  var h=wrap.offsetHeight;
   if(prev){prev.style.transition=tr;prev.style.transform='translate3d(0,-'+h+'px,0)';}
   if(curr){curr.style.transition=tr;curr.style.transform='translate3d(0,0,0)';}
   if(next){next.style.transition=tr;next.style.transform='translate3d(0,'+h+'px,0)';}
+  // Abandoning a drag must never leave the current video paused or stalled -- resume it
+  // explicitly rather than assuming nothing touched its playback state during the drag.
+  var cv=curr&&curr.querySelector('video');
+  if(cv&&cv.paused){cv.play().catch(function(){});}
   setTimeout(function(){
     [prev,curr,next].forEach(function(el){if(el)el.style.transition='none';});
   },260);
@@ -5397,13 +5428,15 @@ function feedInitEvents(wrap){
     _fd.drag=false;
     var dy=y-_fd.sy;
     var H=feedGetH();
+    // Threshold-based like TikTok: past halfway commits to the next/prev post regardless of
+    // speed; a fast flick can still commit well short of halfway (unchanged, existing behavior).
     if(feedMode==='following'){
-      if(dy<-H*0.10||_fd.vel<-0.22){feedSlideFollowing(1);}
-      else if(dy>H*0.10||_fd.vel>0.22){feedSlideFollowing(-1);}
+      if(dy<-H*0.5||_fd.vel<-0.22){feedSlideFollowing(1);}
+      else if(dy>H*0.5||_fd.vel>0.22){feedSlideFollowing(-1);}
       else{feedSnapBack();}
     } else {
-      if(dy<-H*0.10||_fd.vel<-0.22){feedSlide(1);}
-      else if(dy>H*0.10||_fd.vel>0.22){feedSlide(-1);}
+      if(dy<-H*0.5||_fd.vel<-0.22){feedSlide(1);}
+      else if(dy>H*0.5||_fd.vel>0.22){feedSlide(-1);}
       else{feedSnapBack();}
     }
   }
