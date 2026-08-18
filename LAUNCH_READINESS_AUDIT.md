@@ -7,11 +7,9 @@ are explicitly out of scope (deferred separately).
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` fixed & verified
 
 **All 8 blockers + all 11 High-severity + all 18 Medium-severity items fixed and deployed**
-(hosting + database rules + Cloud Functions, all verified byte-for-byte/live). B7's APK
-(versionCode 6 / "1.5") is built and verified but not yet installed — no Android device has been
-connected since it was built. One item (M9) is partially fixed with the remainder explicitly
-flagged for a product/engineering decision rather than guessed at. Next up: Low severity items
-(12 of them), whenever requested.
+(hosting + database rules + Cloud Functions, all verified byte-for-byte/live). 10 of 12 Low
+severity items are fixed; L7 and L9 remain explicitly flagged for a product/engineering decision
+rather than guessed at, same as M9's unbounded-query remainder.
 
 ---
 
@@ -298,9 +296,19 @@ flagged for a product/engineering decision rather than guessed at. Next up: Low 
   `index.html:2503,2876,2489-2490`. `sendEmailVerification()` fires at signup, `emailVerified` is
   never read anywhere, and `showEmailVerificationPrompt()` is defined but never called.
 
-- [~] **L3 — No real age verification, only an optional self-reported profile field.** *(flagged, not fixed — needs a product call: adding a mandatory birthdate field at signup is the standard fix, but it adds signup friction and, depending on jurisdiction, can itself trigger COPPA/GDPR-K obligations (parental consent flows, data-minimization rules for minors) that are a real scope decision, not a quick patch. Leaving as-is pending direction.)*
-  `index.html:9385` (`ep-age`, entered post-signup), `functions/index.js:397` (`registerUser`
-  collects no birthdate). Nothing technically enforces the stated 13+ policy at account creation.
+- [x] **L3 — No real age verification, only an optional self-reported profile field.** *(fixed, per explicit direction to implement the standard mandatory-birthdate approach and flag only the genuinely disputed judgment call rather than guess on it — see below: added a required "Date of birth" field to the sign-up form. Age is computed client-side (calendar-accurate, not just a year subtraction) and checked before any network call — an under-13 birthdate blocks registration entirely with an inline error, and since the check happens before `createUserWithEmailAndPassword` is ever called, no account is created and no birthdate is ever transmitted for a rejected attempt. The birthdate is stored as a millis timestamp (not the raw date string) so the DB rule can also enforce the 13+ requirement server-side, as a numeric comparison against `now` — defense in depth against a client that skips the form and calls the Auth/DB SDKs directly (verified live: a direct bypass attempt with a fabricated under-13 birthdate was rejected with `PERMISSION_DENIED`). The field is locked immutable by the `users/$uid` rule once set, same as `email`/`createdAt` (verified: a later attempt to change it was also rejected).
+
+  **Found and fixed in the course of verifying this**: adding `birthdate` to that same immutability invariant surfaced a pre-existing, unrelated data-integrity bug that predates this fix — `onAuthStateChanged` fires (and starts loading user data) as soon as `createUserWithEmailAndPassword` resolves, well before `doRegister()`'s own username-claim + `users/{uid}.set()` steps finish, so `applyLoadedData()`'s `!data` fallback (and `finishLoad()`'s own early writes, e.g. `lastActive`) could race ahead and create a partial record first. Once that happened, `doRegister()`'s own later, complete write included `email`/`createdAt` (and now `birthdate`) for the first time, but the rule's invariant can't distinguish "setting an immutable field for the first time" from "changing it away from an existing value" — both trip the same equality check, so the whole write was silently rejected and those fields were never actually persisted. This means real registrations may have been losing `email`/`createdAt` this way already, unnoticed, since the visible UX (success toast, landing in the app) looks identical either way. Fixed with a `_registering` guard flag: `setupAuthListener()` now defers calling `loadUserData()` until `doRegister()`'s own write has landed, instead of racing ahead of it.
+
+  **Left alone, flagged rather than guessed**: Google sign-up doesn't collect a birthdate at all (`_handleGoogleSignIn()` just calls the `ensureUser` callable) — it doesn't go through this new form, so age verification currently only applies to email/password sign-up. Closing that gap would need a post-OAuth interstitial screen, a real design decision, not something to add silently. Also not addressed here, as previously flagged: what a mandatory birthdate field implies for COPPA/GDPR-K (data-minimization, retention, parental-consent obligations) beyond the reject-with-no-data-transmitted approach implemented — that's still a legal/compliance call, not a code one.)*
+  `index.html` sign-up form (`#auth-reg`), `doRegister()`, `ageFromBirthdate()`, `applyLoadedData()`,
+  `setupAuthListener()`; `FIREBASE_RULES_PRODUCTION.json` `users/$uid/birthdate`.
+  Verified live on both desktop browser and the real device: under-13 rejected with no account
+  created; a valid signup persists a complete record (username/email/birthdate/agreedToTerms/
+  consentAt/createdAt all present, matching values); direct-bypass and post-creation-change
+  attempts both rejected server-side. Test accounts and their `users`/`leaderboard`/`usernames`
+  data cleaned up via admin CLI afterward; a small number of orphaned Firebase Auth records from
+  this testing are still pending deletion (no associated data, low priority).
 
 - [x] **L4 — No feedback loop to the reporter about the outcome of their report.** *(fixed: `adminUpdateReport` now sends the reporter a notification when their report is marked reviewed/actioned, via the existing `writeNotification` helper. New `report_resolved` notification type + `notifReportResolved` key × 7 languages.)*
   `index.html:7107-7108`. Only a generic submission-time toast; `reports/$reportId/status`
