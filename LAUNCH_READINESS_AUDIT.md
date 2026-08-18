@@ -7,9 +7,9 @@ are explicitly out of scope (deferred separately).
 Status legend: `[ ]` not started · `[~]` in progress · `[x]` fixed & verified
 
 **All 8 blockers + all 11 High-severity + all 18 Medium-severity items fixed and deployed**
-(hosting + database rules + Cloud Functions, all verified byte-for-byte/live). 10 of 12 Low
-severity items are fixed; L7 and L9 remain explicitly flagged for a product/engineering decision
-rather than guessed at, same as M9's unbounded-query remainder.
+(hosting + database rules + Cloud Functions, all verified byte-for-byte/live). 11 of 12 Low
+severity items are fixed; L9 remains explicitly flagged for a design-confirmation decision rather
+than guessed at, same as M9's unbounded-query remainder.
 
 ---
 
@@ -323,12 +323,19 @@ rather than guessed at, same as M9's unbounded-query remainder.
   unbounded read of the `usernames` node plus an `orderByValue` query on every call — free
   read-cost amplification surface for anyone who calls it directly.
 
-- [~] **L7 — Abuse-score/rate-limiting state is in-process memory, not shared across instances.** *(flagged, not fixed — same class of decision as M9's scale items. A real fix means moving `abuseScores`/`ipSignups` to shared state (Firestore, Redis/Memorystore, etc.), which is a genuine infrastructure investment with cost/latency tradeoffs, not a quick patch. Worth doing before real launch traffic makes the current per-instance limits meaningfully bypassable, but not something to guess an approach for silently.)*
-  `functions/index.js:53-110` (`abuseScores`/`ipSignups` Maps). Used by `likePost`,
-  `submitComment`, `followUser`, `rateVideoImpl`, `createFeedPost`, `completeMission`, `watchAd`.
-  Cloud Functions' normal horizontal autoscaling spins up multiple instances that don't share
-  this state, so per-uid/IP thresholds can be bypassed by request volume/timing landing on
-  different instances.
+- [x] **L7 — Abuse-score/rate-limiting state is in-process memory, not shared across instances.** *(fixed, per explicit direction to implement now: moved `abuseScores`/`ipSignups` from in-process Maps to RTDB, at a new server-only `rateLimits/` path (no client read/write is granted there, so it's covered by the root rule's default deny). RTDB was chosen over Firestore/Redis/Memorystore since it's already this project's datastore -- no new service to provision, no new dependency, no cost/latency profile change beyond what every other read/write in this file already has. `addAbuseScore` uses `.transaction()` specifically so two concurrent invocations for the same uid landing on different instances can't produce a lost update (same reasoning as the already-atomic view/watch-time counters) -- a plain read-then-write would have only partially fixed the problem this item exists to close. All 22 call sites across `likePost`, `submitComment`, `followUser`, `rateVideoImpl`, `createFeedPost`, `completeMission`, `watchAd`, the three search functions, and `registerUser` converted to the new `async`/`await` shape. `checkIPSignups` (a second function reading the old `ipSignups` Map) turned out to have zero callers -- removed rather than migrated, since leaving it would've meant a dangling reference to a Map that no longer exists.)*
+  `functions/index.js` (`sanitizeIPKey`, `trackIPSignup`, `addAbuseScore`, `checkAbuseScore`) plus
+  every call site listed above.
+  **Verified live** (not just code review): confirmed `rateLimits/abuseScores/{uid}` is populated
+  correctly after a real `likePost` call, from both the desktop browser and the real device.
+  Directly wrote a score of 150 into that path via admin CLI (simulating what a *different*
+  instance would have accumulated) and confirmed a subsequent `likePost` call from a live session
+  was correctly blocked with "Too many likes" -- the actual cross-instance scenario this item
+  exists to fix. Also verified the 1-hour expiry/reset path: an old (>1hr), high-score record was
+  correctly treated as expired and reset rather than blocking. Confirmed the client genuinely
+  cannot read `rateLimits/` directly (a stray debug read from the browser console returned
+  `permission_denied`, as intended). Test accounts and rate-limit test data cleaned up via admin
+  CLI afterward.
 
 - [x] **L8 — Date/time formatting mostly ignores the selected language.** *(fixed: the two identified spots — chat-list last-message time and draft creation date — now pass `LOCALE_MAP[curLang]||'en-US'` instead of the browser/OS default. Left the many bare `.toLocaleNumber()`-style calls for point/count formatting alone — those are number formatting, not date/time, and out of this item's actual scope.)*
   `LOCALE_MAP` (`index.html:2065`) is defined but only actually used once

@@ -85,63 +85,63 @@ const ABUSE_THRESHOLDS = {
   followsPerMinute: 20
 };
 
-const abuseScores = new Map();
-const ipSignups = new Map();  // IP -> { count, timestamp }
+// Shared across every Cloud Function instance via RTDB (a server-only path -- the root rule
+// defaults to no client read/write, and nothing grants one for `rateLimits/`) instead of the
+// in-process Maps this used to be. Cloud Functions autoscale horizontally; instances don't share
+// memory, so per-uid/IP thresholds were bypassable simply by request volume/timing landing on
+// different instances. RTDB is already this project's datastore, so this needed no new service.
+// addAbuseScore uses .transaction() specifically to avoid a lost-update race between two
+// concurrent invocations for the same uid landing on different instances -- the exact scenario
+// this item exists to close -- same reasoning as the atomic view/watch-time counters elsewhere.
+
+// RTDB keys can't contain '.', '#', '$', '[', ']', or '/' -- IPv4 addresses are full of dots.
+function sanitizeIPKey(ip) {
+  return String(ip || 'unknown').replace(/[.#$\[\]/]/g, '_');
+}
 
 // Track IP-based signup attempts
-function trackIPSignup(ip) {
-  if (!ipSignups.has(ip)) {
-    ipSignups.set(ip, { count: 0, timestamp: Date.now() });
-  }
-  const ipData = ipSignups.get(ip);
-  if (Date.now() - ipData.timestamp > 3600000) {
-    ipData.count = 0;
-    ipData.timestamp = Date.now();
-  }
-  ipData.count += 1;
-  return ipData.count;
+async function trackIPSignup(ip) {
+  const ref = db.ref(`rateLimits/ipSignups/${sanitizeIPKey(ip)}`);
+  const result = await ref.transaction(cur => {
+    if (!cur || Date.now() - cur.timestamp > 3600000) {
+      return { count: 1, timestamp: Date.now() };
+    }
+    return { count: cur.count + 1, timestamp: cur.timestamp };
+  });
+  return result.committed ? result.snapshot.val().count : 1;
 }
 
-function checkIPSignups(ip) {
-  if (!ipSignups.has(ip)) return false;
-  const ipData = ipSignups.get(ip);
-  if (Date.now() - ipData.timestamp > 3600000) {
-    ipSignups.delete(ip);
-    return false;
-  }
-  return ipData.count > 5;  // Block if > 5 signups/hour from same IP
+async function addAbuseScore(uid, points, reason) {
+  const ref = db.ref(`rateLimits/abuseScores/${uid}`);
+  const result = await ref.transaction(cur => {
+    if (!cur || Date.now() - cur.timestamp > 3600000) {
+      return { score: points, timestamp: Date.now(), reasons: [reason] };
+    }
+    // Cap stored reasons at 20 -- only ever used for a diagnostic log line, an unbounded array
+    // for a runaway/bot account would just be wasted storage.
+    const reasons = (cur.reasons || []).slice(-19);
+    reasons.push(reason);
+    return { score: cur.score + points, timestamp: cur.timestamp, reasons };
+  });
+  return result.committed ? result.snapshot.val().score : points;
 }
 
-function addAbuseScore(uid, points, reason) {
-  if (!abuseScores.has(uid)) {
-    abuseScores.set(uid, { score: 0, timestamp: Date.now(), reasons: [] });
-  }
-
-  const abuse = abuseScores.get(uid);
+// Returns { blocked, score, reasons } instead of a bare boolean so the two call sites that log
+// the score/reasons on block don't need a second read to get data this call already fetched.
+async function checkAbuseScore(uid) {
+  const ref = db.ref(`rateLimits/abuseScores/${uid}`);
+  const snap = await ref.once('value');
+  const abuse = snap.val();
+  if (!abuse) return { blocked: false };
 
   if (Date.now() - abuse.timestamp > 3600000) {
-    abuse.score = 0;
-    abuse.reasons = [];
-    abuse.timestamp = Date.now();
+    ref.remove().catch(() => {});
+    return { blocked: false };
   }
 
-  abuse.score += points;
-  abuse.reasons.push(reason);
-  return abuse.score;
-}
-
-function checkAbuseScore(uid) {
-  if (!abuseScores.has(uid)) return false;
-
-  const abuse = abuseScores.get(uid);
-  const now = Date.now();
-
-  if (now - abuse.timestamp > 3600000) {
-    abuseScores.delete(uid);
-    return false;
-  }
-
-  return abuse.score > 100;   // shared hourly budget; raised from 50 so engaged users who like/comment a lot aren't falsely blocked (bots doing hundreds still trip it)
+  // shared hourly budget; raised from 50 so engaged users who like/comment a lot aren't falsely
+  // blocked (bots doing hundreds still trip it)
+  return { blocked: abuse.score > 100, score: abuse.score, reasons: abuse.reasons };
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -469,7 +469,7 @@ exports.registerUser = functions.https.onCall(async (data, context) => {
   }
 
   // Check IP-based signup rate (prevent account farms)
-  const signupCount = trackIPSignup(ip);
+  const signupCount = await trackIPSignup(ip);
   if (signupCount > 5) {
     console.log(`[IPBlock] IP ${ip} exceeded signup limit: ${signupCount} attempts`);
     throw new functions.https.HttpsError(
@@ -562,9 +562,9 @@ exports.completeMission = functions.https.onCall(async (data, context) => {
   // here would lock out existing unverified users. Anti-abuse still applies below
   // (abuse scoring, blocked check, atomic daily-limit) which is the real protection.
 
-  if (checkAbuseScore(uid)) {
-    const abuse = abuseScores.get(uid);
-    console.log(`[Abuse] User ${uid} blocked - score: ${abuse.score}, reasons:`, abuse.reasons);
+  const abuseCheck1 = await checkAbuseScore(uid);
+  if (abuseCheck1.blocked) {
+    console.log(`[Abuse] User ${uid} blocked - score: ${abuseCheck1.score}, reasons:`, abuseCheck1.reasons);
     throw new functions.https.HttpsError(
       'permission-denied',
       'Suspicious activity detected. Please try again later.'
@@ -647,10 +647,10 @@ exports.completeMission = functions.https.onCall(async (data, context) => {
   const newUserData = result.snapshot.val();
 
   // Abuse tracking - check again after transaction to prevent race conditions
-  addAbuseScore(uid, 5, 'mission_completion');
-  if (checkAbuseScore(uid)) {
-    const abuse = abuseScores.get(uid);
-    console.log(`[Abuse] User ${uid} flagged after mission - score: ${abuse.score}`);
+  await addAbuseScore(uid, 5, 'mission_completion');
+  const abuseCheck2 = await checkAbuseScore(uid);
+  if (abuseCheck2.blocked) {
+    console.log(`[Abuse] User ${uid} flagged after mission - score: ${abuseCheck2.score}`);
     // Note: Mission is already completed, but user is now on abuse watch list
   }
 
@@ -742,7 +742,7 @@ exports.followUser = functions.https.onCall(async (data, context) => {
   }
 
   // Check abuse
-  if (checkAbuseScore(uid)) {
+  if ((await checkAbuseScore(uid)).blocked) {
     throw new functions.https.HttpsError(
       'permission-denied',
       'Too many follows. Please wait a moment.'
@@ -767,7 +767,7 @@ exports.followUser = functions.https.onCall(async (data, context) => {
   const timestamp = admin.database.ServerValue.TIMESTAMP;
 
   // Track abuse
-  addAbuseScore(uid, 1, 'follow');
+  await addAbuseScore(uid, 1, 'follow');
 
   // Atomic dual-write
   await db.ref().update({
@@ -1340,7 +1340,7 @@ exports.likePost = functions.https.onCall(async (data, context) => {
   }
 
   // Check abuse
-  if (checkAbuseScore(uid)) {
+  if ((await checkAbuseScore(uid)).blocked) {
     throw new functions.https.HttpsError(
       'permission-denied',
       'Too many likes. Please wait a moment.'
@@ -1367,7 +1367,7 @@ exports.likePost = functions.https.onCall(async (data, context) => {
   const user = userSnap.val();
 
   // Track abuse
-  addAbuseScore(uid, 1, 'like');
+  await addAbuseScore(uid, 1, 'like');
 
   await userLikeRef.set(true);
   await postRef.child('likes').transaction(cur => (cur || 0) + 1);
@@ -1451,7 +1451,7 @@ async function rateVideoImpl(uid, postId, stars) {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid rating');
   }
 
-  if (checkAbuseScore(uid)) {
+  if ((await checkAbuseScore(uid)).blocked) {
     throw new functions.https.HttpsError(
       'permission-denied',
       'Too many ratings. Please wait a moment.'
@@ -1469,7 +1469,7 @@ async function rateVideoImpl(uid, postId, stars) {
     throw new functions.https.HttpsError('invalid-argument', 'Cannot rate your own video');
   }
 
-  addAbuseScore(uid, 2, 'rate');
+  await addAbuseScore(uid, 2, 'rate');
 
   const userRatingRef = db.ref(`userRatings/${uid}/${postId}`);
   const priorSnap = await userRatingRef.once('value');
@@ -1550,7 +1550,7 @@ exports.submitComment = functions.https.onCall(async (data, context) => {
   }
 
   // Check abuse
-  if (checkAbuseScore(uid)) {
+  if ((await checkAbuseScore(uid)).blocked) {
     throw new functions.https.HttpsError(
       'permission-denied',
       'Too many comments. Please wait a moment.'
@@ -1563,7 +1563,7 @@ exports.submitComment = functions.https.onCall(async (data, context) => {
   }
 
   // Track abuse
-  addAbuseScore(uid, 2, 'comment');
+  await addAbuseScore(uid, 2, 'comment');
 
   const [userSnap, postSnap] = await Promise.all([
     db.ref(`users/${uid}`).once('value'),
@@ -2295,10 +2295,10 @@ exports.searchUsers = functions.https.onCall(async (data, context) => {
   if (!uid) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
-  if (checkAbuseScore(uid)) {
+  if ((await checkAbuseScore(uid)).blocked) {
     throw new functions.https.HttpsError('permission-denied', 'Too many searches. Please wait a moment.');
   }
-  addAbuseScore(uid, 1, 'search');
+  await addAbuseScore(uid, 1, 'search');
 
   const query = (data.query || '').trim().toLowerCase().substring(0, 50);
 
@@ -2338,10 +2338,10 @@ exports.searchVideos = functions.https.onCall(async (data, context) => {
   if (!uid) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
-  if (checkAbuseScore(uid)) {
+  if ((await checkAbuseScore(uid)).blocked) {
     throw new functions.https.HttpsError('permission-denied', 'Too many searches. Please wait a moment.');
   }
-  addAbuseScore(uid, 1, 'search');
+  await addAbuseScore(uid, 1, 'search');
 
   const query = (data.query || '').trim().toLowerCase().substring(0, 50);
 
@@ -2380,10 +2380,10 @@ exports.searchHashtags = functions.https.onCall(async (data, context) => {
   if (!uid) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
-  if (checkAbuseScore(uid)) {
+  if ((await checkAbuseScore(uid)).blocked) {
     throw new functions.https.HttpsError('permission-denied', 'Too many searches. Please wait a moment.');
   }
-  addAbuseScore(uid, 1, 'search');
+  await addAbuseScore(uid, 1, 'search');
 
   const query = (data.query || '').trim().toLowerCase().substring(0, 50);
 
@@ -2823,7 +2823,7 @@ exports.createFeedPost = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('invalid-argument', 'Media is required');
   }
 
-  if (checkAbuseScore(uid)) {
+  if ((await checkAbuseScore(uid)).blocked) {
     throw new functions.https.HttpsError('permission-denied', 'Too many uploads. Please wait a moment.');
   }
 
@@ -2831,7 +2831,7 @@ exports.createFeedPost = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('permission-denied', 'Caption contains prohibited content');
   }
 
-  addAbuseScore(uid, 3, 'feed_post');
+  await addAbuseScore(uid, 3, 'feed_post');
 
   const userSnap = await db.ref(`users/${uid}`).once('value');
   const userData = userSnap.val();
@@ -3489,7 +3489,7 @@ exports.watchAd = functions.https.onCall(async (data, context) => {
   if (!context.auth.token.email_verified) {
     throw new functions.https.HttpsError('permission-denied', 'Please verify your email first');
   }
-  if (checkAbuseScore(uid)) {
+  if ((await checkAbuseScore(uid)).blocked) {
     throw new functions.https.HttpsError('permission-denied', 'Suspicious activity detected. Please try again later.');
   }
 
@@ -3510,7 +3510,7 @@ exports.watchAd = functions.https.onCall(async (data, context) => {
     return u;
   });
 
-  addAbuseScore(uid, 5, 'watch_ad');
+  await addAbuseScore(uid, 5, 'watch_ad');
 
   if (!result.committed) {
     if (abortReason === 'LIMIT') {
