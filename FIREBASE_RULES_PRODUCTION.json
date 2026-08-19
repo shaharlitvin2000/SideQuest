@@ -38,6 +38,12 @@
           "$other": {".validate": false}
         },
 
+        "fcmTokens": {
+          ".read": false,
+          ".write": "$uid === auth.uid",
+          "$token": {".validate": "newData.isBoolean()"}
+        },
+
         "avatarURL": {".read": true, ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous'", ".validate": "newData.isString() && newData.val().length <= 600"},
         "avatarColor": {".read": true, ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous'", ".validate": "newData.isString() && newData.val().length <= 9"},
         "bio": {".read": true, ".write": false, ".validate": "newData.isString() && newData.val().length <= 300"},

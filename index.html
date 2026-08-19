@@ -2871,18 +2871,44 @@ function togglePush(){
     // Remove device token so no push can reach this phone.
     try{ db.ref('fcmTokens/'+userUID).remove().catch(()=>{}); }catch(e){}
     try{ db.ref('users/'+userUID+'/fcmTokens').remove().catch(()=>{}); }catch(e){}
-    try{
-      if(typeof firebase!=='undefined' && firebase.messaging && firebase.messaging.isSupported && firebase.messaging.isSupported()){
-        firebase.messaging().deleteToken().catch(()=>{});
-      }
-    }catch(e){}
+    if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
+      var FM=window.Capacitor.Plugins&&window.Capacitor.Plugins.FirebaseMessaging;
+      if(FM) FM.deleteToken().catch(function(){});
+    } else {
+      try{
+        if(typeof firebase!=='undefined' && firebase.messaging && firebase.messaging.isSupported && firebase.messaging.isSupported()){
+          firebase.messaging().deleteToken().catch(()=>{});
+        }
+      }catch(e){}
+    }
   }
 }
 
 // Registers an FCM token for this device (only when the user has push enabled).
-// Safe no-op on Spark / unsupported browsers — kept here so it "just works" on Blaze.
+// Native (Capacitor app): the web Notification API this used to rely on exclusively doesn't
+// exist inside Android's WebView at all -- confirmed live, 'Notification' isn't even in window
+// there -- so that path could never actually request permission or register a token on the real
+// app; it silently no-op'd every time. Goes through the real FirebaseMessaging plugin instead,
+// which drives Android's actual POST_NOTIFICATIONS runtime permission dialog and a real native
+// FCM token. Same native/web branching pattern as doGoogle().
+// Web path kept as-is below for a plain browser install -- safe no-op on Spark / unsupported
+// browsers there.
 function registerPushToken(){
   if(!userUID || !myPushEnabled) return;
+  if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
+    var FM=window.Capacitor.Plugins&&window.Capacitor.Plugins.FirebaseMessaging;
+    if(!FM) return;
+    FM.requestPermissions().then(function(res){
+      if(!res||res.receive!=='granted') return;
+      return FM.getToken().then(function(res2){
+        var token=res2&&res2.token; if(!token) return;
+        var now=firebase.database.ServerValue.TIMESTAMP;
+        db.ref('fcmTokens/'+userUID).set({token:token,updatedAt:now}).catch(function(){});
+        db.ref('users/'+userUID+'/fcmTokens/'+token).set(true).catch(function(){});
+      });
+    }).catch(function(e){console.warn('[push] native register',e);});
+    return;
+  }
   try{
     if(!VAPID_KEY) return; // no web-push key configured yet (set it for Blaze)
     if(typeof firebase==='undefined' || !firebase.messaging || !firebase.messaging.isSupported || !firebase.messaging.isSupported()) return;
@@ -2935,6 +2961,11 @@ function finishLoad(){
   try{loadMyRatings();}catch(e){}
   try{loadMySaves();}catch(e){}
   try{syncFxToggle();}catch(e){}
+  // Re-register the FCM token if this session already had push enabled from before -- otherwise
+  // only the moment of tapping the toggle ever calls this, so anyone who turned it on before the
+  // native registration path existed would show as "enabled" locally while never actually holding
+  // a valid token server-side.
+  try{registerPushToken();}catch(e){}
   // Analytics: daily-active marker + last-active (for retention). The dau ping is fine for a
   // guest too (anonymous, no profile data, just an activity count) -- but users/$uid's write rule
   // rejects anonymous callers outright, and correctly so: a guest has no users/{uid} record at all

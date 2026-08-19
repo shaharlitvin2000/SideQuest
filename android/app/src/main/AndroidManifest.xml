@@ -39,6 +39,10 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Required on Android 13+ (targetSdk 36 here) for the app to be allowed to ask for
+         notification permission at all. Without this, FirebaseMessaging.requestPermissions()
+         has nothing to request and the OS silently denies it. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- The in-app camera/recorder uses the web getUserMedia() API. Capacitor's own
          BridgeWebChromeClient (default WebChromeClient, set up automatically — no
          MainActivity changes needed) already bridges getUserMedia's VIDEO_CAPTURE/
