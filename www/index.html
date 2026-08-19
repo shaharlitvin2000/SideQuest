@@ -1225,6 +1225,12 @@ svg.ic-lg{width:19px;height:19px}
 /* pre-bunny videos with no thumbnail: a calm placeholder instead of a blank white cell */
 .grid-vid-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2b2b34,#3c3c48);color:rgba(255,255,255,.55)}
 .fpp-thumb-label{position:absolute;bottom:0;left:0;right:0;padding:16px 6px 5px;background:linear-gradient(transparent,rgba(0,0,0,.72));font-size:10px;font-weight:600;color:rgba(255,255,255,.95)}
+/* ── AVATAR ZOOM (opens over the profile viewer, so must sit above fpp-overlay's 10150) ── */
+.av-zoom-overlay{position:fixed!important;inset:0!important;z-index:10190!important;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.av-zoom-overlay.show{display:flex;animation:avZoomIn .18s cubic-bezier(.4,0,.2,1)}
+@keyframes avZoomIn{from{opacity:0}to{opacity:1}}
+.av-zoom-img{max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);object-fit:contain}
+.av-zoom-close{position:absolute;top:calc(18px + env(safe-area-inset-top,0px));right:18px;width:38px;height:38px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:50%;font-size:17px;cursor:pointer;color:#fff;line-height:1;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 /* ── POST VIEWER ── */
 .fpv-overlay{position:fixed!important;inset:0!important;z-index:10200!important;max-width:480px;margin:0 auto;background:#000;display:none}
 .fpv-overlay.show{display:block;animation:fpvIn .25s cubic-bezier(.4,0,.2,1)}
@@ -1958,6 +1964,12 @@ svg.ic-lg{width:19px;height:19px}
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- AVATAR ZOOM -->
+  <div class="av-zoom-overlay" id="av-zoom-overlay" onclick="closeAvatarZoom()">
+    <button class="av-zoom-close" onclick="closeAvatarZoom()" aria-label="Close" data-i-aria="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <img class="av-zoom-img" id="av-zoom-img" src="" alt="">
   </div>
 
   <!-- FEED POST VIEWER -->
@@ -3675,8 +3687,13 @@ function feedOpenProfile(uid,username,init){
     if(heroBg) heroBg.style.background='radial-gradient(ellipse at 50% 0%, '+color+'28 0%, transparent 72%)';
     var av=document.getElementById('fpp-av-new');
     if(av){
-      if(photoURL){av.style.backgroundImage='url('+photoURL+')';av.style.backgroundSize='cover';av.style.backgroundPosition='center';av.textContent='';}
-      else {av.style.backgroundImage='';av.textContent=init;av.style.background='var(--accent)';av.style.color='#fff';}
+      if(photoURL){
+        av.style.backgroundImage='url('+photoURL+')';av.style.backgroundSize='cover';av.style.backgroundPosition='center';av.textContent='';
+        av.style.cursor='pointer';av.onclick=function(){openAvatarZoom(photoURL,'@'+username);};
+      } else {
+        av.style.backgroundImage='';av.textContent=init;av.style.background='var(--accent)';av.style.color='#fff';
+        av.style.cursor='';av.onclick=null;
+      }
     }
     var unameEl=document.getElementById('fpp-uname-new');
     unameEl.innerHTML='<span dir="ltr" style="unicode-bidi:isolate">@'+escHtml(username)+'</span>'+(isMe?' <span class="fpp-you-badge">'+t('you')+'</span>':'');
@@ -3837,6 +3854,16 @@ function feedCloseProfile(){
 }
 function fppBgClick(e){
   if(e.target===document.getElementById('fpp-overlay')) feedCloseProfile();
+}
+function openAvatarZoom(url,altText){
+  if(!url) return;
+  var img=document.getElementById('av-zoom-img');
+  img.src=url; img.alt=altText||'';
+  document.getElementById('av-zoom-overlay').classList.add('show');
+}
+function closeAvatarZoom(){
+  document.getElementById('av-zoom-overlay').classList.remove('show');
+  document.getElementById('av-zoom-img').src='';
 }
 function fpvUpdateTitle(){
   document.getElementById('fpv-htitle').textContent=(fpvIdx+1)+' / '+fppPosts.length;
@@ -9928,6 +9955,7 @@ function _handleAndroidBack(){
       ['photo-editor',function(){ peCancel(); }],
       ['cam-overlay',function(){ closeCamera(); }],
       ['fpv-overlay',function(){ feedCloseViewer(); }],
+      ['av-zoom-overlay',function(){ closeAvatarZoom(); }],
       ['fpp-overlay',function(){ feedCloseProfile(); }],
       ['mv-viewer',function(){ closeMediaViewer(); }],
       ['comment-overlay',function(){ closeCommentSheet({target:document.getElementById('comment-overlay')}); }],
