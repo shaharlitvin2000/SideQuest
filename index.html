@@ -1229,7 +1229,7 @@ svg.ic-lg{width:19px;height:19px}
 .av-zoom-overlay{position:fixed!important;inset:0!important;z-index:10190!important;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);touch-action:none}
 .av-zoom-overlay.show{display:flex;animation:avZoomIn .18s cubic-bezier(.4,0,.2,1)}
 @keyframes avZoomIn{from{opacity:0}to{opacity:1}}
-.av-zoom-img{max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);object-fit:contain;touch-action:none}
+.av-zoom-img{width:min(80vw,80vh);height:min(80vw,80vh);border-radius:50%;box-shadow:0 20px 60px rgba(0,0,0,.5);object-fit:cover;touch-action:none}
 .av-zoom-close{position:absolute;top:calc(18px + env(safe-area-inset-top,0px));right:18px;width:38px;height:38px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:50%;font-size:17px;cursor:pointer;color:#fff;line-height:1;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 /* ── POST VIEWER ── */
 .fpv-overlay{position:fixed!important;inset:0!important;z-index:10200!important;max-width:480px;margin:0 auto;background:#000;display:none}
