@@ -2554,10 +2554,18 @@ function bootToAuth(){
   document.documentElement.dir=lo.dir;
   try{applyTranslations();}catch(e){}
   // A genuinely fresh install (no language chosen yet) sees the language picker first -- that's
-  // what it's for. Every other bootToAuth() call (logout, session fallback, etc.) already has a
-  // saved language at this point and goes straight to the auth screen, same as before.
+  // what it's for.
   freshInstallBoot=!hadSavedLang;
-  showPage(hadSavedLang?'p-auth':'p-lang');
+  if(!hadSavedLang){ showPage('p-lang'); return; }
+  // Every other bootToAuth() call (explicit logout, an expired/cleared session, the 6s boot
+  // timeout, an auth error) has a saved language and no active session. Same TikTok-style
+  // philosophy as a fresh install (see confirmLang()'s freshInstallBoot branch, just above):
+  // browse as guest immediately instead of hard-walling behind a full-page login screen. The
+  // sign-up sheet opens on top right away, so there's still an obvious path back to a real
+  // account, but it's dismissible and the feed loads in underneath it like any other guest
+  // session.
+  continueAsGuest();
+  showAuthOverlay();
 }
 
 // Dismisses the sign-up screen into guest browsing (TikTok-style): an Anonymous Auth session
@@ -2585,6 +2593,10 @@ function continueAsGuest(){
 function showAuthOverlay(){
   var el=document.getElementById('p-auth');
   if(el) el.classList.add('show');
+  // Whatever's underneath (feed, room, etc.) stays mounted and playing unless we stop it --
+  // pause any video that's currently running so it doesn't keep going, audibly or visibly, behind
+  // the sheet.
+  document.querySelectorAll('video').forEach(function(v){ if(!v.paused) v.pause(); });
 }
 function closeAuthOverlay(){
   var el=document.getElementById('p-auth');
@@ -2923,8 +2935,12 @@ function finishLoad(){
   try{loadMyRatings();}catch(e){}
   try{loadMySaves();}catch(e){}
   try{syncFxToggle();}catch(e){}
-  // Analytics: daily-active marker + last-active (for retention)
-  try{ if(db&&userUID){ var _d=todayStr(); db.ref('stats/dau/'+_d+'/'+userUID).set(true).catch(function(){}); db.ref('users/'+userUID+'/lastActive').set(_d).catch(function(){}); } }catch(e){}
+  // Analytics: daily-active marker + last-active (for retention). The dau ping is fine for a
+  // guest too (anonymous, no profile data, just an activity count) -- but users/$uid's write rule
+  // rejects anonymous callers outright, and correctly so: a guest has no users/{uid} record at all
+  // until they actually register, and this write should never be the thing that creates one.
+  // Guarding it here just skips an attempt the rule would silently reject anyway.
+  try{ if(db&&userUID){ var _d=todayStr(); db.ref('stats/dau/'+_d+'/'+userUID).set(true).catch(function(){}); if(!isGuestUser) db.ref('users/'+userUID+'/lastActive').set(_d).catch(function(){}); } }catch(e){}
   try{watchNotifUnread();}catch(e){}
   try{updateDailyDot();}catch(e){}
   try{maybeClaimReferral();}catch(e){}
@@ -3129,6 +3145,7 @@ function doRegister(){
         updateAdBanner();
         toast('✅ '+t('regSuccess'));
         setTimeout(function(){toast('📧 '+t('verifyEmailSent'));},2000);
+        closeAuthOverlay();
         showPage('p-app');
         loadLeaderboard();
         try{loadFeed();}catch(e){};
@@ -3242,7 +3259,7 @@ function doLogin(){
   if(!auth){toast(t('noConnection'));return;}
   setAuthLoading(true);
   withTimeout(auth.signInWithEmailAndPassword(email,pass))
-    .then(cred=>{userUID=cred.user.uid;userName=cred.user.displayName||cred.user.email.split('@')[0]||'Player_'+userUID.slice(0,8);})
+    .then(cred=>{userUID=cred.user.uid;userName=cred.user.displayName||cred.user.email.split('@')[0]||'Player_'+userUID.slice(0,8);closeAuthOverlay();})
     .catch(e=>{
       setAuthLoading(false);
       console.error('[Auth] login error:',e);
@@ -3276,6 +3293,7 @@ function _handleGoogleSignIn(cred,consentGiven){
     return;
   }
   userUID=cred.user.uid;userName=cred.user.displayName||cred.user.email.split('@')[0]||'Player_'+userUID.slice(0,8);
+  closeAuthOverlay();
   firebase.functions().httpsCallable('ensureUser')({}).catch(function(){});
 }
 function doGoogle(){
