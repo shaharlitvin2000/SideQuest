@@ -9817,7 +9817,7 @@ async function loadMyVideos(){
 
     window._myVidsArr=videos.map(v=>Object.assign({id:v.id},v.post));
     grid.innerHTML=videos.map((v,i)=>{
-      const label=v.post.missionTitle||v.post.caption||'Untitled';
+      const label=formatFeedCount(v.post.views||0)+' '+t('viewsShort');
       const isBlobURL=v.post.mediaURL&&v.post.mediaURL.startsWith('blob:');
       const media=isBlobURL
         ?`<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#8888a8"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4M12 16h.01"/></svg><div style="font-size:10px;text-align:center">Upload<br>Failed</div></div>`
@@ -9831,11 +9831,13 @@ async function loadMyVideos(){
         <button class="my-video-cell-delete" onclick="deleteMyVideo('${v.id}')" aria-label="Delete" data-i-aria="delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
       </div>
     `}).join('');
-    // tap a cell (not the edit/delete buttons) -> fullscreen viewer over the profile
+    // tap a cell (not the edit/delete buttons) -> full feed-style viewer (like/comment/share included),
+    // same component the normal feed and other users' profile grids already use.
     grid.querySelectorAll('.my-video-cell').forEach(function(el){
       el.addEventListener('click',function(e){
         if(e.target.closest('.my-video-cell-delete')||e.target.closest('.my-video-cell-edit')) return;
-        openMediaViewer(window._myVidsArr, parseInt(el.dataset.idx,10));
+        fppPosts=window._myVidsArr;
+        feedViewPost(parseInt(el.dataset.idx,10));
       });
     });
   }catch(e){console.error('[loadMyVideos]',e);}
