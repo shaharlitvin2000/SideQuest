@@ -2042,7 +2042,15 @@ exports.calculateCreatorAnalytics = functions.pubsub
   .schedule('every 6 hours')
   .onRun(async (context) => {
     try {
-      const usersSnap = await db.ref('users').once('value');
+      // Recalculating for every user ever registered, every 6 hours forever, doesn't scale --
+      // most of that cost buys nothing for an account that hasn't opened the app in months.
+      // `lastActive` ('YYYY-MM-DD', already written on every session -- see finishLoad() client-
+      // side) sorts correctly as a plain string, so a 30-day cutoff bounds the read directly
+      // instead of downloading every user and filtering in memory. An account with no lastActive
+      // at all (pre-dates that field, or never opened the app since) sorts before any cutoff and
+      // is correctly excluded -- it's exactly as stale as this filter intends to skip.
+      const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const usersSnap = await db.ref('users').orderByChild('lastActive').startAt(cutoff).once('value');
       const users = usersSnap.val() || {};
 
       let processed = 0;
@@ -2138,6 +2146,27 @@ exports.trackPostView = functions.database
     }
   });
 
+// Maintained counters for adminGetDashboard -- RTDB has no server-side count aggregation, so an
+// exact totalUsers/totalPosts figure otherwise meant downloading the entire users/feed subtree on
+// every dashboard load just to call .numChildren() on it (the data itself was thrown away right
+// after). Keeping a running total via transaction() (atomic under concurrent creates/deletes) on
+// every create/delete costs one small write per event instead, and the dashboard read becomes a
+// single O(1) path lookup regardless of how large either collection grows. Backfilled once via
+// admin CLI to the actual counts at the time this was introduced -- these triggers only maintain
+// the running total from here on, they don't (and don't need to) reconstruct history.
+exports.onUserCreatedCounter = functions.database.ref('users/{uid}').onCreate(async () => {
+  await db.ref('stats/totalUsers').transaction(v => (v || 0) + 1);
+});
+exports.onUserDeletedCounter = functions.database.ref('users/{uid}').onDelete(async () => {
+  await db.ref('stats/totalUsers').transaction(v => Math.max(0, (v || 0) - 1));
+});
+exports.onPostCreatedCounter = functions.database.ref('feed/{postId}').onCreate(async () => {
+  await db.ref('stats/totalPosts').transaction(v => (v || 0) + 1);
+});
+exports.onPostDeletedCounter = functions.database.ref('feed/{postId}').onDelete(async () => {
+  await db.ref('stats/totalPosts').transaction(v => Math.max(0, (v || 0) - 1));
+});
+
 // ══════════════════════════════════════════════════════════════════
 // RECORD VIEW — unique views, repeat views, and watch time.
 // Called from the client when a viewer finishes watching a post.
@@ -2211,15 +2240,18 @@ exports.calculateTrending = functions.pubsub
     const day = 24 * 60 * 60 * 1000;
     const week = 7 * day;
 
-    const feedSnap = await db.ref('feed').once('value');
+    // Only ever considers posts <7 days old, but used to fetch the entire feed (every post ever
+    // created) to filter that down in memory -- a full download that only grows as post history
+    // grows, even though the result never needed anything older than a week. `feed` is already
+    // indexed on `timestamp`, so bound the read itself to the same 7-day window instead.
+    const feedSnap = await db.ref('feed').orderByChild('timestamp').startAt(now - week).once('value');
     const posts = [];
 
     feedSnap.forEach(child => {
       const post = child.val();
       const age = now - (post.timestamp || 0);
 
-      // Only consider posts < 7 days old
-      if (age < week && post.status === 'verified') {
+      if (post.status === 'verified') {
         const likes = post.likes || 0;
         const views = post.views || 0;
         const engagement = views > 0 ? (likes / views) : 0;
@@ -3130,12 +3162,21 @@ function requireAdmin(context) {
 exports.adminGetDashboard = functions.https.onCall(async (data, context) => {
   requireAdmin(context);
 
-  const [usersSnap, feedSnap, reportsSnap, redemptionsSnap] = await Promise.all([
-    db.ref('users').once('value'),
-    db.ref('feed').once('value'),
-    db.ref('reports').once('value'),
-    db.ref('redemptions').once('value')
+  // totalUsers/totalPosts come from maintained counters (see onUserCreatedCounter etc.) instead of
+  // downloading the full users/feed nodes. The "recent" lists and pending counts are bounded, indexed
+  // queries instead of full-node scans -- reports/redemptions are always created with an explicit
+  // status: 'pending' (see reportUser, rateVideoImpl's auto-flag, and the redeem flow, and both nodes
+  // are server-write-only), so there's no legacy "missing status" case the old `|| !r.status` covered.
+  const [statsSnap, usersSnap, reportsSnap, redemptionsSnap, pendingReportsSnap, pendingRedemptionsSnap] = await Promise.all([
+    db.ref('stats').once('value'),
+    db.ref('users').orderByChild('createdAt').limitToLast(100).once('value'),
+    db.ref('reports').orderByChild('createdAt').limitToLast(100).once('value'),
+    db.ref('redemptions').orderByChild('createdAt').limitToLast(100).once('value'),
+    db.ref('reports').orderByChild('status').equalTo('pending').once('value'),
+    db.ref('redemptions').orderByChild('status').equalTo('pending').once('value')
   ]);
+
+  const stats = statsSnap.val() || {};
 
   const users = [];
   usersSnap.forEach(c => {
@@ -3155,14 +3196,14 @@ exports.adminGetDashboard = functions.https.onCall(async (data, context) => {
 
   return {
     stats: {
-      totalUsers: users.length,
-      totalPosts: feedSnap.numChildren(),
-      pendingReports: reports.filter(r => r.status === 'pending' || !r.status).length,
-      pendingRedemptions: redemptions.filter(r => r.status === 'pending').length
+      totalUsers: stats.totalUsers || 0,
+      totalPosts: stats.totalPosts || 0,
+      pendingReports: pendingReportsSnap.numChildren(),
+      pendingRedemptions: pendingRedemptionsSnap.numChildren()
     },
-    users: users.sort((a, b) => b.createdAt - a.createdAt).slice(0, 100),
-    reports: reports.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 100),
-    redemptions: redemptions.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 100)
+    users: users.sort((a, b) => b.createdAt - a.createdAt),
+    reports: reports.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)),
+    redemptions: redemptions.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
   };
 });
 

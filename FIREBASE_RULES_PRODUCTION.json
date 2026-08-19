@@ -4,7 +4,7 @@
     ".write": false,
 
     "users": {
-      ".indexOn": ["username"],
+      ".indexOn": ["username", "createdAt", "lastActive"],
       "$uid": {
         ".read": "$uid === auth.uid",
         ".write": "$uid === auth.uid && auth.token.firebase.sign_in_provider !== 'anonymous' && (!data.exists() || (newData.child('premium').val() === data.child('premium').val() && newData.child('email').val() === data.child('email').val() && newData.child('blocked').val() === data.child('blocked').val() && newData.child('verified').val() === data.child('verified').val() && newData.child('lastDailyClaim').val() === data.child('lastDailyClaim').val() && newData.child('dailyClaimStreak').val() === data.child('dailyClaimStreak').val() && newData.child('longestDailyStreak').val() === data.child('longestDailyStreak').val() && newData.child('bio').val() === data.child('bio').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('birthdate').val() === data.child('birthdate').val() && newData.child('badUploads').val() === data.child('badUploads').val() && newData.child('username').val() === data.child('username').val() && (!data.child('completedMissionsToday').child('0').exists() || newData.child('completedMissionsToday').child('0').exists()) && (!data.child('completedMissionsToday').child('1').exists() || newData.child('completedMissionsToday').child('1').exists()) && (!data.child('completedMissionsToday').child('2').exists() || newData.child('completedMissionsToday').child('2').exists())))",
@@ -262,6 +262,12 @@
         "reason": {".validate": "newData.val() === 'harassment' || newData.val() === 'spam' || newData.val() === 'abuse' || newData.val() === 'inappropriate' || newData.val() === 'hate_speech' || newData.val() === 'scam' || newData.val() === 'auto_low_rating' || newData.val() === 'nudity' || newData.val() === 'violence'"},
         "status": {".validate": "(newData.val() === 'pending' || newData.val() === 'reviewed' || newData.val() === 'actioned') && (auth.token.email === 'shahar070510@gmail.com' || !data.exists())"}
       }
+    },
+
+    "redemptions": {
+      ".read": "auth !== null && auth.token.email === 'shahar070510@gmail.com'",
+      ".write": false,
+      ".indexOn": ["createdAt", "status", "byUid"]
     },
 
     "usernames": {
