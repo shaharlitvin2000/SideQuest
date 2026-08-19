@@ -1226,10 +1226,10 @@ svg.ic-lg{width:19px;height:19px}
 .grid-vid-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2b2b34,#3c3c48);color:rgba(255,255,255,.55)}
 .fpp-thumb-label{position:absolute;bottom:0;left:0;right:0;padding:16px 6px 5px;background:linear-gradient(transparent,rgba(0,0,0,.72));font-size:10px;font-weight:600;color:rgba(255,255,255,.95)}
 /* ── AVATAR ZOOM (opens over the profile viewer, so must sit above fpp-overlay's 10150) ── */
-.av-zoom-overlay{position:fixed!important;inset:0!important;z-index:10190!important;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.av-zoom-overlay{position:fixed!important;inset:0!important;z-index:10190!important;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);touch-action:none}
 .av-zoom-overlay.show{display:flex;animation:avZoomIn .18s cubic-bezier(.4,0,.2,1)}
 @keyframes avZoomIn{from{opacity:0}to{opacity:1}}
-.av-zoom-img{max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);object-fit:contain}
+.av-zoom-img{max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);object-fit:contain;touch-action:none}
 .av-zoom-close{position:absolute;top:calc(18px + env(safe-area-inset-top,0px));right:18px;width:38px;height:38px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:50%;font-size:17px;cursor:pointer;color:#fff;line-height:1;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 /* ── POST VIEWER ── */
 .fpv-overlay{position:fixed!important;inset:0!important;z-index:10200!important;max-width:480px;margin:0 auto;background:#000;display:none}
@@ -1659,7 +1659,7 @@ svg.ic-lg{width:19px;height:19px}
         <div class="my-hero-bg" id="my-hero-bg"></div>
         <button class="pf-settings-btn" onclick="openSettings()" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
         <button class="pf-edit-btn" onclick="openEditProfile()" aria-label="Edit" data-i-aria="edit"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>
-        <div class="my-hero-ring" id="my-hero-ring" onclick="openAvatarSource()" style="cursor:pointer">
+        <div class="my-hero-ring" id="my-hero-ring" onclick="pfAvatarTap()" style="cursor:pointer">
           <div class="my-hero-gap">
             <div class="pf-avatar" id="pf-av">S</div>
           </div>
@@ -3859,12 +3859,44 @@ function openAvatarZoom(url,altText){
   if(!url) return;
   var img=document.getElementById('av-zoom-img');
   img.src=url; img.alt=altText||'';
+  img.style.transition=''; img.style.transform=''; img.style.opacity='';
   document.getElementById('av-zoom-overlay').classList.add('show');
 }
 function closeAvatarZoom(){
   document.getElementById('av-zoom-overlay').classList.remove('show');
-  document.getElementById('av-zoom-img').src='';
+  var img=document.getElementById('av-zoom-img');
+  img.src=''; img.style.transition=''; img.style.transform=''; img.style.opacity='';
 }
+// Swipe-down-to-dismiss on the avatar zoom viewer -- the image follows the finger and fades as it
+// goes, matching Instagram/WhatsApp's photo-viewer gesture. A drag past 100px releases into a
+// close; anything short of that snaps back. Downward-only: horizontal/upward movement is ignored
+// so it doesn't fight normal scrolling elsewhere.
+(function(){
+  var ov=document.getElementById('av-zoom-overlay');
+  var img=document.getElementById('av-zoom-img');
+  if(!ov||!img) return;
+  var startY=0,dragY=0,dragging=false;
+  ov.addEventListener('touchstart',function(e){
+    dragging=true; dragY=0; startY=e.touches[0].clientY; img.style.transition='none';
+  },{passive:true});
+  ov.addEventListener('touchmove',function(e){
+    if(!dragging) return;
+    dragY=Math.max(0,e.touches[0].clientY-startY);
+    img.style.transform='translateY('+dragY+'px)';
+    img.style.opacity=String(Math.max(1-dragY/300,0.25));
+  },{passive:true});
+  ov.addEventListener('touchend',function(e){
+    if(!dragging) return;
+    dragging=false;
+    img.style.transition='transform .2s ease,opacity .2s ease';
+    // Any real drag (>10px) would otherwise also fire a synthetic click on release, which the
+    // overlay's tap-outside handler would treat as its own close -- harmless when we're already
+    // closing (dragY>100), but it would wrongly close a snap-back too. Suppress it either way.
+    if(dragY>10) e.preventDefault();
+    if(dragY>100){ closeAvatarZoom(); return; }
+    img.style.transform=''; img.style.opacity='';
+  },{passive:false});
+})();
 function fpvUpdateTitle(){
   document.getElementById('fpv-htitle').textContent=(fpvIdx+1)+' / '+fppPosts.length;
 }
@@ -8668,6 +8700,14 @@ async function uploadAvatar(inp){
   const file=inp.files&&inp.files[0];
   inp.value='';
   return uploadAvatarFile(file);
+}
+// Tapping your own hero avatar shows it full-size when you already have a photo (matches
+// Instagram/WhatsApp -- the dedicated camera button below it is the explicit "change photo"
+// action). First-time users with no photo yet go straight to the upload chooser instead, since
+// there's nothing to zoom into and they'd otherwise have no obvious way to add one.
+function pfAvatarTap(){
+  if(myAvatarURL) openAvatarZoom(myAvatarURL, userName?('@'+userName):'');
+  else openAvatarSource();
 }
 // choose your avatar source: shoot it right now, or pick from the gallery
 function openAvatarSource(){
