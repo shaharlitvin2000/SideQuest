@@ -33,9 +33,6 @@ Your mission proofs become posts in a TikTok-style feed. Get likes, comments and
 💬 CHAT WITH FRIENDS
 Send direct messages, follow your favorite creators, and build your crew.
 
-🎁 REAL REWARDS
-Trade your points for gift cards and PayPal cash in the Rewards Shop.
-
 🛡️ SAFE BY DESIGN
 All content is filtered and moderated, you control who can message you, and you can make your profile private any time.
 
@@ -50,6 +47,14 @@ the backend but there's no real purchase flow yet (admin-granted only). Advertis
 a paid tier Play Store can't verify you actually sell would misrepresent the app's
 monetization — add a "Go Premium" bullet once real Play Billing is wired up (see
 P2 item 18 in the punch list).
+
+⚠️ The "REAL REWARDS" bullet (gift cards / PayPal cash via a Rewards Shop) was
+removed 2026-08-20: there's no real fulfillment process for paying those out, so
+advertising it would be the same problem as the Premium one above. The in-app
+redeem UI is hidden (redeemReward()/openRewardsShop()/redeemPoints() and the
+redemptions data are untouched, just unreachable) and terms.html's "Points and
+Rewards" section was reworded to drop the matching promise. Re-add a rewards
+bullet here once a real fulfillment process exists.
 -->
 
 ## Category
