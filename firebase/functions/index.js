@@ -775,17 +775,10 @@ exports.followUser = functions.https.onCall(async (data, context) => {
     [`followers/${targetUid}/${uid}`]: { username: userName, at: timestamp }
   });
 
-  // Send notification to followed user
+  // In-app inbox entry only — the push itself is sent by notifyNewFollower, which triggers off
+  // the followers/{targetUid}/{uid} write just above. Sending it here too used to mean every
+  // follow pushed the target twice with different wording for the same event.
   await writeNotification(targetUid, 'follow', uid, userName);
-  await sendPushNotification(
-    targetUid,
-    '👤 ' + (userName || 'Someone') + ' followed you',
-    'Check out their profile',
-    {
-      type: 'follow',
-      byUid: uid
-    }
-  ).catch(err => console.error('[Follow Notify]', err));
 
   return { success: true };
 });
@@ -2694,8 +2687,16 @@ exports.dailyMissionsPush = functions.pubsub
   .timeZone('Asia/Jerusalem')
   .onRun(async () => {
     const snap = await db.ref('fcmTokens').once('value');
+    // The same physical device's token can end up stored under more than one uid — e.g. a
+    // guest session's uid plus the real account it later signed into, or any uid whose
+    // fcmTokens/{uid} entry never got cleaned up. Dedup by token so that device gets one push,
+    // not one per stale uid still pointing at it.
+    const seenTokens = new Set();
     const sends = [];
     snap.forEach(child => {
+      const token = child.val() && child.val().token;
+      if (!token || seenTokens.has(token)) return;
+      seenTokens.add(token);
       sends.push(sendPushTo(child.key, '⚡ New missions are live!',
         "Today's 3 missions are waiting. Complete them before midnight!", { type: 'daily' }));
     });
@@ -2714,13 +2715,20 @@ exports.streakReminderPush = functions.pubsub
       db.ref('users').once('value')
     ]);
 
+    // Same dedup as dailyMissionsPush — a stale/orphaned uid can share a device's token with
+    // the account actually signed in there, which would otherwise send that one device the
+    // reminder once per uid pointing at it.
+    const seenTokens = new Set();
     const sends = [];
     tokensSnap.forEach(child => {
       const uid = child.key;
+      const token = child.val() && child.val().token;
+      if (!token || seenTokens.has(token)) return;
       const user = usersSnap.child(uid).val() || {};
       const doneToday = user.missionsDate === today &&
         user.completedMissionsToday && Object.keys(user.completedMissionsToday).length > 0;
       if (!doneToday && (user.streak || 0) > 0) {
+        seenTokens.add(token);
         sends.push(sendPushTo(uid, '🔥 Your streak is in danger!',
           `Complete a mission today to keep your ${user.streak}-day streak alive`, { type: 'streak' }));
       }
@@ -3801,6 +3809,11 @@ exports.deleteAccount = functions
     updates[`leaderboard/${uid}`] = null;
     updates[`usernames/${uid}`] = null;
     updates[`notifications/${uid}`] = null;
+    // Separate root-level node from users/{uid}/fcmTokens — sendPushTo() and the scheduled
+    // broadcast pushes read this one directly. Without clearing it, a deleted account's device
+    // token stays registered forever and keeps receiving broadcast pushes under a uid that no
+    // longer exists.
+    updates[`fcmTokens/${uid}`] = null;
 
     // Release the actual username reservation too (usernames/{uid} above is a separate reverse
     // index, uid -> name; the forward registry that doRegister's uniqueness transaction and
