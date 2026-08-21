@@ -39,8 +39,10 @@ input:focus-visible,textarea:focus-visible{outline:none;border-color:var(--accen
   --accent-soft:#2A1B16;--accent-glow:rgba(225,122,92,0.18);
   /* "this row is you / your current state" highlight border — full-strength --accent read as too
      vivid against --accent-soft on a near-black page (high-contrast where light mode had low),
-     so this dimmer variant is used instead everywhere except the podium's #1 spot, which is
-     supposed to be a celebratory spotlight, not a quiet "you are here" marker */
+     so this dimmer variant is used instead. The leaderboard podium's #1 spot used to borrow
+     full-strength --accent for its own, unrelated "celebratory spotlight" styling, which read as
+     a second, conflicting "this is you" signal -- it's on --gold now instead, since that's this
+     app's existing "achievement/rank" color and isn't used anywhere to mean "you". */
   --accent-border-soft:rgba(225,122,92,.45);
   --gold:#E0982B;--gold-ic:#F0B052;--gold-soft:#2E2412;
   --green:#4CAF7D;--green-soft:#163326;
@@ -765,7 +767,7 @@ img,video{max-width:100%}
 .lb-top3{display:flex;align-items:flex-end;justify-content:center;gap:8px;padding:var(--sp-4) var(--sp-4) 0;animation:fadeScaleIn .5s cubic-bezier(.25,.8,.25,1) both}
 .lb-t3-row{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0;padding:var(--sp-3) var(--sp-2);background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;transition:transform .15s,border-color .2s}
 .lb-t3-row:active{transform:scale(.96)}
-.lb-t3-row.rank1{order:2;margin-top:-14px;padding:calc(var(--sp-3) + 8px) var(--sp-2) var(--sp-3);border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 24px -14px rgba(255,91,57,.4)}
+.lb-t3-row.rank1{order:2;margin-top:-14px;padding:calc(var(--sp-3) + 8px) var(--sp-2) var(--sp-3);border-color:var(--gold-ic);background:var(--gold-soft);box-shadow:0 8px 24px -14px rgba(224,152,43,.4)}
 .lb-t3-row.rank2{order:1}
 .lb-t3-row.rank3{order:3}
 .lb-t3-medal{display:flex;align-items:center;justify-content:center;width:20px;flex-shrink:0}
@@ -779,7 +781,7 @@ img,video{max-width:100%}
 .lb-t3-name{max-width:100%;font-size:12.5px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
 .lb-t3-row.rank1 .lb-t3-name{font-size:13.5px}
 .lb-t3-pts{font-size:12px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
-.lb-t3-row.rank1 .lb-t3-pts{font-size:13px;color:var(--accent)}
+.lb-t3-row.rank1 .lb-t3-pts{font-size:13px;color:var(--gold)}
 .lb-row{animation:cardEntry .35s cubic-bezier(.25,.8,.25,1) both}
 .lb-row:nth-child(1){animation-delay:.05s}.lb-row:nth-child(2){animation-delay:.1s}.lb-row:nth-child(3){animation-delay:.15s}.lb-row:nth-child(4){animation-delay:.2s}.lb-row:nth-child(n+5){animation-delay:.25s}
 
@@ -7108,7 +7110,8 @@ function renderLb(){
     list.innerHTML=emptyState(eIcon, msg);
     return;
   }
-  // ── TOP 3 — horizontal premium tier (rank 1 first, subtle lime accent) ──
+  // ── TOP 3 — horizontal premium tier (rank 1 first, gold spotlight -- a celebratory
+  //    highlight, not a "this is you" marker, which is what --accent means everywhere else) ──
   let podiumHTML='';
   const hasPodium=users.length>=3;
   if(hasPodium){
