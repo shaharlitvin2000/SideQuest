@@ -154,9 +154,18 @@ img,video{max-width:100%}
    (sheet-over-content, TikTok-style), instead of the full-page boot presentation. #p-auth's own
    ID keeps this selector above the plain .page/.page.active rules regardless of class order. */
 #p-auth.show{display:flex!important;flex-direction:row;position:fixed;inset:0;z-index:10700;background:rgba(0,0,0,.35);-webkit-backdrop-filter:blur(2.5px);backdrop-filter:blur(2.5px);padding:0;align-items:flex-end;justify-content:center;animation:ovFade .22s ease}
-#p-auth.show .auth-inner{background:var(--bg2);border-radius:var(--r-xl);width:84%;max-width:420px;min-height:auto;max-height:80vh;overflow-y:auto;box-shadow:0 4px 48px rgba(0,0,0,.14);border:1px solid var(--line);margin-bottom:calc(26px + env(safe-area-inset-bottom, 0px));animation:up .25s cubic-bezier(.4,0,.2,1);padding:calc(20px + env(safe-area-inset-top, 0px)) 24px 28px}
+#p-auth.show .auth-inner{background:var(--bg3);border-radius:var(--r-xl);width:88%;max-width:440px;min-height:auto;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3);border:1px solid var(--border2);margin-bottom:calc(26px + env(safe-area-inset-bottom, 0px));animation:up .25s cubic-bezier(.4,0,.2,1);padding:calc(20px + env(safe-area-inset-top, 0px)) 24px 28px}
 #p-auth.show .auth-back{display:none!important}
-#p-auth.show .auth-skip{background:var(--bg3)}
+/* auth-skip sits on the sheet's own surface (now var(--bg3)), so it needs an extra step up for contrast */
+#p-auth.show .auth-skip{background:var(--bg2)}
+/* Sheet content is content-driven (min-height:auto) and this session's margin increases made
+   registration-tab content tall enough to feel disproportionately "stretched" next to the
+   narrower width -- trim a few vertical gaps here only, leaving the full-page boot presentation's
+   more relaxed spacing untouched. */
+#p-auth.show .auth-sub{margin-bottom:18px}
+#p-auth.show .auth-tabs{margin-bottom:18px}
+#p-auth.show .auth-or{margin:14px 0}
+#p-auth.show .input-group{margin-bottom:11px}
 .auth-logo{font-family:var(--font-display);font-size:24px;font-weight:600;margin-bottom:4px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .auth-logo span{-webkit-text-fill-color:inherit}
 .auth-title{font-family:var(--font-display);font-size:24px;font-weight:600;margin-bottom:5px}
@@ -5945,8 +5954,11 @@ function camStartStream(){
   v.classList.toggle('mirror',_camFacing==='user');
   function onStream(stream){ _camStream=stream; v.srcObject=stream; v.muted=true; v.style.filter=_camFx||'none'; v.play().catch(function(){}); _camTorch=false; camSyncControls(); }
   function onErr(e){ console.warn('[cam]',e); toast('📷 '+t('camDenied')); closeCamera(); camFallback(); }
-  navigator.mediaDevices.getUserMedia({video:{facingMode:_camFacing},audio:true}).then(onStream).catch(function(){
-    navigator.mediaDevices.getUserMedia({video:{facingMode:_camFacing},audio:false}).then(onStream).catch(onErr);
+  // Ask for a real 1080p capture -- "ideal" so devices that can't hit it just get their
+  // best available resolution instead of failing the constraint outright.
+  var camConstraints={facingMode:_camFacing,width:{ideal:1920},height:{ideal:1080}};
+  navigator.mediaDevices.getUserMedia({video:camConstraints,audio:true}).then(onStream).catch(function(){
+    navigator.mediaDevices.getUserMedia({video:camConstraints,audio:false}).then(onStream).catch(onErr);
   });
 }
 function camStopStream(){ if(_camStream){ try{_camStream.getTracks().forEach(function(t){t.stop();});}catch(e){} _camStream=null; } }
@@ -5989,7 +6001,10 @@ function camStartRec(){
         else if(MediaRecorder.isTypeSupported('video/webm')) _recMime='video/webm';
       }
     }catch(e){}
-    var mr = _recMime ? new MediaRecorder(recStream,{mimeType:_recMime}) : new MediaRecorder(recStream); _camRec=mr;
+    // 6 Mbps so the source we hand to Bunny is actually worth its 1080p rendition -- MediaRecorder's
+    // unconstrained default bitrate is tuned conservatively for real-time recording, well under that.
+    var _recOpts=_recMime?{mimeType:_recMime,videoBitsPerSecond:6000000}:{videoBitsPerSecond:6000000};
+    var mr = new MediaRecorder(recStream,_recOpts); _camRec=mr;
     mr.ondataavailable=function(e){ if(e.data&&e.data.size) _camChunks.push(e.data); };
     mr.onstop=function(){
       var type=_recMime||(_camChunks[0]&&_camChunks[0].type)||'video/webm';
@@ -9723,7 +9738,7 @@ function handleUploadFile(file){
 // Videos go to bunny.net Stream (cheap egress); images stay on Firebase Storage.
 // The API key never reaches the client — createBunnyVideo (server) returns a presigned
 // TUS signature and we upload the file directly to Bunny with tus-js-client.
-function bunnyMp4URL(guid, cdnHost){ return 'https://'+cdnHost+'/'+guid+'/play_720p.mp4'; }
+function bunnyMp4URL(guid, cdnHost){ return 'https://'+cdnHost+'/'+guid+'/play_1080p.mp4'; }
 // bunny.net auto-generates a thumbnail per video — use it as the <video> poster so the
 // feed shows a frame instead of a black rectangle before playback starts.
 function bunnyThumb(url){ return (url&&/\.b-cdn\.net\/.+\/play_\d+p\.mp4$/.test(url))?url.replace(/play_\d+p\.mp4$/,'thumbnail.jpg'):''; }
