@@ -4394,15 +4394,23 @@ function loadFeed(isRefresh){
   var query=db.ref('feed').orderByChild('timestamp').limitToLast(21);
   Promise.all([onceWithTimeout(query), feedLoadPrefProfile()]).then(function(results){
     var snap=results[0];
-    feedAllPosts=[];
+    var basePool=[];
     snap.forEach(function(c){
       var p={id:c.key,...c.val()};
-      // forYouEligible is a server-decided freshness gate (firebase/functions/index.js:
-      // refreshForYouFreshness) -- it only applies to the For You tab. Following still shows
-      // everything from people you follow regardless of how stale/quiet a post has gone.
-      var forYouOk=(feedMode!=='foryou')||(p.forYouEligible!==false);
-      if(isSafePost(p) && !_blockedSet.has(p.uid) && !_mutedSet.has(p.uid) && forYouOk) feedAllPosts.push(p);
+      if(isSafePost(p) && !_blockedSet.has(p.uid) && !_mutedSet.has(p.uid)) basePool.push(p);
     });
+    // forYouEligible is a server-decided freshness gate (firebase/functions/index.js:
+    // refreshForYouFreshness) -- it only applies to the For You tab. Following still shows
+    // everything from people you follow regardless of how stale/quiet a post has gone.
+    // It's a soft preference, not a hard filter: if nothing currently qualifies as "fresh"
+    // (e.g. a small/quiet app where every post has fallen out of the recent-views window),
+    // falling back to the full pool beats showing an empty feed when real posts exist.
+    if(feedMode==='foryou'){
+      var eligiblePool=basePool.filter(function(p){return p.forYouEligible!==false;});
+      feedAllPosts=eligiblePool.length?eligiblePool:basePool;
+    } else {
+      feedAllPosts=basePool;
+    }
     feedAllPosts.reverse();
 
     // Set pagination cursor to oldest post's timestamp
