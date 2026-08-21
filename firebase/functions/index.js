@@ -3100,7 +3100,7 @@ exports.editComment = functions.https.onCall(async (data, context) => {
 
 exports.changeUsername = functions.https.onCall(async (data, context) => {
   const uid = context.auth?.uid;
-  if (!uid) {
+  if (!uid || isAnonymousCaller(context)) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 

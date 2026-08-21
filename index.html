@@ -1865,15 +1865,15 @@ svg.ic-lg{width:19px;height:19px}
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg></div><div class="setting-label" data-i="blockedUsers">Blocked users</div></div>
             <div class="chevron">›</div>
           </div>
-          <div class="setting-row" role="button" tabindex="0" onclick="closeSettings();changeUsername()">
+          <div class="setting-row" role="button" tabindex="0" id="change-username-row" onclick="closeSettings();changeUsername()">
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="setting-label" data-i="changeUsername">Change username</div></div>
             <div class="chevron">›</div>
           </div>
-          <div class="setting-row" role="button" tabindex="0" onclick="closeSettings();changePassword()">
+          <div class="setting-row" role="button" tabindex="0" id="change-password-row" onclick="closeSettings();changePassword()">
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div class="setting-label" data-i="changePassword">Change password</div></div>
             <div class="chevron">›</div>
           </div>
-          <div class="setting-row" role="button" tabindex="0" onclick="closeSettings();changeEmail()">
+          <div class="setting-row" role="button" tabindex="0" id="change-email-row" onclick="closeSettings();changeEmail()">
             <div class="setting-left"><div class="setting-icon"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg></div><div class="setting-label" data-i="changeEmail">Change email</div></div>
             <div class="chevron">›</div>
           </div>
@@ -2828,7 +2828,15 @@ function applyLoadedData(data, user){
 // Settings panel (TikTok-style), opened from the profile gear button.
 function openSettings(){
   var o=document.getElementById('settings-overlay');
-  if(o){ o.classList.add('show'); try{applyTranslations();}catch(e){} try{syncPushToggle();}catch(e){} try{syncFxToggle();}catch(e){} var ar=document.getElementById('admin-setting-row'); if(ar) ar.style.display=isAdmin()?'':'none'; }
+  if(o){
+    o.classList.add('show'); try{applyTranslations();}catch(e){} try{syncPushToggle();}catch(e){} try{syncFxToggle();}catch(e){}
+    var ar=document.getElementById('admin-setting-row'); if(ar) ar.style.display=isAdmin()?'':'none';
+    // A guest has no username/password/email of their own to change -- these rows don't apply
+    // until they actually register, so hide them rather than let the tap redirect to sign-up.
+    ['change-username-row','change-password-row','change-email-row'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.style.display=isGuestUser?'none':'';
+    });
+  }
   // Lock background scroll while the sheet is open
   var sc=document.querySelector('.screen.active');
   if(sc){ sc.style.overflow='hidden'; window._settingsLockedScreen=sc; }
@@ -3226,6 +3234,11 @@ function changeEmail(){ openAccountEdit('email'); }
 function _vEsc(s){ return String(s||'').replace(/"/g,'&quot;'); }
 function openAccountEdit(type){
   if(!auth||!auth.currentUser){ toast(t('noConnection')); return; }
+  // A guest has no username/password/email of their own to change -- gate here rather than let
+  // them fill out and submit a form that can only fail or (worse, for username specifically --
+  // see changeUsername's own isAnonymousCaller guard) silently succeed in a way that shouldn't
+  // be possible for a throwaway anonymous session.
+  if(!requireRealAccount()) return;
   _acctType=type;
   var cur=auth.currentUser;
   document.getElementById('account-modal-title').textContent = type==='username'?t('changeUsername'):type==='password'?t('changePassword'):t('changeEmail');
@@ -7798,7 +7811,11 @@ function notifIcon(type){ return NOTIF_SVG[type==='comment_reply'?'comment':type
 // Ephemeral "your daily reward is waiting" row. Computed from today's state and never
 // stored in the DB, so it self-clears the moment the reward is claimed, costs no writes,
 // and never pushes real notifications out of the 100-entry cap.
-function dailyReminderActive(){ return !!(userUID&&_dailyStateLoaded&&dailyAvailable()); }
+// A guest has no daily reward to actually claim (openDailyReward()/claimDaily() both redirect
+// them to sign-up), so none of the "you have something waiting" signals this drives -- the nav
+// dot, the card's badge/glow, the notification-panel row, the bell's total count -- should tease
+// them with a reward they can never get.
+function dailyReminderActive(){ return !!(userUID&&!isGuestUser&&_dailyStateLoaded&&dailyAvailable()); }
 function dailyNotifRow(){
   if(!dailyReminderActive()) return '';
   var hasStreak=(myDailyStreak>0&&myLastDailyClaim===yesterdayILStr());
@@ -8129,7 +8146,11 @@ function updateDailyDot(){
   const btn=document.getElementById('daily-reward-btn');
   if(!btn) return;
   const loggedIn=!!userUID;
-  const avail=loggedIn&&dailyAvailable();
+  // A guest can never actually claim (openDailyReward() redirects them to sign-up), so avail is
+  // forced false for them -- the card still shows (loggedIn alone controls visibility, so the
+  // screen layout doesn't shift), just always in the neutral "nothing new" state instead of
+  // glowing with a reward they can't get.
+  const avail=loggedIn&&!isGuestUser&&dailyAvailable();
   btn.style.display=loggedIn?'':'none';           // stays visible even after collecting
   // glow whenever there's an unclaimed reward — stops the instant you claim (avail→false), not on open
   btn.classList.toggle('is-new', !!avail);
@@ -8165,6 +8186,9 @@ function openStreakInfo(){
   document.getElementById('streak-modal').classList.add('show');
 }
 function openDailyReward(){
+  // A guest has nothing to claim -- redirect at the tap that opens this, not just at the claim
+  // button inside it, so they never see a fully-enabled "Claim reward" button that can't work.
+  if(!requireRealAccount()) return;
   // note: the glow is tied to availability now — opening no longer silences it; only claiming does.
   const grid=document.getElementById('daily-grid');
   const claimable=dailyAvailable();
