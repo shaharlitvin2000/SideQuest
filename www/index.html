@@ -380,7 +380,9 @@ img,video{max-width:100%}
 /* Sized in JS to the feed's real crop ratio (see openPhotoEditor) -- this frame IS the export
    crop, so what's inside it is exactly what survives the feed's object-fit:cover, not a guess. */
 .pe-frame{position:relative;overflow:hidden;border-radius:18px;background:#000;box-shadow:0 18px 50px -12px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.05);touch-action:none}
-.pe-img{position:absolute;left:0;top:0;transform-origin:0 0;display:block;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
+/* max-width/max-height:none override the global img,video{max-width:100%} reset -- otherwise it
+   caps the box at the frame's size *before* the scale() transform, squashing the displayed image. */
+.pe-img{position:absolute;left:0;top:0;max-width:none;max-height:none;transform-origin:0 0;display:block;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
 .pe-overlay-layer{position:absolute;inset:0;pointer-events:none}
 .pe-overlay-layer .pe-ov{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;cursor:grab;font-weight:700;white-space:nowrap;text-shadow:0 2px 10px rgba(0,0,0,.55);-webkit-user-select:none;user-select:none;touch-action:none;line-height:1}
 .pe-overlay-layer .pe-ov:active{cursor:grabbing}
