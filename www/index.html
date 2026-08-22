@@ -1153,6 +1153,12 @@ svg.ic-lg{width:19px;height:19px}
    across devices instead of matching each device's arbitrary viewport shape. */
 .feed-media-img{width:auto;height:auto;max-width:100%;max-height:100%;aspect-ratio:9/16;object-fit:cover;display:block;touch-action:none}
 .feed-media-vid{width:auto;height:auto;max-width:100%;max-height:100%;aspect-ratio:9/16;object-fit:cover;display:block;touch-action:none}
+/* Letterbox/pillarbox bars around the 9:16 frame above are .feed-post's own flat black background
+   showing through -- fine once settled, but a partial drag reveals a neighbor slot from its edge
+   inward, so a small drag distance can be *entirely* within that bar, reading as "nothing loaded"
+   even though the video/image itself is primed and fine. Same blurred-backdrop trick already used
+   for this exact problem elsewhere (see .mv-blur-bg) fills the bars with real content instead. */
+.feed-blur-bg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;filter:blur(26px) brightness(.5);transform:scale(1.15);pointer-events:none}
 .feed-overlay{position:absolute;bottom:0;left:0;right:0;padding:80px 16px 22px 74px;background:linear-gradient(transparent 0%,rgba(0,0,0,.38) 40%,rgba(0,0,0,.88) 100%);color:#fff;pointer-events:none;direction:rtl}
 .feed-username-big{font-family:var(--font);font-weight:700;font-size:16px;text-shadow:0 1px 8px rgba(0,0,0,.8);margin-bottom:5px;letter-spacing:-.2px}
 .feed-caption{font-size:13px;line-height:1.45;margin-bottom:5px;text-shadow:0 1px 4px rgba(0,0,0,.7);opacity:.95}
@@ -4725,12 +4731,16 @@ function feedRenderPost(post,slot){
     // through the ordinary (faster, more consistent) image-paint path instead of the video decoder's
     // own poster handling, so there's always something other than black showing immediately.
     var _vThumb=bunnyThumb(post.mediaURL);
-    media='<video class="feed-media-vid" src="'+escHtml(post.mediaURL)+'#t=0.1" poster="'+escHtml(_vThumb)+'" style="background-image:url(\''+escHtml(_vThumb)+'\');background-size:cover;background-position:center" muted loop playsinline preload="auto" ontimeupdate="feedOnVideoProgress(\''+postId+'\',this)"></video>'
+    // Also fills the letterbox bars around the 9:16 frame (see .feed-blur-bg) -- those bars are
+    // outside the video's own box, so its inline background-image fallback above doesn't reach them.
+    media='<div class="feed-blur-bg" style="background-image:url(\''+escHtml(_vThumb)+'\')"></div>'
+         +'<video class="feed-media-vid" src="'+escHtml(post.mediaURL)+'#t=0.1" poster="'+escHtml(_vThumb)+'" style="background-image:url(\''+escHtml(_vThumb)+'\');background-size:cover;background-position:center" muted loop playsinline preload="auto" ontimeupdate="feedOnVideoProgress(\''+postId+'\',this)"></video>'
          +'<button class="feed-mute-btn" onclick="feedToggleMute(event)">'+_muteIcon(true)+'</button>'
          +'<div class="feed-pause-icon"><svg viewBox="0 0 24 24" fill="rgba(255,255,255,.92)" stroke="none"><path d="M8 5.5v13a1 1 0 0 0 1.5.87l11-6.5a1 1 0 0 0 0-1.74l-11-6.5A1 1 0 0 0 8 5.5z"/></svg></div>'
          +'<div class="feed-progress"><div class="feed-progress-fill"></div></div>';
   } else if(post.mediaType==='image'&&isValidURL){
-    media='<img class="feed-media-img" src="'+escHtml(post.mediaURL)+'" alt="" draggable="false">';
+    media='<div class="feed-blur-bg" style="background-image:url(\''+escHtml(post.mediaURL)+'\')"></div>'
+         +'<img class="feed-media-img" src="'+escHtml(post.mediaURL)+'" alt="" draggable="false">';
   } else {
     media='<div class="feed-no-media"><svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--faint)"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div>';
   }
@@ -5334,6 +5344,14 @@ function feedRecordWatchTime(postId){
 function feedPrimeNeighborVideo(slotEl){
   var v=slotEl&&slotEl.querySelector('video');
   if(!v||!v.paused) return;
+  // This slot was just synchronously inserted into the DOM by the caller (appendChild happens
+  // right before this call, at every call site). .feed-media-vid's box is now aspect-ratio:9/16
+  // sized via max-height:100% resolved up through .feed-post's height chain (see the letterboxing
+  // change) instead of a flat width/height:100% -- that chain isn't guaranteed resolved yet at
+  // this exact synchronous point, so play() could prime a frame onto a still-transient (possibly
+  // zero-sized) box. Reading a layout-dependent property forces the browser to settle layout
+  // first, so priming always happens against the video's real, final box.
+  void v.offsetHeight;
   v.muted=true;
   var p=v.play();
   if(p&&p.then) p.then(function(){ try{v.pause();}catch(e){} }).catch(function(){});
