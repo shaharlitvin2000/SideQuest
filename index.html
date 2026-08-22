@@ -226,8 +226,11 @@ img,video{max-width:100%}
 .si-freeze{width:52px;height:52px;border-radius:var(--r-lg);background:rgba(125,216,255,.12);border:1px solid rgba(125,216,255,.35);display:flex;align-items:center;justify-content:center;font-size:24px}
 .si-freeze.off{opacity:.22;filter:grayscale(1)}
 .si-explain{font-size:12.5px;color:var(--muted);line-height:1.6;text-align:center;margin-top:10px}
-.rank-pill{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--accent);background:var(--bg2);border:none;border-radius:11px;padding:5px 11px;cursor:pointer;transition:transform .12s;white-space:nowrap}
+/* Distinguished from the plain streak-pill/pts-pill siblings next to it (same pill shape, but
+   those are just info readouts) with a border ring + chevron, so it reads as tappable. */
+.rank-pill{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--accent);background:var(--bg2);border:1px solid var(--accent-border-soft);border-radius:11px;padding:5px 11px;cursor:pointer;transition:transform .12s;white-space:nowrap}
 .rank-pill #rank-emoji{font-size:13px}
+.rank-pill .chevron{font-size:12px;color:inherit;opacity:.7}
 .rank-pill:active{transform:scale(.92)}
 .name-badge{font-size:.95em;line-height:1}
 /* premium: a small gold star shown next to a premium member's name (see premiumBadgeHTML) */
@@ -811,6 +814,11 @@ img,video{max-width:100%}
 .stat+.stat{border-inline-start:1px solid var(--line)}
 .stat-n{font-family:var(--font);font-size:16px;font-weight:700;line-height:1;color:var(--text);font-variant-numeric:tabular-nums}
 .stat-l{font-size:9px;color:var(--faint);margin-top:3px;font-weight:600}
+/* Only the "Global rank" cell is tappable (opens the leaderboard) -- the other three stat cells
+   are plain readouts, so this one needs its own visual cue to read as a button, not just text. */
+.stat-tappable{cursor:pointer}
+.stat-tappable .chevron{position:absolute;top:2px;right:2px;font-size:11px;color:var(--accent);opacity:.65}
+[dir="rtl"] .stat-tappable .chevron{right:auto;left:2px}
 .rank-wrap{padding:var(--sp-3) var(--sp-4) 0}
 .rank-box{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-lg);padding:13px 16px;box-shadow:var(--sh0)}
 .rank-lbl{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
@@ -1558,7 +1566,7 @@ svg.ic-lg{width:19px;height:19px}
         <span class="tb-count" id="notif-dot"></span>
       </button>
       <div class="tb-stats">
-      <div class="rank-pill" id="rank-pill" role="button" tabindex="0" onclick="openRanksModal()"><span id="rank-emoji"></span> <span id="rank-name-top">Rookie</span></div>
+      <div class="rank-pill" id="rank-pill" role="button" tabindex="0" onclick="openRanksModal()"><span id="rank-emoji"></span> <span id="rank-name-top">Rookie</span> <span class="chevron">›</span></div>
       <div class="streak-pill" role="button" tabindex="0" onclick="openStreakInfo()" style="cursor:pointer"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> <span class="num" id="streak-num">7</span> <span style="color:var(--muted);font-size:10px" id="streak-days-lbl" data-i="days">days</span></div>
       <div class="pts-pill"><span class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></span> <span class="num" id="pts">1,240</span></div>
       </div>
@@ -1726,7 +1734,7 @@ svg.ic-lg{width:19px;height:19px}
         <div class="stat"><div class="stat-n" id="pf-pts">0</div><div class="stat-l" data-i="weeklyPoints">Total points</div></div>
         <div class="stat"><div class="stat-n" id="pf-streak">0</div><div class="stat-l" data-i="dayStreak">Day streak</div></div>
         <div class="stat"><div class="stat-n" id="pf-missions">0</div><div class="stat-l" data-i="missionsDone">Missions done</div></div>
-        <div class="stat" role="button" tabindex="0" style="cursor:pointer" onclick="go('lb')"><div class="stat-n" id="pf-rank">#—</div><div class="stat-l" data-i="friendRank">Global rank</div></div>
+        <div class="stat stat-tappable" role="button" tabindex="0" onclick="go('lb')"><span class="chevron">›</span><div class="stat-n" id="pf-rank">#—</div><div class="stat-l" data-i="friendRank">Global rank</div></div>
       </div>
       <div class="rank-wrap">
         <div class="rank-box">
@@ -1767,6 +1775,12 @@ svg.ic-lg{width:19px;height:19px}
       <div id="my-videos-grid" class="my-videos-grid pf-pane"></div>
       <div id="liked-grid" class="liked-grid pf-pane" style="display:none"></div>
       <div id="saved-grid" class="liked-grid pf-pane" style="display:none"></div>
+    </div>
+
+    <!-- CHATS SCREEN -->
+    <div class="screen" id="s-chats">
+      <div class="sec" data-i="messages">Messages</div>
+      <div id="chat-list"><div class="empty-sheet">…</div></div>
     </div>
 
     <!-- FEED SCREEN -->
@@ -1931,7 +1945,7 @@ svg.ic-lg{width:19px;height:19px}
     <div class="nav-item active" id="nav-feed" onclick="go('feed',this)" role="button" tabindex="0"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></svg></div><div class="nav-label" data-i="feed">Feed</div></div>
     <div class="nav-item" id="nav-home" onclick="go('home',this)" role="button" tabindex="0"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg><span class="nav-dot" id="nav-home-dot"></span></div><div class="nav-label" data-i="missions">Missions</div></div>
     <div class="nav-create" onclick="openUploadVideo()" aria-label="Create" data-i-aria="create" role="button" tabindex="0"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-    <div class="nav-item" onclick="openChatList()" role="button" tabindex="0"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span class="nav-dot" id="nav-chats-dot"></span></div><div class="nav-label" data-i="messages">Messages</div></div>
+    <div class="nav-item" onclick="go('chats',this)" role="button" tabindex="0"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span class="nav-dot" id="nav-chats-dot"></span></div><div class="nav-label" data-i="messages">Messages</div></div>
     <div class="nav-item" onclick="go('pf',this)" role="button" tabindex="0"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div><div class="nav-label" data-i="profile">Profile</div></div>
   </nav>
 
@@ -2485,7 +2499,7 @@ function applyTranslations(){
   // of these), refresh it in place instead of leaving stale-language text until it's next opened.
   try{ if(document.getElementById('comment-overlay')&&document.getElementById('comment-overlay').classList.contains('show')&&_cmtPostId) loadCommentsFull(_cmtPostId); }catch(e){}
   try{ if(document.getElementById('notif-overlay')&&document.getElementById('notif-overlay').classList.contains('show')) openNotifications(); }catch(e){}
-  try{ if(document.getElementById('chat-list-overlay')&&document.getElementById('chat-list-overlay').classList.contains('show')) openChatList(); }catch(e){}
+  try{ if(document.getElementById('s-chats')&&document.getElementById('s-chats').classList.contains('active')) openChatList(); }catch(e){}
   try{ if(document.getElementById('chat-overlay')&&document.getElementById('chat-overlay').classList.contains('show')) renderChatBox(); }catch(e){}
   try{ if(document.getElementById('rewards-modal')&&document.getElementById('rewards-modal').classList.contains('show')) openRewardsShop(); }catch(e){}
   try{ if(document.getElementById('drafts-overlay')&&document.getElementById('drafts-overlay').classList.contains('show')) renderDrafts(); }catch(e){}
@@ -3667,6 +3681,7 @@ function go(id,el){
   if(id==='lb') loadLeaderboard();
   if(id==='home') loadTopRooms();
   if(id==='feed') feedNavTap();
+  if(id==='chats') openChatList();
   if(id==='pf'){
     loadLikedPosts();
     loadSavedPosts();
@@ -8645,7 +8660,7 @@ function loadMyBlocked(){
   db.ref('userBlocked/'+userUID).on('value',function(snap){
     _blockedSet=new Set(); _blockedInfo={};
     snap.forEach(function(c){ if(c.val()){ _blockedSet.add(c.key); var v=c.val(); _blockedInfo[c.key]=(v&&v.name)?v.name:t('playerFallback'); } });
-    var clo=document.getElementById('chat-list-overlay'); if(clo&&clo.classList.contains('show')) openChatList();
+    var scr=document.getElementById('s-chats'); if(scr&&scr.classList.contains('active')) openChatList();
   },function(){});
 }
 function isBlocked(uid){ return _blockedSet.has(uid); }
@@ -8709,9 +8724,8 @@ function renderBlockedList(){
   list.innerHTML=html;
 }
 function openChatList(){
-  const ov=document.getElementById('chat-list-overlay'),list=document.getElementById('chat-list');
-  if(!ov||!list) return;
-  ov.classList.add('show');
+  const list=document.getElementById('chat-list');
+  if(!list) return;
   if(!db||!userUID){list.innerHTML=emptyState(EMPTY_IC.chat, t('noChats'));return;}
   list.innerHTML='<div class="empty-sheet">'+t('loading')+'</div>';
   onceWithTimeout(db.ref('chatMeta/'+userUID).orderByChild('lastAt')).then(function(snap){
@@ -8741,7 +8755,6 @@ function _openChatWith(peerUid,peerName){
   if(!peerUid||peerUid===userUID||!db) return;
   _chatPeerUid=peerUid;_chatPeerName=peerName||t('playerFallback');_chatId=chatIdFor(userUID,peerUid);
   _chatDbMsgs=[]; _chatPending=[];   // fresh chat — don't carry over another conversation's state
-  document.getElementById('chat-list-overlay')?.classList.remove('show');
   document.getElementById('fpp-overlay')?.classList.remove('show');
   document.getElementById('chat-peer-name').textContent=_chatPeerName;
   var box=document.getElementById('chat-messages'); box.innerHTML='<div class="empty-sheet">'+t('chatStart')+'</div>';
@@ -10235,7 +10248,6 @@ function _handleAndroidBack(){
       ['comment-overlay',function(){ closeCommentSheet({target:document.getElementById('comment-overlay')}); }],
       ['follow-sheet-overlay',function(){ closeFollowSheet({target:document.getElementById('follow-sheet-overlay')}); }],
       ['chat-overlay',function(){ closeChat(); }],
-      ['chat-list-overlay',function(){ document.getElementById('chat-list-overlay').classList.remove('show'); }],
       ['room-mission-sheet',function(){ roomSheetClose(); }],
       ['room-user-sheet',function(){ roomSheetClose(); }],
       ['room-chat-screen',function(){ closeRoomChat(); }],
@@ -10695,18 +10707,6 @@ function _handleAndroidBack(){
     <div class="modal-title"><svg class="ic ic-lg" viewBox="0 0 24 24" style="vertical-align:-3px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> <span data-i="myDrafts">Drafts</span></div>
     <div id="drafts-list" class="drafts-list"></div>
     <button class="modal-cancel" onclick="closeDrafts()" data-i="close">Close</button>
-  </div>
-</div>
-
-<!-- CHAT LIST OVERLAY -->
-<div class="follow-sheet-overlay" id="chat-list-overlay" onclick="if(event.target===this)this.classList.remove('show')">
-  <div class="follow-sheet" style="height:75%">
-    <div class="follow-sheet-handle"></div>
-    <div class="follow-sheet-header">
-      <div class="follow-sheet-title" data-i="messages">Messages</div>
-      <button class="follow-sheet-close" onclick="document.getElementById('chat-list-overlay').classList.remove('show')">✕</button>
-    </div>
-    <div class="follow-sheet-list" id="chat-list"><div class="empty-sheet">…</div></div>
   </div>
 </div>
 
